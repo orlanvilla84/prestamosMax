@@ -1,0 +1,14 @@
+{
+  "appId": "com.prestamax.app",
+  "appName": "PrestaMax",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#060e17",
+    "minSdkVersion": 22
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}
