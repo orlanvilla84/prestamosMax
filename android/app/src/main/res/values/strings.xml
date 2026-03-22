@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PrestaMax</string>
+    <string name="title_activity_main">PrestaMax</string>
+    <string name="package_name">com.prestamax.app</string>
+    <string name="custom_url_scheme">com.prestamax.app</string>
+</resources>
