@@ -330,6 +330,26 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .dp-legend{display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--fog)}
 .dp-legend span{display:flex;align-items:center;gap:4px}
 </style>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
+  authDomain: "prestamax-276f0.firebaseapp.com",
+  projectId: "prestamax-276f0",
+  storageBucket: "prestamax-276f0.firebasestorage.app",
+  messagingSenderId: "325489105014",
+  appId: "1:325489105014:web:72c2675e9749a4c5e36757"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db;
+window._fbFns = { doc, setDoc, getDoc, collection, getDocs, deleteDoc };
+</script>
 </head>
 <body>
 <div id="app">
@@ -663,6 +683,46 @@ const DB={
 };
 const S={user:null,cartera:null,tab:'inicio',lid:null,pendingCid:null};
 
+/* ─── FIRESTORE PERSISTENCE ─── */
+async function fsGuardarCartera(c){
+  try{
+    if(!window._db)return;
+    const {doc,setDoc}=window._fbFns;
+    const data=JSON.parse(JSON.stringify(c));
+    // Guardamos en colección global /carteras/{id} accesible por dueño y colaboradores
+    await setDoc(doc(window._db,'carteras',c.id),data);
+  }catch(e){console.warn('fsGuardarCartera:',e);}
+}
+
+async function fsCargarCarteras(){
+  try{
+    if(!S.user||!window._db)return;
+    const {collection,getDocs}=window._fbFns;
+    const snap=await getDocs(collection(window._db,'carteras'));
+    DB.carteras=[];
+    snap.forEach(d=>{
+      const c=d.data();
+      // Solo carteras donde el usuario es dueño o colaborador
+      if(c.owner===S.user.id||c.owner===S.user.email||(c.collabs||[]).includes(S.user.email)){
+        DB.carteras.push(c);
+      }
+    });
+    renderCarteras();
+  }catch(e){console.warn('fsCargarCarteras:',e);}
+}
+
+async function fsEliminarCartera(id){
+  try{
+    if(!window._db)return;
+    const {doc,deleteDoc}=window._fbFns;
+    await deleteDoc(doc(window._db,'carteras',id));
+  }catch(e){console.warn('fsEliminarCartera:',e);}
+}
+
+function fsSave(){
+  if(S.cartera)fsGuardarCartera(S.cartera);
+}
+
 function simHash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffffffff;return h.toString(16);}
 function chkHash(s,h){return simHash(s)===h;}
 
@@ -725,6 +785,7 @@ function doGoogleLogin(){
             updateUserUI();
             document.getElementById('s-admin').classList.remove('on');
             showCarteras();
+            fsCargarCarteras();
             toast('✅ Sesión iniciada: '+u.name);
           }).catch(()=>toast('❌ Error al obtener datos de Google'));
       }
@@ -901,6 +962,7 @@ function saveCartera(){
   closeM('m-new-cartera');renderCarteras();toast('✅ Cartera creada');
   ['nc-name','nc-desc','nc-pass','nc-collabs'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   $('nc-secret-wrap').style.display='none';
+  fsSave();
 }
 
 /* ─── RECUPERACIÓN DE CLAVE (email simulado) ─── */
@@ -1236,7 +1298,7 @@ function rDetail(l){
       <div class="cnum ${cls}">${c.num}</div>
       <div class="cinf">
         <div class="cfecha">${fd(c.fecha)} ${c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳'}</div>
-        <div class="csub">${c.estado==='pagada'?'Pagada · '+c.pagadoPor:c.estado==='mora'?'En mora':'Pendiente'}${ms}</div>
+        <div class="csub">${c.estado==='pagada'?`Pagada · <b>${c.pagadoPor||'Sistema'}</b>${c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''}`:c.estado==='mora'?'En mora':'Pendiente'}${ms}</div>
         ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
         ${c.estado!=='pagada'?`<div class="cact">
           <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar</button>
@@ -1254,6 +1316,7 @@ function rDetail(l){
     <div class="dinfo">🪪 CC ${l.ced}</div>
     <div class="dinfo">📱 ${l.tel} · 🏦 ${l.cta}</div>
     <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not} · ⚠️ ${fmt(l.mul)}</div>
+    ${l.creadoPor?`<div class="dinfo" style="color:var(--smoke)">📝 Creado por: <b style="color:var(--jade)">${l.creadoPor}</b>${l.fechaCreacion?' · '+new Date(l.fechaCreacion).toLocaleDateString('es-CO'):''}</div>`:''}
     ${l.renewRequest?'<div style="margin-top:7px"><span class="badge-violet">🔄 Solicitud de renovación pendiente</span></div>':''}
     <div class="dstats">
       <div class="dstat"><div class="dstat-v" style="color:var(--jade)">${fmt(l.val)}</div><div class="dstat-l">Préstamo</div></div>
@@ -1456,6 +1519,30 @@ function rEstadis(){
     </div>`;
 }
 
+function addCollab(){
+  const c=S.cartera;if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede agregar colaboradores');return;}
+  const email=document.getElementById('new-collab-input')?.value.trim().toLowerCase();
+  if(!email||!email.includes('@')){toast('⚠️ Ingresa un email válido');return;}
+  if(email===c.owner){toast('⚠️ Ese email es el dueño de la cartera');return;}
+  if(!c.collabs)c.collabs=[];
+  if(c.collabs.includes(email)){toast('⚠️ Ese colaborador ya existe');return;}
+  c.collabs.push(email);
+  document.getElementById('new-collab-input').value='';
+  fsSave();
+  goTab('config');
+  toast('✅ Colaborador agregado: '+email);
+}
+
+function removeCollab(email){
+  const c=S.cartera;if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede quitar colaboradores');return;}
+  c.collabs=(c.collabs||[]).filter(e=>e!==email);
+  fsSave();
+  goTab('config');
+  toast('🗑️ Colaborador eliminado');
+}
+
 function rConfig(){
   const c=S.cartera;
   const fin=c?.fin||{pctGanancia:20,liberaCapital:true};
@@ -1536,8 +1623,24 @@ function rConfig(){
       <input type="text" class="fi" id="cfg-grupo" placeholder="https://chat.whatsapp.com/..." value="${c?.cfg?.grupoWA||''}" oninput="S.cartera.cfg.grupoWA=this.value" style="font-size:12px">
     </div>
   </div>
-  <div class="cfg-grp"><div class="cfg-title">Colaboradores de esta cartera</div>
-    <div class="cfg-row"><div class="cfg-ico">👥</div><div style="flex:1"><div class="cfg-lbl">Con acceso</div><div class="cfg-sub">${[c?.owner,...(c?.collabs||[])].filter(Boolean).join(', ')||'Solo tú'}</div></div></div>
+  <div class="cfg-grp">
+    <div class="cfg-title">👥 Colaboradores de esta cartera</div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Personas con acceso a esta cartera:</div>
+      <div id="collabs-list">
+        ${(c?.collabs||[]).length?
+          (c.collabs.map(email=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
+              <span style="font-size:12px">${email}</span>
+              <button class="btn btn-ghost btn-sm" style="color:var(--fire);font-size:11px" onclick="removeCollab('${email}')">✕ Quitar</button>
+            </div>`).join(''))
+          :'<div style="font-size:12px;color:var(--fog);padding:4px 0">Solo tú tienes acceso</div>'}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input type="email" class="fi" id="new-collab-input" placeholder="nuevo@gmail.com" style="flex:1;font-size:13px">
+      <button class="btn btn-jade" onclick="addCollab()">➕ Agregar</button>
+    </div>
   </div>
   <div class="cfg-grp"><div class="cfg-title">Cuenta</div>
     <div class="cfg-row"><div class="cfg-ico">👤</div><div style="flex:1"><div class="cfg-lbl">${S.user?.name}</div><div class="cfg-sub">${S.user?.email}</div></div></div>
@@ -1557,7 +1660,7 @@ function saveFinCfg(){
   if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
   const pct=parseInt(document.getElementById('cfg-pct')?.value||20);
   S.cartera.fin.pctGanancia=pct;
-  toast('✅ Configuración financiera guardada');
+  toast('✅ Configuración financiera guardada');fsSave();
   renderTab(S.tab);
 }
 
@@ -1715,6 +1818,9 @@ function saveLoan(){
   if(iniRaw){try{const d=new Date(iniRaw+'T12:00:00');if(!isNaN(d))iniDate=d;}catch(e){}}
   const loan=mkLoan({nom,ape,ced,tel,cta,val,cuo,mod,ncu,mul,hor,not,iniDate});
   loan.comprobante=gv('loan-comp-data')||null;
+  loan.creadoPor=S.user?.name||S.user?.email||'Desconocido';
+  loan.creadoPorEmail=S.user?.email||'';
+  loan.fechaCreacion=new Date().toISOString();
   S.cartera.loans.unshift(loan);
   closeM('m-loan');toast('✅ Préstamo guardado');
   setTimeout(()=>sendWACreacion(loan),400);
@@ -1768,7 +1874,7 @@ function confirmPay(lid,cn){
   const who=document.getElementById('pw-who')?.value||S.user?.name;
   const met=document.getElementById('pw-met')?.value||'Efectivo';
   const comp=gv('pay-comp-data')||null;
-  c.estado='pagada';c.fechaPago=new Date();c.pagadoPor=who;c.comprobante=comp;
+  c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;
   distribuirPago(l,c);
   l.historico.push(`✅ Cuota #${cn} pagada por ${who} vía ${met}${comp?' 📸':''}  — ${new Date().toLocaleDateString('es-CO')}`);
   closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
@@ -1968,7 +2074,16 @@ function openOpts(){
   <button class="btn btn-fire btn-w" onclick="delLoan(${l.id})">🗑️ Eliminar préstamo</button>`;
   openM('m-opts');
 }
-function delLoan(id){S.cartera.loans=S.cartera.loans.filter(l=>l.id!==id);closeM('m-opts');goBack();toast('🗑️ Eliminado');render();updDot();}
+function delLoan(id){
+  const l=S.cartera.loans.find(x=>x.id===id);
+  if(l){
+    // Registrar en historial de la cartera quién eliminó
+    if(!S.cartera.histAcciones)S.cartera.histAcciones=[];
+    S.cartera.histAcciones.push({accion:'eliminó préstamo',cliente:l.nom+' '+l.ape,por:S.user?.name||S.user?.email,email:S.user?.email,fecha:new Date().toISOString()});
+  }
+  S.cartera.loans=S.cartera.loans.filter(x=>x.id!==id);
+  closeM('m-opts');goBack();toast('🗑️ Eliminado');render();updDot();fsSave();
+}
 
 /* ─── PORTAL CLIENTE ─── */
 function showPortal(loan){
