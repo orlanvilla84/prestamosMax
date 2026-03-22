@@ -352,7 +352,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
       <span style="font-size:13px;opacity:.5">⚙️</span>
       <span class="admin-link-t">Acceso administrador / colaborador</span>
     </div>
-    <div class="demo-hint">Demo Cliente CC: <b style="color:var(--jade)">12345678</b></div>
+    
   </div>
 </div>
 <!-- CARTERAS -->
@@ -429,7 +429,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
       Continuar con Google
     </button>
     <button class="btn btn-ghost btn-w" onclick="goInicio()">← Volver al portal cliente</button>
-    <div class="demo-hint">Demo: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4a2b2e2723240a2d272b232664292527">[email&#160;protected]</a> / <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5b363a29323a1b3c363a323775383436">[email&#160;protected]</a><br><span style="color:var(--smoke)">(clic varias veces para alternar)</span></div>
+
   </div>
 </div>
 </div><!-- #app -->
@@ -488,7 +488,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
     <div class="fg"><label class="fl">🪪 Cédula</label><input type="text" class="fi" id="f-ced" placeholder="12345678" oninput="checkCedDup()"></div>
     <div class="fg"><label class="fl">📱 WhatsApp</label><input type="tel" class="fi" id="f-tel" placeholder="+57 300..."></div>
   </div>
-  <div id="ced-dup-warn" class="warn-box" style="display:none">⚠️ Esta cédula ya tiene un crédito activo en esta cartera. No se puede duplicar.</div>
+
   <div class="fg"><label class="fl">🏦 Cuenta / Nequi</label><input type="text" class="fi" id="f-cta" placeholder="Número de cuenta o Nequi"></div>
   <div class="fg"><label class="fl">💵 Valor préstamo</label>
     <input type="number" class="fi" id="f-val" placeholder="500000" oninput="recalc()">
@@ -658,10 +658,7 @@ function calcFechas(ini,mod,ncu){
 
 /* ─── STATE & DB ─── */
 const DB={
-  users:[
-    {id:'admin@gmail.com',name:'Carlos Admin',email:'admin@gmail.com'},
-    {id:'maria@gmail.com',name:'María Cobros',email:'maria@gmail.com'}
-  ],
+  users:[],
   carteras:[]
 };
 const S={user:null,cartera:null,tab:'inicio',lid:null,pendingCid:null};
@@ -671,21 +668,8 @@ function chkHash(s,h){return simHash(s)===h;}
 
 /* ─── SEED ─── */
 function seed(){
-  const t=new Date();
-  const c1={id:'c1',name:'Cartera Principal',desc:'Créditos generales',color:'cc-jade',passHash:'',collabs:['maria@gmail.com'],loans:[],cfg:{autoWA:true,grupoWA:''},owner:'admin@gmail.com',capital:{base:5000000,histInv:[{fecha:new Date(),monto:5000000,nota:'Inversión inicial'}],histGan:[]}};
-  const c2={id:'c2',name:'Cartera VIP',desc:'Clientes especiales — clave: 1234',color:'cc-violet',passHash:simHash('1234'),collabs:[],loans:[],cfg:{autoWA:true,grupoWA:''},owner:'admin@gmail.com',capital:{base:3000000,histInv:[{fecha:new Date(),monto:3000000,nota:'Inversión inicial'}],histGan:[]}};
-  const c3={id:'c3',name:'Cartera Norte',desc:'Zona norte',color:'cc-amber',passHash:'',collabs:[],loans:[],cfg:{autoWA:true,grupoWA:''},owner:'maria@gmail.com',capital:{base:2000000,histInv:[{fecha:new Date(),monto:2000000,nota:'Inversión inicial'}],histGan:[]}};
-  const sd=[
-    {nom:'Carlos',ape:'Mendoza',ced:'12345678',tel:'+573001234567',cta:'Nequi 3001234567',val:500000,cuo:55000,mod:'diario',   ncu:10,mul:20000,hor:'15:00',not:'whatsapp',pag:4,ini:off(t,-4)},
-    {nom:'María', ape:'García', ced:'23456789',tel:'+573009876543',cta:'Bancolombia 0987',val:300000,cuo:75000,mod:'semanal',  ncu:4, mul:15000,hor:'15:00',not:'ambos',   pag:2,ini:off(t,-14)},
-    {nom:'Juan',  ape:'Pérez',  ced:'34567890',tel:'+573112233445',cta:'Davivienda 1122', val:1000000,cuo:250000,mod:'quincenal',ncu:4,mul:50000,hor:'15:00',not:'whatsapp',pag:1,ini:off(t,-15)},
-    {nom:'Ana',   ape:'López',  ced:'45678901',tel:'+573005566778',cta:'Nequi 3005566778',val:200000,cuo:220000,mod:'mensual', ncu:1, mul:30000,hor:'15:00',not:'sms',     pag:0,ini:off(t,-32)},
-    {nom:'Pedro', ape:'Ramírez',ced:'56789012',tel:'+573227788990',cta:'Banco Bogotá 445',val:800000,cuo:90000, mod:'diario',  ncu:10,mul:25000,hor:'12:00',not:'whatsapp',pag:7,ini:off(t,-7)},
-    {nom:'Luciana',ape:'Torres',ced:'67890123',tel:'+573104455667',cta:'Nequi 3104455667',val:150000,cuo:37500, mod:'semanal', ncu:4, mul:10000,hor:'17:00',not:'ambos',   pag:1,ini:off(t,-7)}
-  ];
-  c1.loans=sd.slice(0,4).map(mkLoan);
-  c2.loans=sd.slice(4).map(mkLoan);
-  DB.carteras=[c1,c2,c3];
+  // Producción — sin datos demo
+  DB.carteras=[];
 }
 
 function mkLoan(d){
@@ -715,16 +699,53 @@ function fd(d){return new Date(d).toLocaleDateString('es-CO',{weekday:'short',da
 
 /* ─── AUTH ─── */
 function doGoogleLogin(){
-  const emails=['admin@gmail.com','maria@gmail.com'];
-  const idx=emails.indexOf(S._lastGmail||'');
-  const next=emails[(idx+1)%emails.length];
-  S._lastGmail=next;
-  const u=DB.users.find(x=>x.id===next)||DB.users[0];
-  S.user=u;
-  updateUserUI();
+  // Google OAuth real via popup
+  const clientId='YOUR_GOOGLE_CLIENT_ID'; // Reemplaza con tu Client ID de Google Cloud Console
+  if(clientId==='YOUR_GOOGLE_CLIENT_ID'){
+    // Fallback temporal hasta configurar OAuth — muestra instrucciones
+    toast('⚠️ Configura tu Google Client ID en el código');
+    // Para pruebas locales: descomenta la línea de abajo y comenta el return
+    // _loginDemo(); return;
+    return;
+  }
+  const params=new URLSearchParams({
+    client_id:clientId,
+    redirect_uri:window.location.origin+window.location.pathname,
+    response_type:'token',
+    scope:'openid email profile',
+    prompt:'select_account'
+  });
+  const popup=window.open('https://accounts.google.com/o/oauth2/v2/auth?'+params,'google-login','width=500,height=600');
+  const timer=setInterval(()=>{
+    try{
+      if(popup.closed){clearInterval(timer);return;}
+      const url=popup.location.href;
+      if(url.includes('access_token')){
+        clearInterval(timer);popup.close();
+        const token=new URLSearchParams(url.split('#')[1]).get('access_token');
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token='+token)
+          .then(r=>r.json()).then(info=>{
+            const u={id:info.email,name:info.name,email:info.email,avatar:info.picture};
+            DB.users=DB.users.filter(x=>x.id!==u.id);
+            DB.users.push(u);
+            S.user=u;
+            updateUserUI();
+            document.getElementById('s-admin').classList.remove('on');
+            showCarteras();
+            toast('✅ Sesión iniciada: '+u.name);
+          }).catch(()=>toast('❌ Error al obtener datos de Google'));
+      }
+    }catch(e){}
+  },500);
+}
+
+function _loginDemo(){
+  // Solo para pruebas — NO usar en producción
+  const u={id:'admin@gmail.com',name:'Administrador',email:'admin@gmail.com'};
+  DB.users=[u];S.user=u;updateUserUI();
   document.getElementById('s-admin').classList.remove('on');
   showCarteras();
-  toast(`✅ Sesión iniciada: ${u.name}`);
+  toast('✅ Modo prueba — configura Google OAuth');
 }
 
 
@@ -740,10 +761,53 @@ function goInicio(){
 function inicioLogin(){
   const ced=document.getElementById('inicio-ced')?.value.trim();
   if(!ced){toast('⚠️ Ingresa tu número de cédula');return;}
-  let found=null;
-  for(const c of DB.carteras){const l=c.loans.find(x=>x.ced===ced&&x.activo);if(l){found=l;break;}}
-  if(!found){toast('❌ No se encontró ningún crédito activo con esa cédula');return;}
-  showPortal(found);
+  // Buscar TODOS los préstamos activos con esa cédula en todas las carteras
+  const prestamos=[];
+  for(const c of DB.carteras){
+    const loans=c.loans.filter(x=>x.ced===ced&&x.activo);
+    loans.forEach(l=>prestamos.push({loan:l,cartera:c}));
+  }
+  if(!prestamos.length){
+    toast('❌ No se encontró ningún crédito activo con esa cédula');return;
+  }
+  if(prestamos.length===1){
+    showPortal(prestamos[0].loan);
+  } else {
+    showPortalMulti(prestamos);
+  }
+}
+
+function showPortalMulti(prestamos){
+  // Mostrar lista de todos los créditos del cliente
+  ['s-inicio','s-admin','s-carteras','s-main','s-detail','s-lock'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('on');
+  });
+  document.getElementById('s-portal').classList.add('on');
+  const l0=prestamos[0].loan;
+  document.getElementById('portal-bar-name').textContent=l0.nom+' '+l0.ape;
+  const el=document.getElementById('portal-content');
+  el.innerHTML=`
+    <div style="padding:16px">
+      <div style="font-weight:800;font-size:16px;margin-bottom:4px">Tus créditos activos</div>
+      <div style="font-size:12px;color:var(--smoke);margin-bottom:14px">CC ${l0.ced}</div>
+      ${prestamos.map(({loan:l,cartera:c},i)=>{
+        const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
+        const pen=l.cuotas.filter(q=>q.estado==='pendiente').length;
+        const mora=l.cuotas.filter(q=>q.estado==='mora').length;
+        return`<div style="background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:10px;cursor:pointer" onclick="showPortal(DB.carteras.find(c=>c.id==='${c.id}').loans.find(l=>l.id===${l.id}))">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Crédito #${i+1}</div>
+            <div style="font-weight:900;color:var(--jade)">${fmt(l.val)}</div>
+          </div>
+          <div style="font-size:11px;color:var(--smoke);margin-bottom:6px">${c.name}</div>
+          <div style="display:flex;gap:8px;font-size:11px">
+            <span style="color:var(--lime)">✅ ${pag} pagadas</span>
+            <span style="color:var(--sky)">⏳ ${pen} pendientes</span>
+            ${mora>0?`<span style="color:var(--fire)">⚠️ ${mora} mora</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 function doClientLogin(){
@@ -839,7 +903,8 @@ function saveCartera(){
   const capBase=parseFloat(gv('nc-cap').replace(/[^0-9.]/g,''))||0;
   DB.carteras.push({id,name,desc:gv('nc-desc').trim(),color:gv('nc-color'),
     passHash:pass?simHash(pass):'',collabs,loans:[],cfg:{autoWA:true,grupoWA:''},owner:S.user?.id||'',
-    capital:{base:capBase,histInv:capBase>0?[{fecha:new Date(),monto:capBase,nota:'Inversión inicial'}]:[],histGan:[]}});
+    capital:{base:capBase,histInv:capBase>0?[{fecha:new Date(),monto:capBase,nota:'Inversión inicial'}]:[],histGan:[]},
+    fin:{pctGanancia:20,liberaCapital:true}});
   closeM('m-new-cartera');renderCarteras();toast('✅ Cartera creada');
   ['nc-name','nc-desc','nc-pass','nc-collabs'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   $('nc-secret-wrap').style.display='none';
@@ -892,6 +957,8 @@ function goBack(){document.getElementById('s-detail').classList.remove('on');doc
 function showLoan(id){
   S.lid=id;const l=getL(id);if(!l)return;
   $('dtitle').textContent=l.nom+' '+l.ape;
+  // Inject financial summary after render
+  setTimeout(()=>{const el=document.getElementById('detail-fin-inject');if(el)el.outerHTML=resumenFin;},10);
   $('dcontent').innerHTML=rDetail(l);
   document.getElementById('s-main').classList.remove('on');
   document.getElementById('s-detail').classList.add('on');
@@ -925,23 +992,60 @@ function capRecuperado(c){
   },0);
 }
 
-// Ganancias acumuladas (pagos que superan el valor prestado)
+// Ganancias acumuladas basadas en % configurado de la cartera
+// ─── GANANCIA REAL: total cobrado - capital prestado ───
+function gananciaLoan(l){
+  // Ganancia real cobrada en este préstamo
+  const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((s,x)=>s+x.valor+(x.multa||0),0);
+  // Cuánto del capital ya se recuperó (no puede exceder val)
+  const capRecup=Math.min(cobrado,l.val);
+  return Math.max(0, cobrado-capRecup);
+}
+
 function gananciaTotal(c){
+  // Ganancia real ya cobrada en toda la cartera
+  return (c?.loans||[]).reduce((s,l)=>s+gananciaLoan(l),0);
+}
+
+function gananciaEstimada(c){
+  // Ganancia estimada si todos los activos terminan de pagar
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>s+gananciaEstimadaLoan(l),0);
+}
+
+// Capital recuperado: cuotas pagadas que corresponden al capital (no ganancia)
+function capitalRecuperado(c){
   return (c?.loans||[]).reduce((s,l)=>{
-    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor+(x.multa||0),0);
-    return s+Math.max(0,pagado-l.val);
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+Math.min(cobrado,l.val);
+  },0);
+}
+
+// Ganancia estimada de un préstamo (alias para compatibilidad)
+function gananciaEstimadaLoan(l,_c){
+  const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
+  return Math.max(0, totalCuotas - l.val);
+}
+
+// Capital total por cobrar (cuotas pendientes + mora)
+function totalPorCobrar(c){
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
+    return s+l.cuotas.filter(q=>q.estado!=='pagada').reduce((ss,q)=>ss+q.valor,0);
   },0);
 }
 
 // Capital disponible para prestar = base - prestado actualmente + recuperado de préstamos activos
 function capDisponible(c){
   const cap=getCap(c);
+  if(!cap.base)return 0;
+  // Capital afuera = suma de (val - capital ya recuperado) de préstamos activos
   const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
-    // Para préstamos activos: capital afuera = val - lo recuperado de ese préstamo
-    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
-    return s+(l.val-Math.min(pagado,l.val));
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    const capRecup=Math.min(cobrado,l.val);
+    return s+(l.val-capRecup);
   },0);
-  return Math.max(0, cap.base - prestadoActivo);
+  // Capital base + ganancia ya cobrada reinvertible - lo que está prestado afuera
+  const ganCobrada=gananciaTotal(c);
+  return Math.max(0, cap.base + ganCobrada - prestadoActivo);
 }
 
 // Porcentaje del capital en uso
@@ -967,6 +1071,19 @@ function distribuirPago(loan, cuota){
 }
 
 /* ─── INICIO ─── */
+function rCobrosHoy(act){
+  const cuotasHoy=act.flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha)));
+  const totHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
+  if(!cuotasHoy.length)return'';
+  const rows=act.map(l=>{
+    const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha));
+    if(!qh.length)return'';
+    const tv=qh.reduce((s,q)=>s+q.valor,0);
+    return'<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--line)"><span>'+l.nom+' '+l.ape+'</span><span style="color:var(--jade);font-weight:700">'+fmt(tv)+'</span></div>';
+  }).join('');
+  return'<div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.25);border-radius:var(--r-sm);padding:12px;margin-bottom:10px"><div style="font-weight:800;font-size:12px;color:var(--jade);margin-bottom:8px">💰 Cobros de hoy — '+fmt(totHoy)+'</div>'+rows+'</div>';
+}
+
 function rInicio(){
   const ls=loans(),act=ls.filter(l=>l.activo);
   const c=S.cartera;
@@ -1002,9 +1119,38 @@ function rInicio(){
     </div>
   </div>
   <div class="ganancia-box">
-    <div class="ganancia-row"><span style="font-weight:700">📈 Ganancias acumuladas</span><span class="mono" style="font-weight:800;color:var(--lime);font-size:14px">${fmt(gan)}</span></div>
-    <div class="ganancia-row" style="color:var(--smoke)"><span>Créditos activos: ${act.length}</span><span>Mora: ${mora}</span><span>Hoy: ${hoy}</span></div>
+    <div style="font-size:10px;font-weight:800;color:var(--jade);margin-bottom:8px;letter-spacing:.5px">📊 RESUMEN FINANCIERO</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Capital invertido</div>
+        <div style="font-weight:900;font-size:15px;color:var(--jade)">${fmt(capBase)}</div>
+      </div>
+      <div style="background:rgba(100,200,255,.08);border:1px solid rgba(100,200,255,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">En préstamos</div>
+        <div style="font-weight:900;font-size:15px;color:var(--sky)">${fmt(capBase-disp+gan)}</div>
+      </div>
+      <div style="background:rgba(50,255,120,.08);border:1px solid rgba(50,255,120,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
+        <div style="font-weight:900;font-size:15px;color:var(--lime)">${fmt(gan)}</div>
+      </div>
+      <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
+        <div style="font-weight:900;font-size:15px;color:var(--gold)">${fmt(gananciaEstimada(c))}</div>
+      </div>
+    </div>
+    <div style="background:rgba(0,229,176,.05);border:1px solid rgba(0,229,176,.15);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;color:var(--fog)">Disponible para reinvertir</div>
+        <div style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(disp)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;color:var(--fog)">Capital reinvertido</div>
+        <div style="font-weight:900;font-size:14px;color:var(--violet)">${fmt(capBase>0?act.reduce((s,l)=>s+l.val,0):0)}</div>
+      </div>
+    </div>
+    <div class="ganancia-row" style="margin-top:8px;color:var(--smoke)"><span>Activos: ${act.length}</span><span>Mora: ${mora}</span><span>Cobros hoy: ${hoy}</span></div>
   </div>
+  ${rCobrosHoy(act)}
   <div class="stgrid">
     <div class="stile t-jade"><div class="stico">💳</div><div class="stv">${act.length}</div><div class="stl">Activos</div></div>
     <div class="stile t-fire"><div class="stico">⚠️</div><div class="stv">${mora}</div><div class="stl">En mora</div></div>
@@ -1047,6 +1193,24 @@ function rLCard(l){
     <div style="flex:1;min-width:0"><div class="lname">${l.nom} ${l.ape}</div><div class="lsub">CC ${l.ced} · ${l.tel}</div></div>
     <div style="text-align:right"><span class="lbadge ${bc}">${l.mod}</span><div class="mono" style="font-weight:700;font-size:12px;margin-top:2px">${fmt(l.val)}</div></div></div>
     <div class="prog"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div><div class="pb-txt"><span>${pag}/${l.cuotas.length} · ${fmt(l.cuo)}/c</span><span>${pct}%</span></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:6px 0;border-top:1px solid var(--line);margin-top:4px">
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Capital</div>
+        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
+        <div style="font-size:11px;font-weight:800;color:var(--lime)">${fmt(gananciaLoan(l))}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
+        <div style="font-size:11px;font-weight:800;color:var(--gold)">${fmt(gananciaEstimadaLoan(l))}</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--smoke);padding:2px 0">
+      <span>⏳ ${l.cuotas.filter(q=>q.estado!=='pagada').length} cuotas pendientes</span>
+      <span>💵 Total cobrar: <b style="color:var(--ash)">${fmt(l.cuo*l.ncu)}</b></span>
+    </div>
     <div class="lchips">${mora?'<div class="chip chip-fire">⚠️ Mora</div>':''}${hoy?'<div class="chip chip-amber">📅 Hoy</div>':''}${l.renewRequest?'<div class="chip chip-violet">🔄 Sol. renov.</div>':''}${l.comprobante?'<div class="chip">📸 Comp.</div>':''}<div class="chip">⏰<b>${l.hor}</b></div></div>
   </div>`;
 }
@@ -1059,6 +1223,19 @@ function rDetail(l){
   const pct=Math.round(pag/l.cuotas.length*100);
   const sc=score(l),canRenew=pag>=6&&pen>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
+  const ganR=gananciaLoan(l);
+  const ganE=gananciaEstimadaLoan(l);
+  const resumenFin='<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Análisis financiero</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div><div style="font-size:9px;color:var(--fog)">Prestado</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo*l.ncu)+'</div><div style="font-size:9px;color:var(--fog)">Total a cobrar</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--lime)">'+fmt(ganR)+'</div><div style="font-size:9px;color:var(--fog)">Gan. real cobrada</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--gold)">'+fmt(ganE)+'</div><div style="font-size:9px;color:var(--fog)">Gan. estimada total</div></div>'
+    +'</div>'
+    +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--smoke)">'
+    +'Al terminar: <b style="color:var(--jade)">'+fmt(l.val)+'</b> vuelve al capital + <b style="color:var(--gold)">'+fmt(ganE)+'</b> ganancia'
+    +'</div></div>';
   const cuotasH=l.cuotas.map(c=>{
     const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
     const ms=c.multa>0?` · Multa: ${fmt(c.multa)}`:'';
@@ -1080,6 +1257,7 @@ function rDetail(l){
   return`<div class="dhero">
     <div class="dav">${ini.toUpperCase()}</div>
     <div class="dname">${l.nom} ${l.ape}</div>
+    <div id="detail-fin-inject"></div>
     <div class="dinfo">🪪 CC ${l.ced}</div>
     <div class="dinfo">📱 ${l.tel} · 🏦 ${l.cta}</div>
     <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not} · ⚠️ ${fmt(l.mul)}</div>
@@ -1159,50 +1337,204 @@ function updDot(){const n=getAlerts().length;const d=$('ndot');d.style.display=n
 
 /* ─── ESTADÍSTICAS ─── */
 function rEstadis(){
-  const c=S.cartera;const capObj=getCap(c);
+  const c=S.cartera;const ls=loans();const act=ls.filter(l=>l.activo);
+  const capObj=getCap(c);
   const gan=gananciaTotal(c);const disp=capDisponible(c);
-  const ls=loans(),bm={diario:0,semanal:0,quincenal:0,mensual:0};
-  ls.forEach(l=>{bm[l.mod]=(bm[l.mod]||0)+l.val;});
-  const mx=Math.max(...Object.values(bm),1);
-  const tP=ls.reduce((s,l)=>s+l.val,0),tR=ls.reduce((s,l)=>s+l.cuotas.filter(q=>q.estado==='pagada').length*l.cuo,0);
-  const tM=ls.reduce((s,l)=>s+l.cuotas.reduce((ss,q)=>ss+(q.multa||0),0),0);
-  const tC=ls.filter(l=>l.activo).reduce((s,l)=>s+l.cuotas.filter(q=>q.estado!=='pagada').length*l.cuo,0);
-  return`<div class="cap-hero" style="margin-bottom:10px">
-    <div class="cap-row"><span class="cap-lbl" style="color:var(--jade)">💰 Resumen del Capital</span><button class="btn btn-ghost btn-sm" onclick="openM_capital()">➕ Invertir</button></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
-      <div style="text-align:center"><div style="font-weight:900;font-size:20px;color:var(--jade)">${fmt(capObj.base)}</div><div style="font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">Base total</div></div>
-      <div style="text-align:center"><div style="font-weight:900;font-size:20px;color:var(--lime)">${fmt(gan)}</div><div style="font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">Ganancias acum.</div></div>
-      <div style="text-align:center"><div style="font-weight:900;font-size:20px;color:var(--sky)">${fmt(disp)}</div><div style="font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">Disponible</div></div>
-      <div style="text-align:center"><div style="font-weight:900;font-size:20px;color:var(--fire)">${fmt(capObj.base-disp)}</div><div style="font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">En préstamos</div></div>
-    </div>
-    <div class="cap-bar-wrap"><div class="cap-bar-track">
-      <div class="cap-bar-base" style="width:100%"></div>
-      <div class="cap-bar-prestado" style="width:${capPct(c)}%"></div>
-    </div></div>
-    ${gan>0?`<button class="btn btn-lime btn-w btn-sm" style="margin-top:8px" onclick="openReinvertir()">💹 Reinvertir ${fmt(gan)} en ganancias</button>`:''}
-  </div>
-  <div class="chart-card"><div class="chart-title">📊 Capital por modalidad</div>
-    <div class="barchart">${Object.entries(bm).map(([k,v])=>`<div class="barw"><div class="barv">${v>0?sfmt(v):''}</div><div class="barb" style="height:${Math.max(5,(v/mx)*100)}%"></div><div class="barl">${cap(k)}</div></div>`).join('')}</div></div>
-  <div class="chart-card"><div class="chart-title">💰 Resumen financiero</div><div class="calcbox">
-    <div class="crow2"><span>Total prestado</span><span class="mono">${fmt(tP)}</span></div>
-    <div class="crow2"><span>Recuperado</span><span class="mono" style="color:var(--lime)">${fmt(tR)}</span></div>
-    <div class="crow2"><span>Multas cobradas</span><span class="mono" style="color:var(--amber)">${fmt(tM)}</span></div>
-    <div class="crow2"><span>Por cobrar</span><span class="mono" style="color:var(--sky)">${fmt(tC)}</span></div>
-    <div class="crow2"><span>Ganancia neta</span><span class="mono">${fmt(Math.max(0,tR-tP+tM))}</span></div>
-  </div></div>
-  <div class="chart-card"><div class="chart-title">🏆 Calificación clientes</div>
-  ${ls.map(l=>{const s=score(l),pag=l.cuotas.filter(c=>c.estado==='pagada').length,moraN=l.cuotas.filter(c=>c.estado==='mora').length;
-  return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)">
-    <div class="clscore sc${s.l}" style="width:26px;height:26px;font-size:11px">${s.l}</div>
-    <div style="flex:1;font-size:11px">${l.nom} ${l.ape} <span style="color:var(--fog)">CC ${l.ced}</span></div>
-    <div style="font-size:10px;color:var(--smoke)">${pag}/${l.cuotas.length}·${moraN}m</div></div>`;}).join('')}
-  </div>`;
+  const ganEst=gananciaEstimada(c);
+  const totalPrestado=act.reduce((s,l)=>s+l.val,0);
+  const totalCobrado=ls.reduce((s,l)=>s+l.cuotas.filter(q=>q.estado==='pagada').reduce((ss,q)=>ss+q.valor,0),0);
+  const totalPendiente=act.reduce((s,l)=>s+l.cuotas.filter(q=>q.estado!=='pagada').reduce((ss,q)=>ss+q.valor,0),0);
+  const capRecup=capitalRecuperado(c);
+  const mora=act.filter(l=>l.cuotas.some(q=>q.estado==='mora'));
+
+  // Tabla por cliente
+  const filas=ls.map(l=>{
+    const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
+    const ganR=gananciaLoan(l);
+    const ganE=gananciaEstimadaLoan(l);
+    const pct=Math.round(pag/l.cuotas.length*100);
+    const esMora=l.cuotas.some(q=>q.estado==='mora');
+    return`<tr>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line)">
+        <div style="font-weight:700;font-size:12px">${l.nom} ${l.ape}</div>
+        <div style="font-size:10px;color:var(--smoke)">CC ${l.ced} · ${l.mod}</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:right">
+        <div style="font-weight:800;color:var(--sky);font-size:12px">${fmt(l.val)}</div>
+        <div style="font-size:9px;color:var(--fog)">${pag}/${l.cuotas.length} cuotas</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:right">
+        <div style="font-weight:800;color:var(--lime);font-size:12px">${fmt(ganR)}</div>
+        <div style="font-size:9px;color:var(--fog)">est: ${fmt(ganE)}</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:center">
+        <div style="font-size:11px;font-weight:700;color:${pct>=100?'var(--jade)':pct>=50?'var(--gold)':'var(--sky)'}">${pct}%</div>
+        ${esMora?'<div style="font-size:9px;color:var(--fire)">⚠️ mora</div>':''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  const el=$('estadis-root');
+  el.innerHTML=`
+    <div style="padding:14px">
+      <!-- RESUMEN GENERAL -->
+      <div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:10px;letter-spacing:.5px">📊 RESUMEN GENERAL</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Capital base</div>
+          <div style="font-weight:900;font-size:16px;color:var(--jade)">${fmt(capObj.base)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Total prestado</div>
+          <div style="font-weight:900;font-size:16px;color:var(--sky)">${fmt(totalPrestado)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Capital recuperado</div>
+          <div style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(capRecup)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Disponible reinvertir</div>
+          <div style="font-weight:900;font-size:16px;color:var(--jade)">${fmt(disp)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Ganancia cobrada</div>
+          <div style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Ganancia estimada</div>
+          <div style="font-weight:900;font-size:16px;color:var(--gold)">${fmt(ganEst)}</div>
+        </div>
+      </div>
+
+      <!-- BARRA VISUAL -->
+      <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--smoke);margin-bottom:6px">Flujo de capital</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          ${capObj.base>0?`
+          <div style="flex:${totalPrestado};background:var(--sky);height:8px;border-radius:4px" title="En préstamos"></div>
+          <div style="flex:${disp};background:var(--jade);height:8px;border-radius:4px" title="Disponible"></div>
+          `:'<div style="color:var(--fog);font-size:11px">Sin capital configurado</div>'}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px">
+          <span><span style="color:var(--sky)">■</span> Prestado: ${fmt(totalPrestado)}</span>
+          <span><span style="color:var(--jade)">■</span> Disponible: ${fmt(disp)}</span>
+        </div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-size:11px;display:flex;justify-content:space-between">
+          <span>Por cobrar pendiente:</span><span style="font-weight:800;color:var(--gold)">${fmt(totalPendiente)}</span>
+        </div>
+      </div>
+
+      <!-- TABLA CLIENTES -->
+      ${ls.length?`
+      <div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px;letter-spacing:.5px">👥 DETALLE POR CLIENTE</div>
+      <div style="overflow-x:auto;border:1px solid var(--line);border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:var(--ink3)">
+              <th style="padding:8px 6px;text-align:left;font-size:10px;color:var(--smoke)">Cliente</th>
+              <th style="padding:8px 6px;text-align:right;font-size:10px;color:var(--smoke)">Capital</th>
+              <th style="padding:8px 6px;text-align:right;font-size:10px;color:var(--smoke)">Ganancia</th>
+              <th style="padding:8px 6px;text-align:center;font-size:10px;color:var(--smoke)">Avance</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+          <tfoot>
+            <tr style="background:var(--ink3)">
+              <td style="padding:8px 6px;font-weight:800;font-size:11px">TOTAL</td>
+              <td style="padding:8px 6px;text-align:right;font-weight:900;color:var(--sky)">${fmt(totalPrestado)}</td>
+              <td style="padding:8px 6px;text-align:right">
+                <div style="font-weight:900;color:var(--lime)">${fmt(gan)}</div>
+                <div style="font-size:9px;color:var(--gold)">est: ${fmt(ganEst)}</div>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`:'<div class="empty"><div class="empty-ico">📊</div><div class="empty-t">Sin préstamos</div></div>'}
+
+      <!-- EN MORA -->
+      ${mora.length?`
+      <div style="font-size:11px;font-weight:800;color:var(--fire);margin:12px 0 8px;letter-spacing:.5px">⚠️ EN MORA (${mora.length})</div>
+      ${mora.map(l=>`<div style="background:rgba(255,80,60,.08);border:1px solid rgba(255,80,60,.25);border-radius:8px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:700;font-size:12px">${l.nom} ${l.ape}</div>
+        <div style="font-size:10px;color:var(--smoke)">${l.cuotas.filter(q=>q.estado==='mora').length} cuota(s) en mora</div></div>
+        <button class="btn btn-sm btn-amber" onclick="showLoan(${l.id})">Ver</button>
+      </div>`).join('')}`:''}
+    </div>`;
 }
 
-/* ─── CONFIG ─── */
 function rConfig(){
   const c=S.cartera;
-  return`<div class="cfg-grp"><div class="cfg-title">Cartera: ${c?.name}</div>
+  const fin=c?.fin||{pctGanancia:20,liberaCapital:true};
+  // Cuotas cobradas hoy
+  const hoy=new Date().toDateString();
+  const cuotasHoy=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy));
+  const totalHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
+  // Cuotas próximos 7 días
+  const en7=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>{
+    if(q.estado!=='pendiente')return false;
+    const d=new Date(q.fecha);const hoy2=new Date();
+    return d>=hoy2&&d<=new Date(hoy2.getTime()+7*86400000);
+  }));
+  const total7=en7.reduce((s,q)=>s+q.valor,0);
+  return`
+  <div class="cfg-grp">
+    <div class="cfg-title">💹 Configuración Financiera</div>
+    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;color:var(--jade);font-weight:800;margin-bottom:10px">¿Cómo se distribuye cada cuota?</div>
+      <div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.6">
+        Cada cuota cobrada se divide en <b>capital</b> (recuperación del préstamo) y <b>ganancia</b>.
+        El capital liberado vuelve al disponible para prestar a nuevos clientes.
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--smoke);font-weight:700;display:block;margin-bottom:6px">% Ganancia por préstamo (sobre el total)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="cfg-pct" min="1" max="100" value="${fin.pctGanancia||20}"
+            oninput="this.nextElementSibling.textContent=this.value+'%';updateFinPreview(this.value)"
+            style="flex:1;accent-color:var(--jade)">
+          <span style="font-weight:900;font-size:18px;color:var(--jade);min-width:42px;text-align:right">${fin.pctGanancia||20}%</span>
+        </div>
+        <div id="fin-preview" style="font-size:11px;color:var(--smoke);margin-top:6px"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)">
+        <div>
+          <div style="font-size:13px;font-weight:700">Liberar capital al cobrar</div>
+          <div style="font-size:11px;color:var(--smoke)">El capital recuperado vuelve al disponible</div>
+        </div>
+        <div class="toggle ${fin.liberaCapital!==false?'on':''}" onclick="togFinCfg('liberaCapital',this)"></div>
+      </div>
+      <button class="btn btn-jade btn-w" style="margin-top:10px" onclick="saveFinCfg()">💾 Guardar configuración</button>
+    </div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px">
+      <div style="font-size:11px;color:var(--amber);font-weight:800;margin-bottom:8px">📋 Ejemplo con configuración actual</div>
+      <div id="fin-ejemplo"></div>
+    </div>
+  </div>
+
+  <div class="cfg-grp">
+    <div class="cfg-title">📅 Cobros programados</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:12px;text-align:center">
+        <div style="font-weight:900;font-size:22px;color:var(--jade)">${fmt(totalHoy)}</div>
+        <div style="font-size:10px;color:var(--smoke);margin-top:2px">💰 Cobros hoy (${cuotasHoy.length})</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--sky);border-radius:var(--r-sm);padding:12px;text-align:center">
+        <div style="font-weight:900;font-size:22px;color:var(--sky)">${fmt(total7)}</div>
+        <div style="font-size:10px;color:var(--smoke);margin-top:2px">📆 Próximos 7 días (${en7.length})</div>
+      </div>
+    </div>
+    ${cuotasHoy.length?`<div style="font-size:11px;color:var(--smoke);margin-bottom:6px;font-weight:700">Detalle de hoy:</div>
+    ${loans().filter(l=>l.activo).map(l=>{
+      const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy);
+      if(!qh.length)return'';
+      return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px">
+        <span>${l.nom} ${l.ape}</span>
+        <span style="color:var(--jade);font-weight:700">${fmt(qh.reduce((s,q)=>s+q.valor,0))}</span>
+      </div>`;
+    }).join('')}`:'<div style="font-size:12px;color:var(--fog);text-align:center;padding:8px 0">Sin cobros programados para hoy</div>'}
+  </div>
+
+  <div class="cfg-grp"><div class="cfg-title">Cartera: ${c?.name}</div>
     <div class="cfg-row"><div class="cfg-ico">📲</div><div style="flex:1"><div class="cfg-lbl">WA automático</div><div class="cfg-sub">Al crear/renovar y recordatorios</div></div><div class="toggle ${c?.cfg?.autoWA?'on':''}" onclick="togCfg('autoWA',this)"></div></div>
   </div>
   <div class="cfg-grp"><div class="cfg-title">📢 Grupo WA Empresa</div>
@@ -1221,6 +1553,42 @@ function rConfig(){
   </div>
   <div style="text-align:center;color:var(--fog);font-size:11px;padding:4px 0 20px">PrestaMax v3.0 · Carteras independientes · Google Auth · Calendario hábil CO 🇨🇴</div>`;
 }
+
+function togFinCfg(key,el){
+  if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
+  S.cartera.fin[key]=!S.cartera.fin[key];el.classList.toggle('on');
+}
+
+function saveFinCfg(){
+  if(!S.cartera)return;
+  if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
+  const pct=parseInt(document.getElementById('cfg-pct')?.value||20);
+  S.cartera.fin.pctGanancia=pct;
+  toast('✅ Configuración financiera guardada');
+  renderTab(S.tab);
+}
+
+function updateFinPreview(pct){
+  const el=document.getElementById('fin-preview');
+  const ej=document.getElementById('fin-ejemplo');
+  const p=parseInt(pct);
+  const ejemploVal=500000,ejemploCuo=550000;
+  const ganEj=Math.round(ejemploVal*p/100);
+  const capEj=ejemploVal-ganEj;
+  if(el)el.textContent=`Ejemplo: préstamo $500.000 → ganancia $${ganEj.toLocaleString('es-CO')} · capital recuperado $${capEj.toLocaleString('es-CO')}`;
+  if(ej)ej.innerHTML=`
+    <div style="font-size:11px;color:var(--ash)">Préstamo: <b>$500.000</b> · 10 cuotas de <b>$55.000</b></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+      <div style="background:rgba(0,229,176,.08);border-radius:6px;padding:8px;text-align:center">
+        <div style="font-weight:800;color:var(--jade)">$${Math.round(550000*p/100).toLocaleString('es-CO')}</div>
+        <div style="font-size:9px;color:var(--fog)">Ganancia total (${p}%)</div>
+      </div>
+      <div style="background:rgba(0,153,255,.08);border-radius:6px;padding:8px;text-align:center">
+        <div style="font-weight:800;color:var(--sky)">$${Math.round(550000*(100-p)/100).toLocaleString('es-CO')}</div>
+        <div style="font-size:9px;color:var(--fog)">Capital recuperado</div>
+      </div>
+    </div>`;
+}
 function togCfg(key,el){if(S.cartera?.cfg)S.cartera.cfg[key]=!S.cartera.cfg[key];el.classList.toggle('on');}
 
 function openLoanModal(){
@@ -1236,8 +1604,7 @@ function openLoanModal(){
 }
 /* ─── NUEVO PRÉSTAMO ─── */
 function checkCedDup(){
-  const ced=gv('f-ced').trim();
-  $('ced-dup-warn').style.display=(ced&&loans().some(l=>l.ced===ced&&l.activo))?'block':'none';
+  // Múltiples préstamos por cliente permitidos — sin bloqueo
 }
 function getIniDate(){
   // Returns the base date to calculate cuotas from
@@ -1347,7 +1714,7 @@ function saveLoan(){
   const not=notChs.length?notChs.join(','):'ninguno';
   if(!nom||!ape||!ced||!tel||val<=0||cuo<=0||ncu<=0){toast('⚠️ Completa todos los campos requeridos (incluyendo cédula)');return;}
   if(cuo*ncu<val){toast(`⛔ Las cuotas no cubren el préstamo (${fmt(cuo*ncu)} < ${fmt(val)}). Corrígelo antes de guardar.`);return;}
-  if(loans().some(l=>l.ced===ced&&l.activo)){toast('❌ Esta cédula ya tiene un crédito activo en esta cartera');return;}
+  // Se permite múltiples préstamos activos por cédula
   const dispAhora=capDisponible(S.cartera);
   if(getCap(S.cartera).base>0&&val>dispAhora){toast(`❌ Capital insuficiente. Disponible: ${fmt(dispAhora)}`);return;}
   const iniRaw=(gv('f-ini')||'').trim();
@@ -1644,6 +2011,10 @@ function renderPortal(l){
       <div class="portal-stat"><div class="portal-stat-v" style="color:var(--sky)">${fmt(l.cuo)}</div><div class="portal-stat-l">Valor cuota</div></div>
       <div class="portal-stat"><div class="portal-stat-v" style="color:var(--lime)">${pag}</div><div class="portal-stat-l">Cuotas pagadas</div></div>
       <div class="portal-stat"><div class="portal-stat-v" style="color:${pen>0?'var(--amber)':'var(--lime)'}">${pen}</div><div class="portal-stat-l">Cuotas pendientes</div></div>
+    </div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:11px;color:var(--smoke)">Total a pagar</div>
+      <div style="font-weight:900;color:var(--white);font-size:15px">${fmt(l.cuo*l.ncu)}</div>
     </div>
     <div style="margin-bottom:12px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--smoke);margin-top:2px"><span>Progreso: ${pct}%</span>${moraN>0?`<span style="color:var(--fire)">${moraN} en mora</span>`:''}</div></div>
