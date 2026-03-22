@@ -331,11 +331,10 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .dp-legend span{display:flex;align-items:center;gap:4px}
 </style>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<!-- Firebase SDK compat -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
   authDomain: "prestamax-276f0.firebaseapp.com",
@@ -344,11 +343,8 @@ const firebaseConfig = {
   messagingSenderId: "325489105014",
   appId: "1:325489105014:web:72c2675e9749a4c5e36757"
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-window._db = db;
-window._fbFns = { doc, setDoc, getDoc, collection, getDocs, deleteDoc };
+firebase.initializeApp(firebaseConfig);
+window._db = firebase.firestore();
 </script>
 </head>
 <body>
@@ -687,36 +683,33 @@ const S={user:null,cartera:null,tab:'inicio',lid:null,pendingCid:null};
 async function fsGuardarCartera(c){
   try{
     if(!window._db)return;
-    const {doc,setDoc}=window._fbFns;
     const data=JSON.parse(JSON.stringify(c));
-    // Guardamos en colección global /carteras/{id} accesible por dueño y colaboradores
-    await setDoc(doc(window._db,'carteras',c.id),data);
-  }catch(e){console.warn('fsGuardarCartera:',e);}
+    await window._db.collection('carteras').doc(c.id).set(data);
+    console.log('Guardado OK:',c.id);
+  }catch(e){console.warn('fsGuardarCartera error:',e);}
 }
 
 async function fsCargarCarteras(){
   try{
     if(!S.user||!window._db)return;
-    const {collection,getDocs}=window._fbFns;
-    const snap=await getDocs(collection(window._db,'carteras'));
+    const snap=await window._db.collection('carteras').get();
     DB.carteras=[];
     snap.forEach(d=>{
       const c=d.data();
-      // Solo carteras donde el usuario es dueño o colaborador
       if(c.owner===S.user.id||c.owner===S.user.email||(c.collabs||[]).includes(S.user.email)){
         DB.carteras.push(c);
       }
     });
     renderCarteras();
-  }catch(e){console.warn('fsCargarCarteras:',e);}
+    console.log('Carteras cargadas:',DB.carteras.length);
+  }catch(e){console.warn('fsCargarCarteras error:',e);}
 }
 
 async function fsEliminarCartera(id){
   try{
     if(!window._db)return;
-    const {doc,deleteDoc}=window._fbFns;
-    await deleteDoc(doc(window._db,'carteras',id));
-  }catch(e){console.warn('fsEliminarCartera:',e);}
+    await window._db.collection('carteras').doc(id).delete();
+  }catch(e){console.warn('fsEliminarCartera error:',e);}
 }
 
 function fsSave(){
