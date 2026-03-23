@@ -952,7 +952,7 @@ function saveCartera(){
     passHash:pass?simHash(pass):'',collabs,loans:[],cfg:{autoWA:true,grupoWA:''},owner:S.user?.id||'',
     capital:{base:capBase,histInv:capBase>0?[{fecha:new Date(),monto:capBase,nota:'Inversión inicial'}]:[],histGan:[]},
     fin:{pctGanancia:20,liberaCapital:true}});
-  closeM('m-new-cartera');renderCarteras();toast('✅ Cartera creada');
+  closeM('m-new-cartera');renderCarteras();toast('✅ Cartera creada');fsSave();
   ['nc-name','nc-desc','nc-pass','nc-collabs'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   $('nc-secret-wrap').style.display='none';
   fsSave();
@@ -1815,7 +1815,7 @@ function saveLoan(){
   loan.creadoPorEmail=S.user?.email||'';
   loan.fechaCreacion=new Date().toISOString();
   S.cartera.loans.unshift(loan);
-  closeM('m-loan');toast('✅ Préstamo guardado');
+  closeM('m-loan');toast('✅ Préstamo guardado');fsSave();
   setTimeout(()=>sendWACreacion(loan),400);
   if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('nuevo',loan),900);
   render();updDot();
