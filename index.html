@@ -534,6 +534,14 @@ window._db = firebase.firestore();
     <div class="fg"><label class="fl">⚠️ Multa mora</label><input type="number" class="fi" id="f-mul" placeholder="20000"></div>
     <div class="fg"><label class="fl">⏰ Hora límite</label><input type="time" class="fi" id="f-hor" value="15:00"></div>
   </div>
+  <div class="fg">
+    <label class="fl">📈 % Interés del préstamo</label>
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="range" class="fi" id="f-pct" min="1" max="100" value="20" oninput="document.getElementById('f-pct-val').textContent=this.value+'%';recalc()" style="flex:1;accent-color:var(--jade);padding:0;height:36px">
+      <span id="f-pct-val" style="font-weight:900;font-size:18px;color:var(--jade);min-width:48px;text-align:right">20%</span>
+    </div>
+    <div class="fhint">% de ganancia sobre el capital prestado. La cuota debe cubrir capital + interés.</div>
+  </div>
   <div class="fg"><label class="fl">📢 Notificaciones al crear/cobrar</label>
     <div style="display:flex;flex-direction:column;gap:6px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
@@ -562,8 +570,10 @@ window._db = firebase.firestore();
   <div id="loan-warn" style="display:none;background:rgba(255,61,90,.09);border:1.5px solid rgba(255,61,90,.4);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:4px"></div>
   <div id="cprev" style="display:none" class="prevcalc">
     <div class="prow"><span>Total a pagar</span><span id="c-tot" class="mono">-</span></div>
-    <div class="prow"><span>Ganancia bruta</span><span id="c-gan" class="mono">-</span></div>
+    <div class="prow"><span>Ganancia estimada</span><span id="c-gan" class="mono">-</span></div>
     <div class="prow"><span>Rentabilidad</span><span id="c-pct" class="mono">-</span></div>
+    <div class="prow"><span>Cap. por cuota</span><span id="c-capq" class="mono">-</span></div>
+    <div class="prow"><span>Gan. por cuota</span><span id="c-ganq" class="mono">-</span></div>
     <div class="prow"><span>1ª cuota</span><span id="c-1ra" class="mono">-</span></div>
   </div>
   <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-loan')">Cancelar</button><button class="btn btn-jade btn-w" id="btn-guardar" onclick="saveLoan()">✅ Guardar y notificar</button></div>
@@ -742,6 +752,7 @@ function mkLoan(d){
   });
   return{id,nom:d.nom,ape:d.ape,ced:d.ced||'',tel:d.tel,cta:d.cta,val:d.val,cuo:d.cuo,
     mod:d.mod,ncu:d.ncu,mul:d.mul,hor:d.hor,not:d.not,ini,cuotas,activo:true,
+    pct:d.pct||20,
     historico:[],comprobante:null,renewRequest:false};
 }
 
@@ -894,6 +905,10 @@ function renderCarteras(){
     const hasPass=!!c.passHash;
     return`<div class="cartera-card ${c.color}" onclick="enterCartera('${c.id}')">
       ${hasPass?'<div class="cartera-lock">🔒</div>':''}
+      <div style="position:absolute;top:10px;right:10px;z-index:2;display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:11px" onclick="event.stopPropagation();openEditCartera('${c.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:11px;color:var(--fire)" onclick="event.stopPropagation();confirmDelCartera('${c.id}')">🗑️</button>
+      </div>
       <div class="cartera-ico">${icos[c.color]||'📁'}</div>
       <div class="cartera-name">${c.name}</div>
       <div class="cartera-desc">${c.desc||''}</div>
@@ -905,6 +920,47 @@ function renderCarteras(){
       </div>
     </div>`;
   }).join('');
+}
+
+function confirmDelCartera(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede eliminar carteras');return;}
+  const activos=c.loans.filter(l=>l.activo).length;
+  if(activos>0){toast(`⛔ No se puede eliminar: hay ${activos} crédito(s) activo(s)`);return;}
+  if(!confirm(`¿Eliminar cartera "${c.name}"? Esta acción no se puede deshacer.`))return;
+  DB.carteras=DB.carteras.filter(x=>x.id!==id);
+  fsEliminarCartera(id);
+  renderCarteras();
+  toast('🗑️ Cartera eliminada');
+}
+
+function openEditCartera(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede editar');return;}
+  document.getElementById('nc-name').value=c.name;
+  document.getElementById('nc-desc').value=c.desc||'';
+  document.getElementById('nc-color').value=c.color;
+  document.getElementById('nc-cap').value='';
+  document.getElementById('nc-collabs').value=(c.collabs||[]).join(', ');
+  // Cambiar botón para editar
+  const btn=document.querySelector('#m-new-cartera .btn-jade');
+  if(btn){btn.textContent='✅ Guardar cambios';btn.onclick=()=>saveEditCartera(id);}
+  document.querySelector('#m-new-cartera .shtitle').textContent='✏️ Editar Cartera';
+  openM('m-new-cartera');
+}
+
+function saveEditCartera(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  const name=gv('nc-name').trim();if(!name){toast('⚠️ Nombre requerido');return;}
+  c.name=name;c.desc=gv('nc-desc').trim();c.color=gv('nc-color');
+  const collabs=gv('nc-collabs').split(',').map(x=>x.trim()).filter(Boolean);
+  c.collabs=collabs;
+  fsGuardarCartera(c);
+  closeM('m-new-cartera');renderCarteras();toast('✅ Cartera actualizada');
+  // Restaurar botón
+  const btn=document.querySelector('#m-new-cartera .btn-jade');
+  if(btn){btn.textContent='✅ Crear cartera';btn.onclick=saveCartera;}
+  document.querySelector('#m-new-cartera .shtitle').textContent='➕ Nueva Cartera';
 }
 
 function enterCartera(id){
@@ -1047,9 +1103,10 @@ function capRecuperado(c){
 // Ganancias acumuladas basadas en % configurado de la cartera
 // ─── GANANCIA REAL: total cobrado - capital prestado ───
 function gananciaLoan(l){
-  // Ganancia real cobrada en este préstamo
+  // Ganancia real = lo cobrado que supera el capital prestado
+  const pct=(l.pct||20)/100;
+  const ganEstimadaTotal=Math.round(l.val*pct); // ganancia total estimada
   const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((s,x)=>s+x.valor+(x.multa||0),0);
-  // Cuánto del capital ya se recuperó (no puede exceder val)
   const capRecup=Math.min(cobrado,l.val);
   return Math.max(0, cobrado-capRecup);
 }
@@ -1074,8 +1131,9 @@ function capitalRecuperado(c){
 
 // Ganancia estimada de un préstamo (alias para compatibilidad)
 function gananciaEstimadaLoan(l,_c){
-  const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
-  return Math.max(0, totalCuotas - l.val);
+  // Ganancia estimada = capital * % interés
+  const pct=(l.pct||20)/100;
+  return Math.round(l.val*pct);
 }
 
 // Capital total por cobrar (cuotas pendientes + mora)
@@ -1248,7 +1306,7 @@ function rLCard(l){
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:6px 0;border-top:1px solid var(--line);margin-top:4px">
       <div style="text-align:center">
         <div style="font-size:9px;color:var(--fog)">Capital</div>
-        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)}</div>
+        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)} <span style="font-size:9px;color:var(--amber)">${l.pct||20}%</span></div>
       </div>
       <div style="text-align:center">
         <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
@@ -1300,10 +1358,14 @@ function rDetail(l){
         ${c.estado!=='pagada'?`<div class="cact">
           <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar</button>
           ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar</button>`:''}
+          ${c.estado==='pendiente'?`<button class="btn btn-fire btn-sm" style="font-size:10px" onclick="marcarMoraCuota(${l.id},${c.num})">⚠️ Mora</button>`:''}
           <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
         </div>`:''}
       </div>
-      <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
+      <div style="text-align:right">
+        <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
+        ${c.estado==='pagada'?`<div style="font-size:9px;color:var(--fog)">Cap: ${fmt(Math.min(c.valor,Math.max(0,l.val-l.cuotas.filter((q,qi)=>qi<l.cuotas.indexOf(c)&&q.estado==='pagada').reduce((s,q)=>s+q.valor,0))))} · Gan: ${fmt(Math.max(0,c.valor-Math.min(c.valor,Math.max(0,l.val-l.cuotas.filter((q,qi)=>qi<l.cuotas.indexOf(c)&&q.estado==='pagada').reduce((s,q)=>s+q.valor,0)))))}</div>`:''}
+      </div>
     </div>`;
   }).join('');
   return`<div class="dhero">
@@ -1813,7 +1875,8 @@ function saveLoan(){
   const iniRaw=(gv('f-ini')||'').trim();
   let iniDate=null;
   if(iniRaw){try{const d=new Date(iniRaw+'T12:00:00');if(!isNaN(d))iniDate=d;}catch(e){}}
-  const loan=mkLoan({nom,ape,ced,tel,cta,val,cuo,mod,ncu,mul,hor,not,iniDate});
+  const pct=parseInt(document.getElementById('f-pct')?.value||20);
+  const loan=mkLoan({nom,ape,ced,tel,cta,val,cuo,mod,ncu,mul,hor,not,iniDate,pct});
   loan.comprobante=gv('loan-comp-data')||null;
   loan.creadoPor=S.user?.name||S.user?.email||'Desconocido';
   loan.creadoPorEmail=S.user?.email||'';
@@ -1875,6 +1938,7 @@ function confirmPay(lid,cn){
   distribuirPago(l,c);
   l.historico.push(`✅ Cuota #${cn} pagada por ${who} vía ${met}${comp?' 📸':''}  — ${new Date().toLocaleDateString('es-CO')}`);
   closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
+  fsSave();
   if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
   updDot();render();
 }
@@ -1969,6 +2033,16 @@ function selMulta(paga, lid, cn){
   }
 }
 
+function marcarMoraCuota(lid, cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  c.estado='mora';
+  l.historico.push(`⚠️ Cuota #${cn} marcada en mora — ${new Date().toLocaleDateString('es-CO')}`);
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+  toast('⚠️ Cuota marcada en mora');
+}
+
 function doMora(lid, cn, pagaMulta){
   const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
   const nfAdj=nextFecha(c,l);
@@ -1996,20 +2070,84 @@ function doMora(lid, cn, pagaMulta){
 function openRenew(lid){
   const l=getL(lid);if(!l)return;
   const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
-  const desc=pend*l.cuo,trans=Math.max(0,l.val-desc);
-  $('renew-body').innerHTML=`<div class="calcbox" style="margin-bottom:9px">
+  const deuda=pend*l.cuo; // lo que debe
+  const cobrado=l.cuotas.filter(c=>c.estado==='pagada').reduce((s,c)=>s+c.valor,0);
+  // Trans = lo que se le entrega = nuevo monto - deuda pendiente
+  $('renew-body').innerHTML=`
+  <div class="calcbox" style="margin-bottom:10px">
     <div class="crow2"><span>Crédito original</span><span class="mono">${fmt(l.val)}</span></div>
-    <div class="crow2"><span>Cuotas pendientes (${pend}×${fmt(l.cuo)})</span><span class="mono" style="color:var(--fire)">-${fmt(desc)}</span></div>
-    <div class="crow2"><span>💸 Transferencia al cliente</span><span class="mono" style="color:var(--lime)">${fmt(trans)}</span></div>
-    <div class="crow2"><span>Nuevo crédito</span><span class="mono">${fmt(l.val)}</span></div></div>
-  <div class="renewal-box">💡 El cliente recibe <b>${fmt(trans)}</b> (se descontaron ${pend} cuotas pendientes). El nuevo crédito es por <b>${fmt(l.val)}</b>. Las cuotas reinician desde hoy con calendario hábil Colombia.</div>
+    <div class="crow2"><span>Ya pagó</span><span class="mono" style="color:var(--lime)">${fmt(cobrado)}</span></div>
+    <div class="crow2"><span>Deuda pendiente (${pend} cuotas)</span><span class="mono" style="color:var(--fire)">${fmt(deuda)}</span></div>
+  </div>
+  <div class="fg"><label class="fl">💵 Nuevo valor del préstamo</label>
+    <input type="number" class="fi" id="ren-val" value="${l.val}" oninput="calcRenew(${lid})">
+  </div>
+  <div class="fg"><label class="fl">📈 % Interés nuevo préstamo</label>
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="range" id="ren-pct" min="1" max="100" value="${l.pct||20}" oninput="document.getElementById('ren-pct-val').textContent=this.value+'%';calcRenew(${lid})" style="flex:1;accent-color:var(--jade)">
+      <span id="ren-pct-val" style="font-weight:900;font-size:16px;color:var(--jade);min-width:42px">${l.pct||20}%</span>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">🔢 Nº cuotas</label>
+    <input type="number" class="fi" id="ren-ncu" value="${l.ncu}" oninput="calcRenew(${lid})">
+  </div>
+  <div id="ren-preview" style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:10px"></div>
   <div class="fg"><label class="fl">📸 Comprobante transferencia (opcional)</label>
-    <div class="comp-upload" id="ren-comp-wrap" onclick="document.getElementById('ren-comp-inp').click()"><div style="font-size:22px">📸</div><div class="comp-upload-t">Foto del comprobante de transferencia</div></div>
+    <div class="comp-upload" id="ren-comp-wrap" onclick="document.getElementById('ren-comp-inp').click()"><div style="font-size:22px">📸</div><div class="comp-upload-t">Foto del comprobante</div></div>
     <input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewComp(this,'ren-comp-wrap','ren-comp-data')">
     <input type="hidden" id="ren-comp-data">
   </div>
-  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-renew')">Cancelar</button><button class="btn btn-amber btn-w" onclick="confirmRenew(${lid},${trans},${pend})">🔄 Confirmar y notificar</button></div>`;
+  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-renew')">Cancelar</button><button class="btn btn-amber btn-w" onclick="confirmRenewNew(${lid})">🔄 Confirmar renovación</button></div>`;
   closeM('m-opts');openM('m-renew');
+  calcRenew(lid);
+}
+
+function calcRenew(lid){
+  const l=getL(lid);if(!l)return;
+  const nuevoVal=parseInt(document.getElementById('ren-val')?.value)||l.val;
+  const pct=parseInt(document.getElementById('ren-pct')?.value)||20;
+  const ncu=parseInt(document.getElementById('ren-ncu')?.value)||l.ncu;
+  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
+  const deuda=pend*l.cuo;
+  const trans=Math.max(0, nuevoVal-deuda); // efectivo que recibe
+  const totalConInteres=Math.round(nuevoVal*(1+pct/100));
+  const cuoNueva=ncu>0?Math.round(totalConInteres/ncu):0;
+  const ganancia=totalConInteres-nuevoVal;
+  const prev=document.getElementById('ren-preview');
+  if(prev)prev.innerHTML=`
+    <div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:8px">📊 Resumen renovación</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+      <div><span style="color:var(--fog)">Nuevo préstamo</span><div style="font-weight:800;color:var(--white)">${fmt(nuevoVal)}</div></div>
+      <div><span style="color:var(--fog)">Deuda pendiente</span><div style="font-weight:800;color:var(--fire)">${fmt(deuda)}</div></div>
+      <div><span style="color:var(--fog)">💸 Efectivo cliente</span><div style="font-weight:800;color:var(--lime)">${fmt(trans)}</div></div>
+      <div><span style="color:var(--fog)">Total a cobrar</span><div style="font-weight:800;color:var(--sky)">${fmt(totalConInteres)}</div></div>
+      <div><span style="color:var(--fog)">📈 Ganancia</span><div style="font-weight:800;color:var(--gold)">${fmt(ganancia)}</div></div>
+      <div><span style="color:var(--fog)">Cuota ${ncu>0?ncu:'?'} cuotas</span><div style="font-weight:800;color:var(--jade)">${fmt(cuoNueva)}</div></div>
+    </div>`;
+}
+
+function confirmRenewNew(lid){
+  const l=getL(lid);if(!l)return;
+  const nuevoVal=parseInt(document.getElementById('ren-val')?.value)||l.val;
+  const pct=parseInt(document.getElementById('ren-pct')?.value)||20;
+  const ncu=parseInt(document.getElementById('ren-ncu')?.value)||l.ncu;
+  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
+  const deuda=pend*l.cuo;
+  const trans=Math.max(0,nuevoVal-deuda);
+  const totalConInteres=Math.round(nuevoVal*(1+pct/100));
+  const cuoNueva=ncu>0?Math.round(totalConInteres/ncu):l.cuo;
+  const comp=gv('ren-comp-data')||null;
+  l.historico.push(`🔄 Renovación · Nuevo val: ${fmt(nuevoVal)} · Interés: ${pct}% · Cliente recibe: ${fmt(trans)} · ${pend} cuotas descontadas${comp?' 📸':''} — ${new Date().toLocaleDateString('es-CO')}`);
+  // Actualizar préstamo
+  l.val=nuevoVal;l.pct=pct;l.ncu=ncu;l.cuo=cuoNueva;
+  l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
+  const fechas=calcFechas(new Date(),l.mod,l.ncu);
+  l.cuotas=fechas.map((f,i)=>({num:i+1,fecha:new Date(f),valor:cuoNueva,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null}));
+  closeM('m-renew');toast('🔄 Crédito renovado');
+  fsSave();
+  setTimeout(()=>sendWARenovacion(l,pend,trans),400);
+  if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('renovacion',l,{trans}),900);
+  $('dcontent').innerHTML=rDetail(l);updDot();render();
 }
 function confirmRenew(lid,trans,pend){
   const l=getL(lid);if(!l)return;
@@ -2019,6 +2157,7 @@ function confirmRenew(lid,trans,pend){
   const fechas=calcFechas(new Date(),l.mod,l.ncu);
   l.cuotas=fechas.map((f,i)=>({num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null}));
   closeM('m-renew');toast('🔄 Crédito renovado');
+  fsSave();
   setTimeout(()=>sendWARenovacion(l,pend,trans),400);
   if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('renovacion',l,{trans}),900);
   $('dcontent').innerHTML=rDetail(l);updDot();render();
