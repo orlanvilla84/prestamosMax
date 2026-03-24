@@ -332,19 +332,26 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 </style>
 
 <!-- Firebase SDK compat -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" onerror="console.warn('Firebase app failed to load')"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" onerror="console.warn('Firestore failed to load')"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
-  authDomain: "prestamax-276f0.firebaseapp.com",
-  projectId: "prestamax-276f0",
-  storageBucket: "prestamax-276f0.firebasestorage.app",
-  messagingSenderId: "325489105014",
-  appId: "1:325489105014:web:72c2675e9749a4c5e36757"
-};
-firebase.initializeApp(firebaseConfig);
-window._db = firebase.firestore();
+try {
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
+    authDomain: "prestamax-276f0.firebaseapp.com",
+    projectId: "prestamax-276f0",
+    storageBucket: "prestamax-276f0.firebasestorage.app",
+    messagingSenderId: "325489105014",
+    appId: "1:325489105014:web:72c2675e9749a4c5e36757"
+  };
+  if(typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    window._db = firebase.firestore();
+    console.log('Firebase OK');
+  } else {
+    console.warn('Firebase not loaded - app runs without persistence');
+  }
+} catch(e) { console.warn('Firebase init error:', e); }
 </script>
 </head>
 <body>
