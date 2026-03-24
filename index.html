@@ -332,26 +332,19 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 </style>
 
 <!-- Firebase SDK compat -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" onerror="console.warn('Firebase app failed to load')"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" onerror="console.warn('Firestore failed to load')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-try {
-  const firebaseConfig = {
-    apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
-    authDomain: "prestamax-276f0.firebaseapp.com",
-    projectId: "prestamax-276f0",
-    storageBucket: "prestamax-276f0.firebasestorage.app",
-    messagingSenderId: "325489105014",
-    appId: "1:325489105014:web:72c2675e9749a4c5e36757"
-  };
-  if(typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
-    window._db = firebase.firestore();
-    console.log('Firebase OK');
-  } else {
-    console.warn('Firebase not loaded - app runs without persistence');
-  }
-} catch(e) { console.warn('Firebase init error:', e); }
+const firebaseConfig = {
+  apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
+  authDomain: "prestamax-276f0.firebaseapp.com",
+  projectId: "prestamax-276f0",
+  storageBucket: "prestamax-276f0.firebasestorage.app",
+  messagingSenderId: "325489105014",
+  appId: "1:325489105014:web:72c2675e9749a4c5e36757"
+};
+firebase.initializeApp(firebaseConfig);
+window._db = firebase.firestore();
 </script>
 </head>
 <body>
@@ -512,8 +505,37 @@ try {
     <div class="fg"><label class="fl">🪪 Cédula</label><input type="text" class="fi" id="f-ced" placeholder="12345678" oninput="checkCedDup()"></div>
     <div class="fg"><label class="fl">📱 WhatsApp</label><input type="tel" class="fi" id="f-tel" placeholder="+57 300..."></div>
   </div>
-
-  <div class="fg"><label class="fl">🏦 Cuenta / Nequi</label><input type="text" class="fi" id="f-cta" placeholder="Número de cuenta o Nequi"></div>
+  <div class="r2">
+    <div class="fg"><label class="fl">📞 Celular adicional (opcional)</label><input type="tel" class="fi" id="f-cel2" placeholder="+57 310..."></div>
+    <div class="fg"><label class="fl">📧 Correo electrónico (opcional)</label><input type="email" class="fi" id="f-email" placeholder="cliente@gmail.com"></div>
+  </div>
+  <div class="fg"><label class="fl">🏦 Cuentas bancarias</label>
+    <div id="cuentas-wrap" style="display:flex;flex-direction:column;gap:6px">
+      <div class="cuenta-row" style="display:flex;gap:6px;align-items:center">
+        <select class="fsel" id="f-banco-0" style="flex:1;min-width:0">
+          <option value="Nequi">📱 Nequi</option>
+          <option value="Bancolombia">🏦 Bancolombia</option>
+          <option value="Davivienda">🏦 Davivienda</option>
+          <option value="BBVA">🏦 BBVA</option>
+          <option value="Banco de Bogotá">🏦 Banco de Bogotá</option>
+          <option value="Banco Popular">🏦 Banco Popular</option>
+          <option value="Banco Agrario">🏦 Banco Agrario</option>
+          <option value="Banco Caja Social">🏦 Banco Caja Social</option>
+          <option value="AV Villas">🏦 AV Villas</option>
+          <option value="Itaú">🏦 Itaú</option>
+          <option value="Banco Falabella">🏦 Banco Falabella</option>
+          <option value="Bancamía">🏦 Bancamía</option>
+          <option value="Daviplata">📱 Daviplata</option>
+          <option value="Movii">📱 Movii</option>
+          <option value="RappiPay">📱 RappiPay</option>
+          <option value="Efectivo">💵 Efectivo</option>
+          <option value="Otro">🏦 Otro</option>
+        </select>
+        <input type="text" class="fi" id="f-num-0" placeholder="Número de cuenta" style="flex:1.5">
+      </div>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px;width:100%" onclick="addCuentaRow()">➕ Agregar otra cuenta</button>
+  </div>
   <div class="fg"><label class="fl">💵 Valor préstamo</label>
     <input type="number" class="fi" id="f-val" placeholder="500000" oninput="recalc()">
     <div id="warn-capital" style="display:none;margin-top:5px;background:rgba(255,61,90,.1);border:1.5px solid rgba(255,61,90,.5);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--fire)"></div>
@@ -542,7 +564,6 @@ try {
     <div class="fg"><label class="fl">⚠️ Multa mora</label><input type="number" class="fi" id="f-mul" placeholder="20000"></div>
     <div class="fg"><label class="fl">⏰ Hora límite</label><input type="time" class="fi" id="f-hor" value="15:00"></div>
   </div>
-
   <div class="fg"><label class="fl">📢 Notificaciones al crear/cobrar</label>
     <div style="display:flex;flex-direction:column;gap:6px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
@@ -571,10 +592,8 @@ try {
   <div id="loan-warn" style="display:none;background:rgba(255,61,90,.09);border:1.5px solid rgba(255,61,90,.4);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:4px"></div>
   <div id="cprev" style="display:none" class="prevcalc">
     <div class="prow"><span>Total a pagar</span><span id="c-tot" class="mono">-</span></div>
-    <div class="prow"><span>Ganancia estimada</span><span id="c-gan" class="mono">-</span></div>
+    <div class="prow"><span>Ganancia bruta</span><span id="c-gan" class="mono">-</span></div>
     <div class="prow"><span>Rentabilidad</span><span id="c-pct" class="mono">-</span></div>
-    <div class="prow"><span>Cap. por cuota</span><span id="c-capq" class="mono">-</span></div>
-    <div class="prow"><span>Gan. por cuota</span><span id="c-ganq" class="mono">-</span></div>
     <div class="prow"><span>1ª cuota</span><span id="c-1ra" class="mono">-</span></div>
   </div>
   <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-loan')">Cancelar</button><button class="btn btn-jade btn-w" id="btn-guardar" onclick="saveLoan()">✅ Guardar y notificar</button></div>
@@ -700,35 +719,26 @@ async function fsGuardarCartera(c){
   }catch(e){console.warn('fsGuardarCartera error:',e);}
 }
 
-let _unsubscribeSnapshot=null;
+let _unsubFS=null;
 async function fsCargarCarteras(){
   try{
     if(!S.user||!window._db)return;
-    // Cancelar listener anterior si existe
-    if(_unsubscribeSnapshot){_unsubscribeSnapshot();_unsubscribeSnapshot=null;}
-    // Listener en tiempo real — se actualiza automáticamente en todos los dispositivos
-    _unsubscribeSnapshot=window._db.collection('carteras').onSnapshot(snap=>{
+    if(_unsubFS){_unsubFS();_unsubFS=null;}
+    _unsubFS=window._db.collection('carteras').onSnapshot(function(snap){
       const nuevas=[];
-      snap.forEach(d=>{
+      snap.forEach(function(d){
         const c=d.data();
         if(c.owner===S.user.id||c.owner===S.user.email||(c.collabs||[]).includes(S.user.email)){
           nuevas.push(c);
         }
       });
       DB.carteras=nuevas;
-      // Si estamos en s-carteras, actualizar lista
-      if(document.getElementById('s-carteras').classList.contains('on')){
-        renderCarteras();
-      }
-      // Si estamos dentro de una cartera, actualizar datos
+      if(document.getElementById('s-carteras')?.classList.contains('on'))renderCarteras();
       if(S.cartera){
-        const updated=DB.carteras.find(c=>c.id===S.cartera.id);
-        if(updated){
-          S.cartera=updated;
-          render();updDot();
-        }
+        const upd=DB.carteras.find(function(c){return c.id===S.cartera.id;});
+        if(upd){S.cartera=upd;render();updDot();}
       }
-    },e=>console.warn('onSnapshot error:',e));
+    },function(e){console.warn('snapshot err:',e);});
   }catch(e){console.warn('fsCargarCarteras error:',e);}
 }
 
@@ -767,9 +777,8 @@ function mkLoan(d){
     return{num:i+1,fecha:new Date(f),valor:d.cuo,estado,multa:0,
       fechaPago:estado==='pagada'?new Date(f):null,pagadoPor:estado==='pagada'?'Sistema':null,comprobante:null};
   });
-  return{id,nom:d.nom,ape:d.ape,ced:d.ced||'',tel:d.tel,cta:d.cta,val:d.val,cuo:d.cuo,
+  return{id,nom:d.nom,ape:d.ape,ced:d.ced||'',tel:d.tel,cel2:d.cel2||'',email:d.email||'',cta:d.cta,val:d.val,cuo:d.cuo,
     mod:d.mod,ncu:d.ncu,mul:d.mul,hor:d.hor,not:d.not,ini,cuotas,activo:true,
-    pct:d.pct||20,
     historico:[],comprobante:null,renewRequest:false};
 }
 
@@ -897,7 +906,7 @@ function updateUserUI(){
 }
 
 function logout(){
-  if(_unsubscribeSnapshot){_unsubscribeSnapshot();_unsubscribeSnapshot=null;}
+  if(_unsubFS){_unsubFS();_unsubFS=null;}
   S.user=null;S.cartera=null;
   ['s-carteras','s-admin','s-main','s-detail','s-lock','s-portal'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.getElementById('s-inicio').classList.add('on');
@@ -921,12 +930,13 @@ function renderCarteras(){
     const n=c.loans.length,cap=c.loans.reduce((s,l)=>s+l.val,0);
     const mora=c.loans.filter(l=>l.cuotas.some(x=>x.estado==='mora')).length;
     const hasPass=!!c.passHash;
-    return`<div class="cartera-card ${c.color}" onclick="enterCartera('${c.id}')">
+    return`<div class="cartera-card ${c.color}">
       ${hasPass?'<div class="cartera-lock">🔒</div>':''}
-      <div style="position:absolute;top:10px;right:10px;z-index:2;display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:11px" onclick="event.stopPropagation();openEditCartera('${c.id}')">✏️</button>
-        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:11px;color:var(--fire)" onclick="event.stopPropagation();confirmDelCartera('${c.id}')">🗑️</button>
+      <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:11px" onclick="openEditCartera('${c.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:11px" onclick="delCartera('${c.id}')">🗑️</button>
       </div>
+      <div onclick="enterCartera('${c.id}')" style="cursor:pointer">
       <div class="cartera-ico">${icos[c.color]||'📁'}</div>
       <div class="cartera-name">${c.name}</div>
       <div class="cartera-desc">${c.desc||''}</div>
@@ -936,51 +946,45 @@ function renderCarteras(){
         ${mora>0?`<div class="cstat" style="color:var(--fire)"><b>${mora}</b> mora</div>`:''}
         ${hasPass?'<div class="cstat">🔒 Protegida</div>':''}
       </div>
+      </div>
     </div>`;
   }).join('');
 }
 
-function confirmDelCartera(id){
-  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
-  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede eliminar carteras');return;}
-  const activos=c.loans.filter(l=>l.activo).length;
-  if(activos>0){toast(`⛔ No se puede eliminar: hay ${activos} crédito(s) activo(s)`);return;}
-  if(!confirm(`¿Eliminar cartera "${c.name}"? Esta acción no se puede deshacer.`))return;
-  DB.carteras=DB.carteras.filter(x=>x.id!==id);
-  fsEliminarCartera(id);
-  renderCarteras();
-  toast('🗑️ Cartera eliminada');
+function delCartera(id){
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede eliminar');return;}
+  if(c.loans.filter(function(l){return l.activo;}).length>0){toast('⛔ Hay créditos activos. No se puede eliminar.');return;}
+  if(!window.confirm('¿Eliminar cartera "'+c.name+'"? No se puede deshacer.'))return;
+  DB.carteras=DB.carteras.filter(function(x){return x.id!==id;});
+  if(window._db)window._db.collection('carteras').doc(id).delete();
+  renderCarteras();toast('🗑️ Cartera eliminada');
 }
-
 function openEditCartera(id){
-  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
   if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede editar');return;}
   document.getElementById('nc-name').value=c.name;
   document.getElementById('nc-desc').value=c.desc||'';
   document.getElementById('nc-color').value=c.color;
-  document.getElementById('nc-cap').value='';
   document.getElementById('nc-collabs').value=(c.collabs||[]).join(', ');
-  // Cambiar botón para editar
   const btn=document.querySelector('#m-new-cartera .btn-jade');
-  if(btn){btn.textContent='✅ Guardar cambios';btn.onclick=()=>saveEditCartera(id);}
-  document.querySelector('#m-new-cartera .shtitle').textContent='✏️ Editar Cartera';
+  const ttl=document.querySelector('#m-new-cartera .shtitle');
+  if(btn){btn.textContent='✅ Guardar cambios';btn.onclick=function(){saveEditCartera(id);};}
+  if(ttl)ttl.textContent='✏️ Editar Cartera';
   openM('m-new-cartera');
 }
-
 function saveEditCartera(id){
-  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
   const name=gv('nc-name').trim();if(!name){toast('⚠️ Nombre requerido');return;}
   c.name=name;c.desc=gv('nc-desc').trim();c.color=gv('nc-color');
-  const collabs=gv('nc-collabs').split(',').map(x=>x.trim()).filter(Boolean);
-  c.collabs=collabs;
-  fsGuardarCartera(c);
+  c.collabs=gv('nc-collabs').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(window._db)window._db.collection('carteras').doc(id).set(JSON.parse(JSON.stringify(c)));
   closeM('m-new-cartera');renderCarteras();toast('✅ Cartera actualizada');
-  // Restaurar botón
   const btn=document.querySelector('#m-new-cartera .btn-jade');
+  const ttl=document.querySelector('#m-new-cartera .shtitle');
   if(btn){btn.textContent='✅ Crear cartera';btn.onclick=saveCartera;}
-  document.querySelector('#m-new-cartera .shtitle').textContent='➕ Nueva Cartera';
+  if(ttl)ttl.textContent='➕ Nueva Cartera';
 }
-
 function enterCartera(id){
   const c=DB.carteras.find(x=>x.id===id);if(!c)return;
   if(c.passHash){
@@ -1090,22 +1094,33 @@ function showLoan(id){
   document.getElementById('s-detail').classList.add('on');
 }
 function getL(id){return loans().find(l=>l.id===id);}
-
+let _cuentaIdx=1;
+function addCuentaRow(){
+  const wrap=document.getElementById('cuentas-wrap');if(!wrap)return;
+  const idx=wrap.querySelectorAll('.cuenta-row').length;
+  const row=document.createElement('div');
+  row.className='cuenta-row';
+  row.style.cssText='display:flex;gap:6px;align-items:center';
+  row.innerHTML='<select class="fsel" id="f-banco-'+idx+'" style="flex:1;min-width:0">'+
+    '<option value="Nequi">📱 Nequi</option><option value="Bancolombia">🏦 Bancolombia</option>'+
+    '<option value="Davivienda">🏦 Davivienda</option><option value="BBVA">🏦 BBVA</option>'+
+    '<option value="Banco de Bogotá">🏦 Banco de Bogotá</option><option value="Daviplata">📱 Daviplata</option>'+
+    '<option value="Efectivo">💵 Efectivo</option><option value="Otro">🏦 Otro</option></select>'+
+    '<input type="text" class="fi" id="f-num-'+idx+'" placeholder="Número" style="flex:1.5">'+
+    '<button type="button" class="btn btn-ghost btn-sm" style="padding:6px 8px" onclick="this.parentElement.remove()">✕</button>';
+  wrap.appendChild(row);
+}
 function openNuevoPrestamoCliente(lid){
   const l=getL(lid);if(!l)return;
   openLoanModal();
-  setTimeout(()=>{
-    const fCed=document.getElementById('f-ced');
-    const fNom=document.getElementById('f-nom');
-    const fApe=document.getElementById('f-ape');
-    const fTel=document.getElementById('f-tel');
-    const fCta=document.getElementById('f-cta');
-    if(fCed)fCed.value=l.ced;
-    if(fNom)fNom.value=l.nom;
-    if(fApe)fApe.value=l.ape;
-    if(fTel)fTel.value=l.tel;
-    if(fCta)fCta.value=l.cta;
-  },200);
+  setTimeout(function(){
+    if(document.getElementById('f-ced'))document.getElementById('f-ced').value=l.ced;
+    if(document.getElementById('f-nom'))document.getElementById('f-nom').value=l.nom;
+    if(document.getElementById('f-ape'))document.getElementById('f-ape').value=l.ape;
+    if(document.getElementById('f-tel'))document.getElementById('f-tel').value=l.tel;
+    if(document.getElementById('f-email'))document.getElementById('f-email').value=l.email||'';
+    if(document.getElementById('f-cel2'))document.getElementById('f-cel2').value=l.cel2||'';
+  },300);
 }
 function render(){
   const el=$('tabcontent'),t=S.tab;
@@ -1139,10 +1154,9 @@ function capRecuperado(c){
 // Ganancias acumuladas basadas en % configurado de la cartera
 // ─── GANANCIA REAL: total cobrado - capital prestado ───
 function gananciaLoan(l){
-  // Ganancia real = lo cobrado que supera el capital prestado
-  const pct=(l.pct||20)/100;
-  const ganEstimadaTotal=Math.round(l.val*pct); // ganancia total estimada
+  // Ganancia real cobrada en este préstamo
   const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((s,x)=>s+x.valor+(x.multa||0),0);
+  // Cuánto del capital ya se recuperó (no puede exceder val)
   const capRecup=Math.min(cobrado,l.val);
   return Math.max(0, cobrado-capRecup);
 }
@@ -1167,9 +1181,8 @@ function capitalRecuperado(c){
 
 // Ganancia estimada de un préstamo (alias para compatibilidad)
 function gananciaEstimadaLoan(l,_c){
-  // Ganancia estimada = capital * % interés
-  const pct=(l.pct||20)/100;
-  return Math.round(l.val*pct);
+  const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
+  return Math.max(0, totalCuotas - l.val);
 }
 
 // Capital total por cobrar (cuotas pendientes + mora)
@@ -1342,7 +1355,7 @@ function rLCard(l){
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:6px 0;border-top:1px solid var(--line);margin-top:4px">
       <div style="text-align:center">
         <div style="font-size:9px;color:var(--fog)">Capital</div>
-        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)} <span style="font-size:9px;color:var(--amber)">${l.pct||20}%</span></div>
+        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)}</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
@@ -1394,14 +1407,10 @@ function rDetail(l){
         ${c.estado!=='pagada'?`<div class="cact">
           <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar</button>
           ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar</button>`:''}
-          ${c.estado==='pendiente'?`<button class="btn btn-fire btn-sm" style="font-size:10px" onclick="marcarMoraCuota(${l.id},${c.num})">⚠️ Mora</button>`:''}
           <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
         </div>`:''}
       </div>
-      <div style="text-align:right">
-        <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
-        ${c.estado==='pagada'?`<div style="font-size:9px;color:var(--fog)">Cap: ${fmt(Math.min(c.valor,Math.max(0,l.val-l.cuotas.filter((q,qi)=>qi<l.cuotas.indexOf(c)&&q.estado==='pagada').reduce((s,q)=>s+q.valor,0))))} · Gan: ${fmt(Math.max(0,c.valor-Math.min(c.valor,Math.max(0,l.val-l.cuotas.filter((q,qi)=>qi<l.cuotas.indexOf(c)&&q.estado==='pagada').reduce((s,q)=>s+q.valor,0)))))}</div>`:''}
-      </div>
+      <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
     </div>`;
   }).join('');
   return`<div class="dhero">
@@ -1409,7 +1418,8 @@ function rDetail(l){
     <div class="dname">${l.nom} ${l.ape}</div>
     <div id="detail-fin-inject"></div>
     <div class="dinfo">🪪 CC ${l.ced}</div>
-    <div class="dinfo">📱 ${l.tel} · 🏦 ${l.cta}</div>
+    <div class="dinfo">📱 WA: ${l.tel}${l.cel2?" · 📞 "+l.cel2:""}${l.email?" · 📧 "+l.email:""}</div>
+    ${l.cta?`<div class="dinfo">🏦 ${l.cta}</div>`:""}
     <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not} · ⚠️ ${fmt(l.mul)}</div>
     ${l.creadoPor?`<div class="dinfo" style="color:var(--smoke)">📝 Creado por: <b style="color:var(--jade)">${l.creadoPor}</b>${l.fechaCreacion?' · '+new Date(l.fechaCreacion).toLocaleDateString('es-CO'):''}</div>`:''}
     ${l.renewRequest?'<div style="margin-top:7px"><span class="badge-violet">🔄 Solicitud de renovación pendiente</span></div>':''}
@@ -1423,10 +1433,10 @@ function rDetail(l){
   </div>
   ${l.comprobante?`<div style="margin-bottom:10px"><div class="st" style="margin-bottom:5px">📸 Comprobante desembolso</div><img src="${l.comprobante}" style="width:100%;max-height:140px;object-fit:contain;border-radius:var(--r-sm);border:1px solid var(--line2);cursor:pointer" onclick="viewImg('${l.comprobante}')"></div>`:''}
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-    <button class="btn btn-sky btn-w btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
-    <button class="btn btn-amber btn-w btn-sm" onclick="openRenew(${l.id})">🔄 Renovar</button>
-    <button class="btn btn-jade btn-w btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro préstamo</button>
-    ${l.renewRequest?`<button class="btn btn-violet btn-w btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
+    <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
+    <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})">🔄 Renovar</button>
+    <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
+    ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
   </div>
   <div class="sh"><div class="st">📋 Plan de cuotas (${l.ncu})</div></div>${cuotasH}
   ${l.historico.length?`<div class="hr"></div><div class="st" style="margin-bottom:6px">📜 Historial completo (${l.historico.length})</div>${l.historico.map(h=>`<div class="hitem">${h}</div>`).join('')}`:''}`;
@@ -1434,36 +1444,42 @@ function rDetail(l){
 
 /* ─── CLIENTES ─── */
 function rHistorial(){
-  const cerrados=(S.cartera?.loans||[]).filter(l=>!l.activo);
-  if(!cerrados.length)return`<div class="empty"><div class="empty-ico">📜</div><div class="empty-t">Sin historial</div><div class="empty-s">Los créditos completados aparecerán aquí</div></div>`;
-  return`<div style="padding:4px 0 8px;font-size:12px;color:var(--smoke)">${cerrados.length} crédito(s) completado(s)</div>`+
-  cerrados.map(l=>{
-    const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
-    const totalCobrado=l.cuotas.filter(c=>c.estado==='pagada').reduce((s,c)=>s+c.valor,0);
-    const ganancia=totalCobrado-l.val;
+  const cerrados=(S.cartera?.loans||[]).filter(function(l){return !l.activo;});
+  if(!cerrados.length)return '<div class="empty"><div class="empty-ico">📜</div><div class="empty-t">Sin historial</div><div class="empty-s">Los créditos completados aparecerán aquí automáticamente</div></div>';
+  const totalGanado=cerrados.reduce(function(s,l){
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(ss,c){return ss+c.valor+(c.multa||0);},0);
+    return s+Math.max(0,cobrado-l.val);
+  },0);
+  let html='<div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.2);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between">'+
+    '<div><div style="font-size:10px;color:var(--fog)">Créditos completados</div><div style="font-weight:900;font-size:18px">'+cerrados.length+'</div></div>'+
+    '<div><div style="font-size:10px;color:var(--fog)">Ganancia total</div><div style="font-weight:900;font-size:18px;color:var(--gold)">'+fmt(totalGanado)+'</div></div>'+
+  '</div>';
+  html+=cerrados.map(function(l){
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(s,c){return s+c.valor+(c.multa||0);},0);
+    const ganancia=Math.max(0,cobrado-l.val);
     const ini=(l.nom[0]||'')+(l.ape[0]||'');
-    return`<div class="lc" onclick="showLoan(${l.id})" style="opacity:.85">
-      <div class="lstripe s-jade"></div>
-      <div class="lhead">
-        <div class="lav" style="background:var(--ink3)">${ini.toUpperCase()}</div>
-        <div style="flex:1;min-width:0">
-          <div class="lname">${l.nom} ${l.ape}</div>
-          <div class="lsub">CC ${l.ced} · ${cap(l.mod)} · ${l.fechaCierre?new Date(l.fechaCierre).toLocaleDateString('es-CO'):''}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="chip" style="background:rgba(57,216,112,.15);color:var(--lime);border:1px solid rgba(57,216,112,.3)">✅ Completado</div>
-          <div class="mono" style="font-weight:700;font-size:12px;margin-top:3px">${fmt(l.val)}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:6px 0;border-top:1px solid var(--line);margin-top:6px;font-size:10px">
-        <div style="text-align:center"><div style="color:var(--fog)">Prestado</div><div style="font-weight:800;color:var(--sky)">${fmt(l.val)}</div></div>
-        <div style="text-align:center"><div style="color:var(--fog)">Cobrado</div><div style="font-weight:800;color:var(--lime)">${fmt(totalCobrado)}</div></div>
-        <div style="text-align:center"><div style="color:var(--fog)">Ganancia</div><div style="font-weight:800;color:var(--gold)">${fmt(ganancia)}</div></div>
-      </div>
-    </div>`;
+    return '<div class="lc" onclick="showLoan('+l.id+')" style="opacity:.9">'+
+      '<div class="lstripe s-jade"></div>'+
+      '<div class="lhead">'+
+        '<div class="lav" style="background:var(--ink3)">'+ini.toUpperCase()+'</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="lname">'+l.nom+' '+l.ape+'</div>'+
+          '<div class="lsub">CC '+l.ced+' · '+cap(l.mod)+(l.fechaCierre?' · '+new Date(l.fechaCierre).toLocaleDateString('es-CO'):'')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-size:10px;color:var(--lime);font-weight:700">✅ Completado</div>'+
+          '<div class="mono" style="font-weight:700;font-size:12px">'+fmt(l.val)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:6px 0;border-top:1px solid var(--line);margin-top:6px;font-size:10px">'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Prestado</div><div style="font-weight:800;color:var(--sky)">'+fmt(l.val)+'</div></div>'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Cobrado</div><div style="font-weight:800;color:var(--lime)">'+fmt(cobrado)+'</div></div>'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Ganancia</div><div style="font-weight:800;color:var(--gold)">'+fmt(ganancia)+'</div></div>'+
+      '</div>'+
+    '</div>';
   }).join('');
+  return html;
 }
-
 function rClientes(){
   const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,loans:[]};map[l.ced].loans.push(l);});
   const cl=Object.values(map);
@@ -1471,14 +1487,54 @@ function rClientes(){
   return`<div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchCl(this.value)"></div>
   <div id="cllist">${renderClList(cl)}</div>`;
 }
-function renderClList(cl){return cl.map(c=>{
-  const sc=clientSc(c.loans),total=c.loans.reduce((s,l)=>s+l.val,0);
-  const pend=c.loans.reduce((s,l)=>s+l.cuotas.filter(x=>x.estado!=='pagada').length,0);
-  return`<div class="clcard" onclick="showLoan(${c.loans[0].id})">
-    <div class="clscore sc${sc}">${sc}</div>
-    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">${c.nom}</div><div style="font-size:10px;color:var(--smoke)">CC ${c.ced} · ${c.tel}</div></div>
-    <div style="text-align:right"><div class="mono" style="font-weight:700;font-size:11px">${fmt(total)}</div><div style="font-size:10px;color:${pend>0?'var(--amber)':'var(--lime)'}">${pend} pend.</div></div>
-  </div>`;}).join('');}
+function renderClList(cl){return cl.map(function(c){
+  const sc=clientSc(c.loans);
+  const activos=c.loans.filter(function(l){return l.activo;});
+  const cerrados=c.loans.filter(function(l){return !l.activo;});
+  const totalActivo=activos.reduce(function(s,l){return s+l.val;},0);
+  const pend=activos.reduce(function(s,l){return s+l.cuotas.filter(function(x){return x.estado!=='pagada';}).length;},0);
+  const mora=activos.some(function(l){return l.cuotas.some(function(x){return x.estado==='mora';});});
+  const ini=(c.loans[0].nom[0]||'')+(c.loans[0].ape[0]||'');
+  // Si tiene múltiples activos, mostrar lista expandible
+  const multiLoans=activos.length>1;
+  let html='<div class="clcard" style="cursor:pointer">'+
+    '<div class="lstripe '+(mora?'s-fire':pend>0?'s-amber':'s-jade')+'"></div>'+
+    '<div style="display:flex;align-items:center;gap:10px" onclick="'+clickAction+'">'+
+      '<div class="lav">'+ini.toUpperCase()+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:700;font-size:13px">'+c.nom+'</div>'+
+        '<div style="font-size:10px;color:var(--smoke)">CC '+c.ced+' · '+c.tel+'</div>'+
+        (c.email?'<div style="font-size:10px;color:var(--fog)">'+c.email+'</div>':'')+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div class="mono" style="font-weight:700;font-size:11px">'+fmt(totalActivo)+'</div>'+
+        '<div style="font-size:10px;color:'+(pend>0?'var(--amber)':'var(--lime)')+'">'+
+          (multiLoans?activos.length+' créditos activos':pend+' cuotas pend.')+
+        '</div>'+
+        (cerrados.length?'<div style="font-size:9px;color:var(--fog)">'+cerrados.length+' histórico</div>':'')+
+      '</div>'+
+    '</div>';
+  // Expandible con lista de préstamos si tiene varios
+  if(multiLoans){
+    html+='<div id="cl-'+c.ced+'" style="display:none;margin-top:8px;border-top:1px solid var(--line);padding-top:8px">'+
+      activos.map(function(l){
+        const lPag=l.cuotas.filter(function(q){return q.estado==='pagada';}).length;
+        const lMora=l.cuotas.some(function(q){return q.estado==='mora';});
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer" onclick="showLoan('+l.id+')">'+
+          '<div>'+
+            '<span class="lbadge '+(l.mod==='diario'?'bd':l.mod==='semanal'?'bs':l.mod==='quincenal'?'bq':'bm')+'">'+l.mod+'</span>'+
+            ' <span style="font-size:11px">'+fmt(l.val)+'</span>'+
+          '</div>'+
+          '<div style="font-size:10px;color:'+(lMora?'var(--fire)':'var(--smoke)')+'">'+lPag+'/'+l.cuotas.length+' cuotas</div>'+
+        '</div>';
+      }).join('')+
+      '<button class="btn btn-jade btn-sm" style="width:100%;margin-top:8px" onclick="openNuevoPrestamoCliente('+activos[0].id+')">➕ Nuevo crédito</button>'+
+    '</div>';
+  }
+  html+='</div>';
+  return html;
+}).join('');}
+function toggleClientLoans(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
 function searchCl(q){const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,loans:[]};map[l.ced].loans.push(l);});$('cllist').innerHTML=renderClList(Object.values(map).filter(c=>c.nom.toLowerCase().includes(q.toLowerCase())||c.ced.includes(q)));}
 
 /* ─── ALERTAS ─── */
@@ -1882,14 +1938,11 @@ function recalc(){
     if(btnG){btnG.disabled=bloquear;btnG.style.opacity=bloquear?'.35':'1';btnG.style.cursor=bloquear?'not-allowed':'pointer';}
 
     // ── Preview de cálculo ──
-    const capPorCuota=n>0?Math.round(val/n):0;
-    const ganPorCuota=cuo-capPorCuota;
     $('c-tot').textContent=fmt(total);
     $('c-gan').textContent=fmt(gan);
     $('c-gan').style.color=gan<=0?'var(--fire)':'var(--lime)';
     $('c-pct').textContent=pct.toFixed(1)+'%';
     $('c-pct').style.color=gan<=0?'var(--fire)':'var(--sky)';
-    if(document.getElementById('c-capq'))document.getElementById('c-capq').textContent=fmt(capPorCuota)+' cap + '+fmt(Math.max(0,ganPorCuota))+' gan';
     $('cprev').style.display='block';
     const wGen=$('loan-warn');if(wGen)wGen.style.display='none';
     // Use custom ini date if set, otherwise today
@@ -1929,7 +1982,17 @@ function calcFechasDesde(primera,mod,ncu){
 }
 function saveLoan(){
   const nom=gv('f-nom').trim(),ape=gv('f-ape').trim(),ced=gv('f-ced').trim(),tel=gv('f-tel').trim();
-  const cta=gv('f-cta').trim(),val=+gv('f-val')||0,cuo=+gv('f-cuo')||0;
+  // Leer cuentas bancarias dinámicas
+  const cuentas=[];
+  document.querySelectorAll('.cuenta-row').forEach(function(row,i){
+    const banco=document.getElementById('f-banco-'+i)?.value||'';
+    const num=document.getElementById('f-num-'+i)?.value.trim()||'';
+    if(num)cuentas.push(banco+': '+num);
+  });
+  const cta=cuentas.join(' | ')||'';
+  const email=gv('f-email').trim();
+  const cel2=gv('f-cel2').trim();
+  const val=+gv('f-val')||0,cuo=+gv('f-cuo')||0;
   const mod=gv('f-mod'),ncu=+gv('f-ncu')||0,mul=+gv('f-mul')||0;
   const hor=gv('f-hor')||'15:00';
   const notChs=[];
@@ -1946,9 +2009,7 @@ function saveLoan(){
   const iniRaw=(gv('f-ini')||'').trim();
   let iniDate=null;
   if(iniRaw){try{const d=new Date(iniRaw+'T12:00:00');if(!isNaN(d))iniDate=d;}catch(e){}}
-  // pct se calcula automáticamente: (total-val)/val*100
-  const pctAuto=val>0?Math.round(((cuo*ncu)-val)/val*100):0;
-  const loan=mkLoan({nom,ape,ced,tel,cta,val,cuo,mod,ncu,mul,hor,not,iniDate,pct:pctAuto});
+  const loan=mkLoan({nom,ape,ced,tel,cel2,email,cta,val,cuo,mod,ncu,mul,hor,not,iniDate});
   loan.comprobante=gv('loan-comp-data')||null;
   loan.creadoPor=S.user?.name||S.user?.email||'Desconocido';
   loan.creadoPorEmail=S.user?.email||'';
@@ -1958,7 +2019,9 @@ function saveLoan(){
   setTimeout(()=>sendWACreacion(loan),400);
   if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('nuevo',loan),900);
   render();updDot();
-  ['f-nom','f-ape','f-ced','f-tel','f-cta','f-val','f-cuo','f-ncu','f-mul','f-ini'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  ['f-nom','f-ape','f-ced','f-tel','f-cel2','f-email','f-val','f-cuo','f-ncu','f-mul','f-ini'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  // Reset cuentas
+  const cw=document.getElementById('cuentas-wrap');if(cw){cw.innerHTML='<div class="cuenta-row" style="display:flex;gap:6px;align-items:center"><select class="fsel" id="f-banco-0" style="flex:1;min-width:0"><option value="Nequi">📱 Nequi</option><option value="Bancolombia">🏦 Bancolombia</option><option value="Davivienda">🏦 Davivienda</option><option value="BBVA">🏦 BBVA</option><option value="Banco de Bogotá">🏦 Banco de Bogotá</option><option value="Daviplata">📱 Daviplata</option><option value="Efectivo">💵 Efectivo</option><option value="Otro">🏦 Otro</option></select><input type="text" class="fi" id="f-num-0" placeholder="Número de cuenta" style="flex:1.5"></div>';}
   const lbl=document.getElementById('f-ini-label');if(lbl){lbl.textContent='Seleccionar fecha...';lbl.style.color='var(--smoke)';};
   ['not-wa','not-sms','not-email','not-call'].forEach(i=>{const e=document.getElementById(i);if(e)e.checked=(i==='not-wa');});;
   $('cprev').style.display='none';$('sched-prev').style.display='none';$('ced-dup-warn').style.display='none';
@@ -1966,6 +2029,7 @@ function saveLoan(){
 }
 
 /* ─── COMPROBANTES ─── */
+function previewRenComp(inp){previewComp(inp,'ren-comp-wrap','ren-comp-data');}
 function previewComp(inp,wrapId,dataId){
   const file=inp.files[0];if(!file)return;
   const r=new FileReader();
@@ -2009,14 +2073,14 @@ function confirmPay(lid,cn){
   c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;
   distribuirPago(l,c);
   l.historico.push(`✅ Cuota #${cn} pagada por ${who} vía ${met}${comp?' 📸':''}  — ${new Date().toLocaleDateString('es-CO')}`);
-  closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
-  // Verificar si todas las cuotas están pagadas → marcar como completado
-  const todasPagadas=l.cuotas.every(q=>q.estado==='pagada');
+  const todasPagadas=l.cuotas.every(function(q){return q.estado==='pagada';});
   if(todasPagadas){
     l.activo=false;
     l.fechaCierre=new Date().toISOString();
-    l.historico.push(`🏁 Préstamo completado — ${new Date().toLocaleDateString('es-CO')}`);
-    toast('🎉 ¡Préstamo completado! Pasó al historial');
+    l.historico.push('🏁 Préstamo completado — '+new Date().toLocaleDateString('es-CO'));
+    closeM('m-pay');toast('🎉 ¡Préstamo completado! Pasó al historial');
+  } else {
+    closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
   }
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
@@ -2113,35 +2177,31 @@ function selMulta(paga, lid, cn){
   }
 }
 
-function marcarMoraCuota(lid, cn){
-  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
-  c.estado='mora';
-  l.historico.push(`⚠️ Cuota #${cn} marcada en mora — ${new Date().toLocaleDateString('es-CO')}`);
-  fsSave();
-  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
-  updDot();render();
-  toast('⚠️ Cuota marcada en mora');
-}
-
 function doMora(lid, cn, pagaMulta){
-  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  const l=getL(lid),c=l?.cuotas.find(function(x){return x.num===cn;});if(!l||!c)return;
   const nfAdj=nextFecha(c,l);
   if(pagaMulta){
-    c.multa=l.mul;
-    c.estado='pagada';
-    c.fechaPago=new Date();
-    c.pagadoPor=S.user?.name;
-    distribuirPago(l,c);
-    l.historico.push(`✅ Cuota #${cn} pagada + multa ${fmt(l.mul)} cobrada — ${new Date().toLocaleDateString('es-CO')}`);
-    toast(`✅ Cobrado: ${fmt(c.valor+l.mul)}`);
-  } else {
-    c.multa=0;
+    // SOLO cobra la multa - la cuota se reprograma al siguiente slot
+    // La multa va ÍNTEGRA a ganancia
+    if(!l.histMultas)l.histMultas=[];
+    l.histMultas.push({fecha:new Date().toISOString(),cuota:cn,monto:l.mul,cobradoPor:S.user?.name||''});
+    // Registrar la multa en histGan de la cartera
+    const cap=getCap(S.cartera);
+    if(cap)cap.histGan.push({fecha:new Date(),monto:l.mul,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
+    // Reprogramar la cuota
     c.fecha=nfAdj;
     c.estado='pendiente';
-    l.historico.push(`🤝 Multa cuota #${cn} perdonada · reprogramada al ${fd(nfAdj)} — ${new Date().toLocaleDateString('es-CO')}`);
-    toast(`🤝 Multa perdonada. Cuota → ${fd(nfAdj)}`);
+    c.multa=(c.multa||0)+l.mul; // acumular multa pagada para registro
+    l.historico.push('💸 Multa cuota #'+cn+' cobrada: '+fmt(l.mul)+' → cuota reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
+    toast('✅ Multa cobrada: '+fmt(l.mul)+'. Cuota reprogramada al '+fd(nfAdj));
+  } else {
+    c.fecha=nfAdj;
+    c.estado='pendiente';
+    l.historico.push('🤝 Multa cuota #'+cn+' perdonada · reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
+    toast('🤝 Multa perdonada. Cuota → '+fd(nfAdj));
   }
   closeM('m-mora');
+  fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
   updDot();render();
 }
@@ -2149,86 +2209,31 @@ function doMora(lid, cn, pagaMulta){
 /* ─── RENOVAR ─── */
 function openRenew(lid){
   const l=getL(lid);if(!l)return;
-  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
-  const deuda=pend*l.cuo; // lo que debe
-  const cobrado=l.cuotas.filter(c=>c.estado==='pagada').reduce((s,c)=>s+c.valor,0);
-  // Trans = lo que se le entrega = nuevo monto - deuda pendiente
-  $('renew-body').innerHTML=`
-  <div class="calcbox" style="margin-bottom:10px">
-    <div class="crow2"><span>Crédito original</span><span class="mono">${fmt(l.val)}</span></div>
-    <div class="crow2"><span>Ya pagó</span><span class="mono" style="color:var(--lime)">${fmt(cobrado)}</span></div>
-    <div class="crow2"><span>Deuda pendiente (${pend} cuotas)</span><span class="mono" style="color:var(--fire)">${fmt(deuda)}</span></div>
-  </div>
-  <div class="fg"><label class="fl">💵 Nuevo valor del préstamo</label>
-    <input type="number" class="fi" id="ren-val" value="${l.val}" oninput="calcRenew(${lid})">
-  </div>
-  <div class="fg"><label class="fl">📈 % Interés nuevo préstamo</label>
-    <div style="display:flex;align-items:center;gap:10px">
-      <input type="range" id="ren-pct" min="1" max="100" value="${l.pct||20}" oninput="document.getElementById('ren-pct-val').textContent=this.value+'%';calcRenew(${lid})" style="flex:1;accent-color:var(--jade)">
-      <span id="ren-pct-val" style="font-weight:900;font-size:16px;color:var(--jade);min-width:42px">${l.pct||20}%</span>
-    </div>
-  </div>
-  <div class="fg"><label class="fl">🔢 Nº cuotas</label>
-    <input type="number" class="fi" id="ren-ncu" value="${l.ncu}" oninput="calcRenew(${lid})">
-  </div>
-  <div id="ren-preview" style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:10px"></div>
-  <div class="fg"><label class="fl">📸 Comprobante transferencia (opcional)</label>
-    <div class="comp-upload" id="ren-comp-wrap" onclick="document.getElementById('ren-comp-inp').click()"><div style="font-size:22px">📸</div><div class="comp-upload-t">Foto del comprobante</div></div>
-    <input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewComp(this,'ren-comp-wrap','ren-comp-data')">
-    <input type="hidden" id="ren-comp-data">
-  </div>
-  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-renew')">Cancelar</button><button class="btn btn-amber btn-w" onclick="confirmRenewNew(${lid})">🔄 Confirmar renovación</button></div>`;
+  const pend=l.cuotas.filter(function(c){return c.estado!=='pagada';}).length;
+  const deuda=pend*l.cuo;
+  const trans=Math.max(0,l.val-deuda);
+  const totalNuevo=l.ncu*l.cuo;
+  const ganNueva=totalNuevo-l.val;
+  const html=[
+    '<div class="calcbox" style="margin-bottom:10px">',
+    '<div class="crow2"><span>Préstamo original</span><span class="mono">'+fmt(l.val)+'</span></div>',
+    '<div class="crow2"><span>Deuda pendiente ('+pend+'×'+fmt(l.cuo)+')</span><span class="mono" style="color:var(--fire)">-'+fmt(deuda)+'</span></div>',
+    '<div class="crow2"><span>💸 Efectivo al cliente</span><span class="mono" style="color:var(--lime);font-weight:900">'+fmt(trans)+'</span></div>',
+    '<div style="border-top:1px solid var(--line);margin:8px 0;padding-top:8px">',
+    '<div class="crow2"><span>Nuevo ciclo ('+l.ncu+'×'+fmt(l.cuo)+')</span><span class="mono">'+fmt(totalNuevo)+'</span></div>',
+    '<div class="crow2"><span>Ganancia nueva</span><span class="mono" style="color:var(--gold);font-weight:900">'+fmt(ganNueva)+'</span></div>',
+    '</div></div>',
+    '<div class="renewal-box">El cliente recibe <b>'+fmt(trans)+'</b> en efectivo. El préstamo sigue siendo <b>'+fmt(l.val)+'</b> y pagará <b>'+fmt(totalNuevo)+'</b> en nuevo ciclo.</div>',
+    '<div class="fg"><label class="fl">📸 Comprobante (opcional)</label>',
+    '<div class="comp-upload" id="ren-comp-wrap" onclick="openRenCompInp()">',
+    '<div style="font-size:22px">📸</div><div class="comp-upload-t">Foto transferencia</div></div>',
+    '<input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewRenComp(this)">',
+    '<input type="hidden" id="ren-comp-data"></div>'
+  ].join('');
+  $('renew-body').innerHTML=html;
   closeM('m-opts');openM('m-renew');
-  calcRenew(lid);
 }
 
-function calcRenew(lid){
-  const l=getL(lid);if(!l)return;
-  const nuevoVal=parseInt(document.getElementById('ren-val')?.value)||l.val;
-  const pct=parseInt(document.getElementById('ren-pct')?.value)||20;
-  const ncu=parseInt(document.getElementById('ren-ncu')?.value)||l.ncu;
-  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
-  const deuda=pend*l.cuo;
-  const trans=Math.max(0, nuevoVal-deuda); // efectivo que recibe
-  const totalConInteres=Math.round(nuevoVal*(1+pct/100));
-  const cuoNueva=ncu>0?Math.round(totalConInteres/ncu):0;
-  const ganancia=totalConInteres-nuevoVal;
-  const prev=document.getElementById('ren-preview');
-  if(prev)prev.innerHTML=`
-    <div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:8px">📊 Resumen renovación</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
-      <div><span style="color:var(--fog)">Nuevo préstamo</span><div style="font-weight:800;color:var(--white)">${fmt(nuevoVal)}</div></div>
-      <div><span style="color:var(--fog)">Deuda pendiente</span><div style="font-weight:800;color:var(--fire)">${fmt(deuda)}</div></div>
-      <div><span style="color:var(--fog)">💸 Efectivo cliente</span><div style="font-weight:800;color:var(--lime)">${fmt(trans)}</div></div>
-      <div><span style="color:var(--fog)">Total a cobrar</span><div style="font-weight:800;color:var(--sky)">${fmt(totalConInteres)}</div></div>
-      <div><span style="color:var(--fog)">📈 Ganancia</span><div style="font-weight:800;color:var(--gold)">${fmt(ganancia)}</div></div>
-      <div><span style="color:var(--fog)">Cuota ${ncu>0?ncu:'?'} cuotas</span><div style="font-weight:800;color:var(--jade)">${fmt(cuoNueva)}</div></div>
-    </div>`;
-}
-
-function confirmRenewNew(lid){
-  const l=getL(lid);if(!l)return;
-  const nuevoVal=parseInt(document.getElementById('ren-val')?.value)||l.val;
-  const pct=parseInt(document.getElementById('ren-pct')?.value)||20;
-  const ncu=parseInt(document.getElementById('ren-ncu')?.value)||l.ncu;
-  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
-  const deuda=pend*l.cuo;
-  const trans=Math.max(0,nuevoVal-deuda);
-  const totalConInteres=Math.round(nuevoVal*(1+pct/100));
-  const cuoNueva=ncu>0?Math.round(totalConInteres/ncu):l.cuo;
-  const comp=gv('ren-comp-data')||null;
-  l.historico.push(`🔄 Renovación · Nuevo val: ${fmt(nuevoVal)} · Interés: ${pct}% · Cliente recibe: ${fmt(trans)} · ${pend} cuotas descontadas${comp?' 📸':''} — ${new Date().toLocaleDateString('es-CO')}`);
-  // Actualizar préstamo
-  l.val=nuevoVal;l.pct=pct;l.ncu=ncu;l.cuo=cuoNueva;
-  l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
-  const fechas=calcFechas(new Date(),l.mod,l.ncu);
-  l.cuotas=fechas.map((f,i)=>({num:i+1,fecha:new Date(f),valor:cuoNueva,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null}));
-  closeM('m-renew');toast('🔄 Crédito renovado');
-  fsSave();
-  setTimeout(()=>sendWARenovacion(l,pend,trans),400);
-  if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('renovacion',l,{trans}),900);
-  $('dcontent').innerHTML=rDetail(l);updDot();render();
-}
 function confirmRenew(lid,trans,pend){
   const l=getL(lid);if(!l)return;
   const comp=gv('ren-comp-data')||null;
@@ -2238,8 +2243,8 @@ function confirmRenew(lid,trans,pend){
   l.cuotas=fechas.map((f,i)=>({num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null}));
   closeM('m-renew');toast('🔄 Crédito renovado');
   fsSave();
-  setTimeout(()=>sendWARenovacion(l,pend,trans),400);
-  if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('renovacion',l,{trans}),900);
+  setTimeout(function(){sendWARenovacion(l,pend,trans);},400);
+  if(S.cartera.cfg?.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans});},900);
   $('dcontent').innerHTML=rDetail(l);updDot();render();
 }
 
@@ -2415,6 +2420,7 @@ function notifGrupo(tipo,l,extra={}){
     if(navigator.clipboard)navigator.clipboard.writeText(msg).then(()=>toast('📋 Aviso copiado — pégalo en el grupo'));
   }else openWA(dest,msg);
 }
+function openRenCompInp(){const el=document.getElementById('ren-comp-inp');if(el)el.click();}
 function openWA(tel,msg){window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');}
 
 
