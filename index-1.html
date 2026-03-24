@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PrestaMax v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#080d16;--ink2:#0d1520;--ink3:#141e2e;--ink4:#1c2a3e;
+  --line:#1f2f45;--line2:#243348;--mist:#2a3d58;--fog:#4a6278;
+  --smoke:#7a92a8;--ash:#a8bbc8;--white:#eef4f8;
+  --jade:#00e5b0;--jade2:#00c49a;--sky:#0099ff;
+  --fire:#ff3d5a;--amber:#ffaa00;--lime:#39d870;--violet:#8b5cf6;--gold:#ffd060;
+  --r:14px;--r-sm:9px;--r-lg:20px;
+  --glow-jade:0 0 24px rgba(0,229,176,.2);--shadow:0 12px 40px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+#app{height:100dvh;position:relative;overflow:hidden;max-width:480px;margin:0 auto}
+
+/* ─── TABLET / DESKTOP RESPONSIVE ─── */
+@media(min-width:600px){
+  #app{max-width:600px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .sheet{max-width:600px}
+  .toast{max-width:600px}
+  #date-picker-box{max-width:600px}
+  .r2{grid-template-columns:1fr 1fr}
+  .fi,.fsel{font-size:14px;padding:11px 13px}
+  .btn{font-size:14px;padding:11px 16px}
+  .lc{padding:14px}
+  .bar{padding:10px 20px}
+  .nv{font-size:12px}
+  .nvi{font-size:22px}
+  .hero{padding:20px}
+  .chart-card{padding:16px}
+  .inicio-hero{padding:52px 32px 28px}
+  .inicio-brand{font-size:46px}
+  .inicio-body{padding:0 32px 40px}
+  .inicio-card{padding:24px}
+  #s-admin .admin-card{max-width:420px}
+}
+
+@media(min-width:768px){
+  #app{max-width:720px}
+  .sheet{max-width:720px}
+  .toast{max-width:720px}
+  #date-picker-box{max-width:720px}
+  body{font-size:15px}
+  .shandle{display:none}
+  .sheet{border-radius:16px;margin:auto;max-height:88dvh}
+  .overlay{align-items:center;padding:20px}
+  .dp-day{height:46px;font-size:14px}
+  .dp-dow{font-size:11px}
+  .sched-row{font-size:13px;padding:7px 0}
+  .cartera-card{padding:22px}
+  .inicio-brand{font-size:52px}
+}
+
+@media(min-width:1024px){
+  body{background:#030a10}
+  #app{max-width:480px;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  .sheet{max-width:480px}
+  .toast{max-width:480px}
+}
+.screen{display:none;flex-direction:column;position:absolute;inset:0;overflow:hidden;z-index:1;background:var(--ink)}
+.screen.on{display:flex;z-index:10}
+/* pantalla inicio = portal cliente */
+#s-inicio{background:radial-gradient(ellipse at 50% 0%,#091e2d 0%,var(--ink) 60%);}
+.inicio-hero{flex-shrink:0;padding:40px 24px 24px;text-align:center}
+.inicio-logo-wrap{width:80px;height:80px;border-radius:26px;background:linear-gradient(135deg,#091e30,#0d1e2e);border:2px solid var(--jade);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;box-shadow:var(--glow-jade)}
+.inicio-brand{font-weight:900;font-size:38px;letter-spacing:-2px;background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.inicio-tagline{color:var(--smoke);font-size:13px;margin-top:4px}
+.inicio-body{flex:1;overflow-y:auto;padding:0 20px 32px;scrollbar-width:none}
+.inicio-body::-webkit-scrollbar{display:none}
+.inicio-card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;margin-bottom:12px}
+.inicio-card-t{font-weight:800;font-size:16px;margin-bottom:4px}
+.inicio-card-s{font-size:12px;color:var(--smoke);margin-bottom:14px;line-height:1.5}
+.ced-big{background:var(--ink3);border:2px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;color:var(--white);font-family:'Exo 2',sans-serif;font-size:18px;font-weight:700;outline:none;width:100%;letter-spacing:1px;text-align:center;transition:border-color .2s}
+.ced-big:focus{border-color:var(--jade)}
+.ced-big::placeholder{color:var(--mist);font-size:14px;font-weight:400;letter-spacing:0}
+.admin-link{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;cursor:pointer;opacity:.35;transition:opacity .2s;margin-top:4px}
+.admin-link:hover,.admin-link:active{opacity:.7}
+.admin-link-t{font-size:11px;color:var(--fog)}
+.btn-google-big{background:var(--white);border:none;border-radius:var(--r-sm);padding:11px 16px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;color:#1f1f1f;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.btn-google-big:active{transform:scale(.97)}
+.demo-hint{font-size:11px;color:var(--fog);text-align:center;line-height:1.7}
+#s-carteras{background:var(--ink)}
+.carteras-scroll{flex:1;overflow-y:auto;padding:16px;scrollbar-width:none}
+.carteras-scroll::-webkit-scrollbar{display:none}
+.cartera-card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;margin-bottom:12px;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden}
+.cartera-card:hover,.cartera-card:active{border-color:var(--jade)}
+.cartera-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.cc-jade::before{background:linear-gradient(90deg,var(--jade),var(--sky))}
+.cc-violet::before{background:linear-gradient(90deg,var(--violet),var(--sky))}
+.cc-amber::before{background:linear-gradient(90deg,var(--amber),var(--fire))}
+.cc-lime::before{background:linear-gradient(90deg,var(--lime),var(--jade))}
+.cartera-ico{font-size:26px;margin-bottom:7px}
+.cartera-name{font-weight:900;font-size:17px;letter-spacing:-.5px;margin-bottom:2px}
+.cartera-desc{font-size:12px;color:var(--smoke)}
+.cartera-stats{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.cstat{font-size:11px;color:var(--fog)}.cstat b{color:var(--white);font-weight:700}
+.cartera-lock{position:absolute;top:16px;right:16px;font-size:18px;opacity:.6}
+.new-cartera-btn{background:rgba(0,229,176,.06);border:2px dashed rgba(0,229,176,.2);border-radius:var(--r-lg);padding:22px;text-align:center;cursor:pointer;margin-bottom:12px}
+.new-cartera-btn:active{border-color:var(--jade);background:rgba(0,229,176,.12)}
+.new-cartera-ico{font-size:26px;margin-bottom:5px;opacity:.6}
+.new-cartera-t{font-weight:700;font-size:14px;color:var(--jade)}
+.new-cartera-s{font-size:11px;color:var(--fog);margin-top:2px}
+.bar{background:var(--ink2);border-bottom:1px solid var(--line);padding:11px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0}
+.bar-logo{font-weight:900;font-size:16px;letter-spacing:-1px;background:linear-gradient(120deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.bar-title{font-weight:800;font-size:14px;flex:1;letter-spacing:-.3px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-back{width:33px;height:33px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ash);cursor:pointer;flex-shrink:0}
+.bar-btn{height:33px;padding:0 12px;background:linear-gradient(135deg,var(--jade),var(--jade2));border:none;border-radius:20px;font-family:'Exo 2',sans-serif;font-size:11px;font-weight:800;color:#000;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.bar-btn:active{opacity:.85;transform:scale(.97)}
+.bar-ico{width:33px;height:33px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;position:relative}
+.ndot{position:absolute;top:-3px;right:-3px;background:var(--fire);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;padding:0 3px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink2)}
+.user-chip{background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:4px 10px 4px 6px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0}
+.user-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#000}
+.scroll{flex:1;overflow-y:auto;padding:12px 13px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.pb{padding-bottom:14px}
+.nav{background:var(--ink2);border-top:1px solid var(--line);display:flex;flex-shrink:0}
+.nv{flex:1;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;opacity:.38;transition:all .18s;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ash)}
+.nv.on{opacity:1;color:var(--jade)}
+.nvi{font-size:18px;line-height:1}
+.hero{background:linear-gradient(135deg,#081820,#0c1e2c);border:1px solid rgba(0,229,176,.3);border-radius:var(--r-lg);padding:16px;margin-bottom:11px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,176,.1),transparent 70%);pointer-events:none}
+.hero-lbl{font-size:10px;font-weight:800;color:var(--jade);letter-spacing:.8px;text-transform:uppercase}
+.hero-amt{font-weight:900;font-size:31px;letter-spacing:-2px;line-height:1.1;background:linear-gradient(90deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:3px 0}
+.hero-sub{font-size:11px;color:var(--smoke)}
+.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.hstat{background:rgba(255,255,255,.05);border-radius:8px;padding:7px 4px;text-align:center}
+.hstat-v{font-weight:800;font-size:14px}.hstat-l{font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
+.stile{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:12px;position:relative;overflow:hidden}
+.stile::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+.t-jade::after{background:linear-gradient(90deg,var(--jade),var(--lime))}.t-sky::after{background:linear-gradient(90deg,var(--sky),var(--violet))}
+.t-fire::after{background:linear-gradient(90deg,var(--fire),#ff8c00)}.t-gold::after{background:linear-gradient(90deg,var(--gold),var(--amber))}
+.stico{font-size:18px;margin-bottom:4px}.stv{font-weight:900;font-size:20px;letter-spacing:-.5px}.stl{font-size:9px;color:var(--smoke);font-weight:600;margin-top:1px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.st{font-weight:800;font-size:13px;letter-spacing:-.2px}.sl{font-size:11px;color:var(--jade);font-weight:600;cursor:pointer}
+.lc{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .18s;position:relative;overflow:hidden}
+.lc:active{border-color:var(--jade)}
+.lstripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r)}
+.s-jade{background:var(--jade)}.s-amber{background:var(--amber)}.s-fire{background:var(--fire)}
+.lhead{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-left:7px}
+.lav{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--ink3),var(--ink4));border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--jade);flex-shrink:0}
+.lname{font-weight:800;font-size:13px;letter-spacing:-.2px}.lsub{font-size:10px;color:var(--smoke)}
+.lbadge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
+.bd{background:rgba(0,229,176,.15);color:var(--jade)}.bs{background:rgba(0,153,255,.15);color:var(--sky)}
+.bq{background:rgba(255,170,0,.15);color:var(--amber)}.bm{background:rgba(255,61,90,.15);color:var(--fire)}
+.prog{padding-left:7px;margin-bottom:8px}
+.pb-track{height:4px;border-radius:3px;background:var(--line2);overflow:hidden;margin-bottom:3px}
+.pb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--jade),var(--sky))}
+.pb-txt{display:flex;justify-content:space-between;font-size:10px;color:var(--smoke)}
+.lchips{display:flex;gap:4px;flex-wrap:wrap;padding-left:7px}
+.chip{background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:2px 6px;font-size:10px;color:var(--smoke)}
+.chip b{color:var(--white)}.chip-fire{border-color:var(--fire);color:var(--fire)}.chip-amber{border-color:var(--amber);color:var(--amber)}.chip-violet{border-color:var(--violet);color:var(--violet)}
+.crow{display:flex;gap:5px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}
+.crow::-webkit-scrollbar{display:none}
+.cf{flex-shrink:0;padding:5px 11px;border-radius:20px;border:1.5px solid var(--line);font-size:11px;font-weight:700;cursor:pointer;color:var(--smoke);white-space:nowrap}
+.cf.on{border-color:var(--jade);color:var(--jade);background:rgba(0,229,176,.1)}
+.swrap{position:relative;margin-bottom:10px}
+.sico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:var(--fog)}
+.sinp{background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 12px 9px 32px;color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;outline:none;width:100%}
+.sinp:focus{border-color:var(--jade)}
+.dhero{background:linear-gradient(135deg,#081820,#0b1d2b);border:1px solid var(--line2);border-radius:var(--r-lg);padding:15px;margin-bottom:10px;text-align:center}
+.dav{width:58px;height:58px;border-radius:50%;margin:0 auto 9px;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#000}
+.dname{font-weight:900;font-size:18px;letter-spacing:-.5px;margin-bottom:2px}
+.dinfo{font-size:11px;color:var(--smoke);margin-bottom:1px}
+.dstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+.dstat{background:rgba(255,255,255,.04);border-radius:8px;padding:7px 4px;text-align:center}
+.dstat-v{font-weight:800;font-size:13px}.dstat-l{font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.cuota{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
+.cnum{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-top:1px}
+.cn-ok{background:rgba(57,216,112,.2);color:var(--lime)}.cn-p{background:rgba(255,170,0,.2);color:var(--amber)}.cn-m{background:rgba(255,61,90,.2);color:var(--fire)}
+.cinf{flex:1;min-width:0}.cfecha{font-size:11px;font-weight:600}.csub{font-size:10px;color:var(--smoke)}
+.cval{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;text-align:right;flex-shrink:0}
+.cact{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.comp-thumb{width:34px;height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--line2);cursor:pointer;flex-shrink:0}
+.alcard{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:11px;margin-bottom:7px;border-left-width:3px}
+.al-mora{border-left-color:var(--fire)}.al-hoy{border-left-color:var(--amber)}.al-renew{border-left-color:var(--violet)}
+.alhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.alav{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#000}
+.alname{font-weight:700;font-size:13px}.aldet{font-size:11px;color:var(--smoke)}
+.alamt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--amber)}
+.alact{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+.clcard{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:11px;margin-bottom:7px;display:flex;align-items:center;gap:9px;cursor:pointer}
+.clscore{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
+.scA{background:rgba(57,216,112,.2);color:var(--lime);border:1.5px solid var(--lime)}.scB{background:rgba(0,153,255,.2);color:var(--sky);border:1.5px solid var(--sky)}
+.scC{background:rgba(255,170,0,.2);color:var(--amber);border:1.5px solid var(--amber)}.scD{background:rgba(255,61,90,.2);color:var(--fire);border:1.5px solid var(--fire)}
+.chart-card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:13px;margin-bottom:10px}
+.chart-title{font-weight:800;font-size:12px;margin-bottom:11px}
+.barchart{display:flex;align-items:flex-end;gap:6px;height:75px}
+.barw{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.barb{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--jade),rgba(0,229,176,.2));min-height:4px}
+.barl{font-size:9px;color:var(--fog);text-align:center}.barv{font-size:9px;color:var(--jade);font-family:'JetBrains Mono',monospace}
+.calcbox{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r-sm);padding:10px}
+.crow2{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid var(--line)}
+.crow2:last-child{border-bottom:none;font-weight:800;font-size:13px;color:var(--jade)}
+.cfg-grp{margin-bottom:13px}
+.cfg-title{font-size:10px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding:0 2px}
+.cfg-row{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.cfg-ico{font-size:15px;width:22px;text-align:center;flex-shrink:0}
+.cfg-lbl{font-weight:600;font-size:13px}.cfg-sub{font-size:10px;color:var(--smoke)}
+.toggle{width:40px;height:21px;background:var(--line2);border-radius:11px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--jade)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on::after{transform:translateX(19px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--ink2);border-radius:22px 22px 0 0;border:1px solid var(--line);border-bottom:none;width:100%;max-width:480px;max-height:94dvh;overflow-y:auto;padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:sup .26s cubic-bezier(.32,.72,0,1);scrollbar-width:none}
+.sheet::-webkit-scrollbar{display:none}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.shandle{width:37px;height:4px;background:var(--line2);border-radius:2px;margin:-4px auto 14px}
+.shtitle{font-weight:900;font-size:18px;letter-spacing:-.5px;margin-bottom:13px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.fl{font-size:10px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.8px}
+.fi{background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;outline:none;width:100%;transition:border-color .2s}
+.fi:focus{border-color:var(--jade)}.fi::placeholder{color:var(--mist)}
+.fsel{background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;outline:none;width:100%;-webkit-appearance:none}
+.fhint{font-size:10px;color:var(--fog);margin-top:2px}
+.prevcalc{background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:10px;margin-bottom:9px}
+.prow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:none;font-weight:800;font-size:13px;color:var(--jade)}
+.mono{font-family:'JetBrains Mono',monospace}
+.hr{border:none;border-top:1px solid var(--line);margin:11px 0}
+.renewal-box{background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:9px;font-size:12px;color:var(--ash);margin-bottom:9px}
+.sched-box{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px;margin-bottom:9px}
+.sched-title{font-size:10px;font-weight:800;color:var(--sky);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.sched-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:3px 0;border-bottom:1px solid var(--line)}
+.sched-row:last-child{border-bottom:none}
+.tag-ok{font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(0,229,176,.15);color:var(--jade);margin-left:4px}
+.mora-opt{background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px;cursor:pointer;margin-bottom:7px}
+.mora-opt.sel{border-color:var(--jade);background:rgba(0,229,176,.07)}
+.mora-opt-t{font-weight:700;font-size:13px;margin-bottom:1px}.mora-opt-s{font-size:11px;color:var(--smoke)}
+.comp-upload{background:var(--ink3);border:2px dashed var(--line2);border-radius:var(--r-sm);padding:14px;text-align:center;cursor:pointer}
+.comp-upload:active{border-color:var(--jade)}
+.comp-upload-t{font-size:11px;color:var(--fog);margin-top:5px}
+.comp-preview img{width:100%;max-height:160px;object-fit:contain;border-radius:var(--r-sm);border:1px solid var(--line2)}
+.comp-del{display:block;margin:6px auto 0;background:var(--fire);border:none;border-radius:6px;color:#fff;font-size:11px;padding:4px 12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
+#s-portal{background:radial-gradient(ellipse at 50% 10%,#091e2d,var(--ink) 70%)}
+.portal-header{padding:20px 18px 12px;text-align:center;flex-shrink:0;border-bottom:1px solid var(--line)}
+.portal-logo{font-weight:900;font-size:22px;letter-spacing:-1px;background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.portal-sub{font-size:11px;color:var(--fog);margin-top:2px}
+.portal-scroll{flex:1;overflow-y:auto;padding:12px 14px 20px;scrollbar-width:none}
+.portal-scroll::-webkit-scrollbar{display:none}
+.portal-loan{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px;margin-bottom:10px}
+.portal-loan-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.portal-loan-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:#000;flex-shrink:0}
+.portal-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:12px}
+.portal-stat{background:var(--ink3);border:1px solid var(--line2);border-radius:9px;padding:9px;text-align:center}
+.portal-stat-v{font-weight:800;font-size:17px;letter-spacing:-.5px}
+.portal-stat-l{font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.portal-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px}
+.portal-row:last-child{border-bottom:none}
+.renew-box{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:var(--r-sm);padding:11px;margin-top:10px;text-align:center}
+.renew-box-t{font-weight:700;font-size:13px;color:var(--violet);margin-bottom:3px}
+.renew-box-s{font-size:11px;color:var(--smoke);margin-bottom:9px}
+#s-lock{background:radial-gradient(ellipse at 50% 20%,#0d1a2a,var(--ink) 70%);justify-content:center;align-items:center;padding:32px 24px;gap:18px}
+.lock-form{width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px}
+.lock-forgot{text-align:center;font-size:11px;color:var(--jade);cursor:pointer;font-weight:600}
+#img-viewer{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+#img-viewer.on{display:flex}
+#img-viewer img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px}
+#img-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn{padding:10px 15px;border-radius:var(--r-sm);border:none;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .16s}
+.btn:active{transform:scale(.97);opacity:.88}
+.btn-jade{background:linear-gradient(135deg,var(--jade),var(--jade2));color:#000}
+.btn-sky{background:linear-gradient(135deg,var(--sky),#0077cc);color:#fff}
+.btn-ghost{background:var(--ink3);border:1.5px solid var(--line);color:var(--ash)}
+.btn-fire{background:var(--fire);color:#fff}.btn-amber{background:var(--amber);color:#000}
+.btn-lime{background:var(--lime);color:#000}.btn-violet{background:var(--violet);color:#fff}
+.btn-w{width:100%}.btn-sm{padding:5px 9px;font-size:11px;border-radius:7px}
+.brow{display:flex;gap:7px;margin-top:9px}
+.empty{text-align:center;padding:40px 20px;color:var(--fog)}
+.empty-ico{font-size:42px;opacity:.35;margin-bottom:9px}
+.empty-t{font-weight:800;font-size:15px;color:var(--ash);margin-bottom:4px}.empty-s{font-size:12px}
+.toast{position:fixed;bottom:68px;left:10px;right:10px;max-width:480px;margin:0 auto;background:var(--ink4);border:1px solid var(--jade);border-radius:var(--r-sm);padding:10px 12px;color:var(--white);font-size:13px;font-weight:600;z-index:300;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow);animation:tin .22s ease}
+@keyframes tin{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hitem{font-size:11px;color:var(--smoke);padding:4px 0;border-bottom:1px solid var(--line)}
+.info-box{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r-sm);padding:10px;font-size:12px;color:var(--ash);margin-bottom:8px}
+.warn-box{background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.3);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--fire);margin-bottom:8px}
+.badge-violet{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:var(--violet);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+
+/* ─── CAPITAL WIDGETS ─── */
+.cap-hero{background:linear-gradient(135deg,#071a28,#0c2235);border:1.5px solid rgba(0,229,176,.35);border-radius:var(--r-lg);padding:16px;margin-bottom:11px;position:relative;overflow:hidden}
+.cap-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,176,.12),transparent 70%);pointer-events:none}
+.cap-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cap-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.cap-val{font-family:'JetBrains Mono',monospace;font-weight:800}
+.cap-bar-wrap{margin:10px 0 8px}
+.cap-bar-track{height:8px;border-radius:4px;background:var(--line2);overflow:hidden;position:relative}
+.cap-bar-base{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--jade),var(--sky));transition:width .4s}
+.cap-bar-prestado{position:absolute;top:0;left:0;height:100%;background:rgba(255,61,90,.6);border-radius:4px;transition:width .4s}
+.cap-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--smoke);margin-top:4px}
+.cap-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px;flex-shrink:0}
+.cap-actions{display:flex;gap:6px;margin-top:10px}
+.ganancia-box{background:rgba(57,216,112,.07);border:1px solid rgba(57,216,112,.2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px}
+.ganancia-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0}
+.ganancia-hist{max-height:140px;overflow-y:auto;scrollbar-width:none}
+.ganancia-hist::-webkit-scrollbar{display:none}
+.gitem{font-size:11px;color:var(--smoke);padding:3px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.no-cap-warn{background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.35);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:8px}
+
+#s-admin{background:var(--ink);justify-content:center;align-items:center;padding:40px 28px;gap:22px;overflow-y:auto}
+.admin-screen-back{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--ash)}
+
+/* ─── DATE PICKER ─── */
+#date-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:flex-end;justify-content:center}
+#date-picker-overlay.on{display:flex}
+#date-picker-box{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg) var(--r-lg) 0 0;width:100%;max-width:480px;padding:20px;max-height:80vh;overflow-y:auto}
+.dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dp-title{font-weight:900;font-size:16px}
+.dp-nav{display:flex;gap:8px;align-items:center}
+.dp-nav button{background:var(--ink3);border:1px solid var(--line);border-radius:8px;color:var(--white);width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dp-dow{text-align:center;font-size:10px;font-weight:700;color:var(--fog);padding:4px 0}
+.dp-dow.blocked{color:rgba(255,61,90,.5)}
+.dp-day{height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.dp-day.empty{cursor:default}
+.dp-day.blocked{background:rgba(255,61,90,.06);color:rgba(255,61,90,.35);cursor:not-allowed;border-color:transparent}
+.dp-day.available{background:var(--ink3);color:var(--ash)}
+.dp-day.available:active{background:rgba(0,229,176,.15);border-color:var(--jade)}
+.dp-day.selected{background:var(--jade);color:#000;font-weight:900;border-color:var(--jade)}
+.dp-day.today{border-color:rgba(0,229,176,.4)}
+.dp-day.past{opacity:.35;cursor:not-allowed}
+.dp-legend{display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--fog)}
+.dp-legend span{display:flex;align-items:center;gap:4px}
+</style>
+
+<!-- Firebase SDK compat -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCJFKJbQkLMReDO3p415lw0rqOHZwWTv_g",
+  authDomain: "prestamax-276f0.firebaseapp.com",
+  projectId: "prestamax-276f0",
+  storageBucket: "prestamax-276f0.firebasestorage.app",
+  messagingSenderId: "325489105014",
+  appId: "1:325489105014:web:72c2675e9749a4c5e36757"
+};
+firebase.initializeApp(firebaseConfig);
+window._db = firebase.firestore();
+</script>
+</head>
+<body>
+<div id="app">
+<!-- LOGIN -->
+<!-- PANTALLA INICIO = PORTAL CLIENTE -->
+<div id="s-inicio" class="screen on">
+  <div class="inicio-hero">
+    <div class="inicio-logo-wrap">💰</div>
+    <div class="inicio-brand">PrestaMax</div>
+    <div class="inicio-tagline">Consulta el estado de tu crédito</div>
+  </div>
+  <div class="inicio-body">
+    <div class="inicio-card">
+      <div class="inicio-card-t">👤 ¿Tienes un crédito activo?</div>
+      <div class="inicio-card-s">Ingresa tu número de cédula para ver el estado de tu crédito, cuotas pagadas, pendientes y más.</div>
+      <input type="tel" class="ced-big" id="inicio-ced" placeholder="Número de cédula" maxlength="15" onkeydown="if(event.key==='Enter')inicioLogin()">
+      <button class="btn btn-jade btn-w" style="margin-top:10px;font-size:15px;padding:13px" onclick="inicioLogin()">🔍 Consultar mi crédito</button>
+    </div>
+    <div class="admin-link" onclick="goAdmin()">
+      <span style="font-size:13px;opacity:.5">⚙️</span>
+      <span class="admin-link-t">Acceso administrador / colaborador</span>
+    </div>
+    
+  </div>
+</div>
+<!-- CARTERAS -->
+<div id="s-carteras" class="screen">
+  <div class="bar"><div class="bar-logo">PrestaMax</div><div style="flex:1"></div>
+    <div class="user-chip" onclick="openM('m-user-menu')"><div class="user-av" id="uav">A</div><span id="uname">Admin</span></div>
+  </div>
+  <div class="carteras-scroll pb">
+    <div style="font-weight:800;font-size:18px;letter-spacing:-.5px;margin-bottom:3px">Mis Carteras</div>
+    <div style="font-size:12px;color:var(--smoke);margin-bottom:14px">Selecciona una cartera para gestionar préstamos</div>
+    <div id="carteras-list"></div>
+    <div class="new-cartera-btn" onclick="openM('m-new-cartera')">
+      <div class="new-cartera-ico">➕</div><div class="new-cartera-t">Nueva Cartera</div>
+      <div class="new-cartera-s">Grupo independiente con clave opcional</div>
+    </div>
+  </div>
+</div>
+<!-- LOCK -->
+<div id="s-lock" class="screen">
+  <div style="font-size:48px;text-align:center">🔐</div>
+  <div><div style="font-weight:900;font-size:22px;text-align:center" id="lock-title">Cartera Protegida</div>
+  <div style="font-size:13px;color:var(--fog);text-align:center;margin-top:4px">Ingresa la clave para acceder</div></div>
+  <div class="lock-form">
+    <div class="fg"><label class="fl">Clave de cartera</label><input type="password" class="fi" id="lock-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')tryUnlock()"></div>
+    <button class="btn btn-jade btn-w" onclick="tryUnlock()">🔓 Ingresar</button>
+    <div class="lock-forgot" onclick="openForgot()">¿Olvidaste la clave? → Recuperar por email</div>
+    <button class="btn btn-ghost btn-w" onclick="backToCarteras()">← Volver a carteras</button>
+  </div>
+</div>
+<!-- MAIN -->
+<div id="s-main" class="screen">
+  <div class="bar">
+    <div class="bar-back" onclick="backToCarteras()">←</div>
+    <div class="bar-title" id="cartera-bar-title">Cartera</div>
+    <div class="bar-ico" id="alert-btn" onclick="goTab('alertas')" style="margin-left:auto">🔔<div class="ndot" id="ndot" style="display:none">0</div></div>
+    <div class="bar-btn" onclick="openLoanModal()">＋ Nuevo</div>
+  </div>
+  <div class="scroll pb" id="tabcontent"></div>
+  <div class="nav">
+    <div class="nv on" id="nv-inicio"    onclick="goTab('inicio')">   <div class="nvi">🏠</div><div>Inicio</div></div>
+    <div class="nv"    id="nv-prestamos" onclick="goTab('prestamos')"><div class="nvi">💳</div><div>Créditos</div></div>
+    <div class="nv"    id="nv-clientes"  onclick="goTab('clientes')"> <div class="nvi">👥</div><div>Clientes</div></div>
+    <div class="nv"    id="nv-alertas"   onclick="goTab('alertas')">  <div class="nvi">🔔</div><div>Alertas</div></div>
+    <div class="nv"    id="nv-estadis"   onclick="goTab('estadis')">  <div class="nvi">📊</div><div>Stats</div></div>
+    <div class="nv"    id="nv-historial" onclick="goTab('historial')"><div class="nvi">📜</div><div>Historial</div></div>
+    <div class="nv"    id="nv-config"    onclick="goTab('config')">   <div class="nvi">⚙️</div><div>Config</div></div>
+  </div>
+</div>
+<!-- DETAIL -->
+<div id="s-detail" class="screen">
+  <div class="bar"><div class="bar-back" onclick="goBack()">←</div><div class="bar-title" id="dtitle">Detalle</div><div class="bar-ico" onclick="openOpts()">⋮</div></div>
+  <div class="scroll pb" id="dcontent"></div>
+</div>
+<!-- PORTAL CLIENTE -->
+<div id="s-portal" class="screen">
+  <div class="bar" style="background:var(--ink2);border-bottom:1px solid var(--line)">
+    <div class="bar-back" onclick="portalLogout()" title="Volver">←</div>
+    <div style="flex:1;text-align:center">
+      <span style="font-weight:900;font-size:15px;letter-spacing:-1px;background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent">PrestaMax</span>
+    </div>
+    <div style="width:33px"></div>
+  </div>
+  <div class="portal-scroll" id="portal-content"></div>
+</div>
+<div id="s-admin" class="screen">
+  <div class="admin-screen-back" onclick="goInicio()">←</div>
+  <div style="text-align:center">
+    <div style="width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#091e30,#0d1e2e);border:2px solid rgba(0,229,176,.4);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;box-shadow:0 0 24px rgba(0,229,176,.15)">⚙️</div>
+    <div style="font-weight:900;font-size:26px;letter-spacing:-1px;background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Administrador</div>
+    <div style="font-size:12px;color:var(--smoke);margin-top:4px">Accede con tu cuenta Gmail para gestionar carteras y préstamos</div>
+  </div>
+  <div style="width:100%;max-width:340px;background:var(--ink2);border:1.5px solid var(--line);border-radius:var(--r-lg);padding:24px;display:flex;flex-direction:column;gap:12px">
+    <button class="btn-google-big" onclick="doGoogleLogin()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.9 1.1 8 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.4-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.7-3-11.8-7.4L6.1 34c3.5 6.5 10.2 10 17.9 10z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.3 4.1-4.3 5.4l6.2 5.2C41.3 35.5 44 30 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+      Continuar con Google
+    </button>
+    <button class="btn btn-ghost btn-w" onclick="goInicio()">← Volver al portal cliente</button>
+
+  </div>
+</div>
+</div><!-- #app -->
+
+<!-- DATE PICKER -->
+<div id="date-picker-overlay" onclick="if(event.target===this)closeDatePicker()">
+  <div id="date-picker-box">
+    <div class="dp-header">
+      <div class="dp-title" id="dp-month-label">Marzo 2026</div>
+      <div class="dp-nav">
+        <button onclick="dpNav(-1)">‹</button>
+        <button onclick="dpNav(1)">›</button>
+        <button onclick="closeDatePicker()" style="margin-left:4px;font-size:12px;width:auto;padding:0 10px">✕</button>
+      </div>
+    </div>
+    <div class="dp-grid" id="dp-grid"></div>
+    <div class="dp-legend">
+      <span><div style="width:12px;height:12px;border-radius:3px;background:var(--jade)"></div> Seleccionado</span>
+      <span><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,61,90,.15)"></div> No hábil</span>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div id="img-viewer"><button id="img-close" onclick="document.getElementById('img-viewer').classList.remove('on')">✕</button><img id="img-src" src="" alt="Comprobante"></div>
+
+<!-- MODALS -->
+
+<div class="overlay" id="m-new-cartera"><div class="sheet">
+  <div class="shandle"></div><div class="shtitle">📁 Nueva Cartera</div>
+  <div class="fg"><label class="fl">Nombre de la cartera</label><input type="text" class="fi" id="nc-name" placeholder="Ej: Cartera Norte, Familia García..."></div>
+  <div class="fg"><label class="fl">Descripción (opcional)</label><input type="text" class="fi" id="nc-desc" placeholder="Breve descripción"></div>
+  <div class="fg"><label class="fl">🎨 Color</label>
+    <select class="fsel" id="nc-color"><option value="cc-jade">Verde / Cyan</option><option value="cc-violet">Violeta</option><option value="cc-amber">Naranja</option><option value="cc-lime">Verde Lima</option></select>
+  </div>
+  <div class="fg"><label class="fl">💰 Inversión base inicial (opcional)</label><input type="text" class="fi" id="nc-cap" placeholder="Ej: 5000000"><div class="fhint">Capital disponible para prestar en esta cartera</div></div>
+  <div class="fg"><label class="fl">🔑 Clave de acceso (opcional)</label><input type="password" class="fi" id="nc-pass" placeholder="Dejar vacío = sin clave" oninput="toggleSecretFields()">
+    <div class="fhint">Si estableces clave, solo quien la tenga puede ver estos préstamos</div>
+  </div>
+  <div id="nc-secret-wrap" style="display:none">
+    <div class="info-box">💡 Si olvidas la clave, usaremos tu correo Gmail registrado para enviarte una clave temporal. No necesitas pregunta secreta.</div>
+  </div>
+  <div class="fg"><label class="fl">👥 Colaboradores (emails Gmail, separados por coma)</label><input type="text" class="fi" id="nc-collabs" placeholder="colega@gmail.com, otro@gmail.com">
+    <div class="fhint">Estos usuarios podrán acceder a esta cartera (necesitarán la clave si la tiene)</div>
+  </div>
+  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-new-cartera')">Cancelar</button><button class="btn btn-jade btn-w" onclick="saveCartera()">✅ Crear cartera</button></div>
+</div></div>
+
+<div class="overlay" id="m-loan"><div class="sheet">
+  <div class="shandle"></div><div class="shtitle">💰 Nuevo Préstamo</div>
+  <div class="r2">
+    <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="f-nom" placeholder="Nombres"></div>
+    <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="f-ape" placeholder="Apellidos"></div>
+  </div>
+  <div class="r2">
+    <div class="fg"><label class="fl">🪪 Cédula</label><input type="text" class="fi" id="f-ced" placeholder="12345678" oninput="checkCedDup()"></div>
+    <div class="fg"><label class="fl">📱 WhatsApp</label><input type="tel" class="fi" id="f-tel" placeholder="+57 300..."></div>
+  </div>
+  <div class="r2">
+    <div class="fg"><label class="fl">📞 Celular adicional (opcional)</label><input type="tel" class="fi" id="f-cel2" placeholder="+57 310..."></div>
+    <div class="fg"><label class="fl">📧 Correo electrónico (opcional)</label><input type="email" class="fi" id="f-email" placeholder="cliente@gmail.com"></div>
+  </div>
+  <div class="fg"><label class="fl">🏦 Cuentas bancarias</label>
+    <div id="cuentas-wrap" style="display:flex;flex-direction:column;gap:6px">
+      <div class="cuenta-row" style="display:flex;gap:6px;align-items:center">
+        <select class="fsel" id="f-banco-0" style="flex:1;min-width:0">
+          <option value="Nequi">📱 Nequi</option>
+          <option value="Bancolombia">🏦 Bancolombia</option>
+          <option value="Davivienda">🏦 Davivienda</option>
+          <option value="BBVA">🏦 BBVA</option>
+          <option value="Banco de Bogotá">🏦 Banco de Bogotá</option>
+          <option value="Banco Popular">🏦 Banco Popular</option>
+          <option value="Banco Agrario">🏦 Banco Agrario</option>
+          <option value="Banco Caja Social">🏦 Banco Caja Social</option>
+          <option value="AV Villas">🏦 AV Villas</option>
+          <option value="Itaú">🏦 Itaú</option>
+          <option value="Banco Falabella">🏦 Banco Falabella</option>
+          <option value="Bancamía">🏦 Bancamía</option>
+          <option value="Daviplata">📱 Daviplata</option>
+          <option value="Movii">📱 Movii</option>
+          <option value="RappiPay">📱 RappiPay</option>
+          <option value="Efectivo">💵 Efectivo</option>
+          <option value="Otro">🏦 Otro</option>
+        </select>
+        <input type="text" class="fi" id="f-num-0" placeholder="Número de cuenta" style="flex:1.5">
+      </div>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px;width:100%" onclick="addCuentaRow()">➕ Agregar otra cuenta</button>
+  </div>
+  <div class="fg"><label class="fl">💵 Valor préstamo</label>
+    <input type="number" class="fi" id="f-val" placeholder="500000" oninput="recalc()">
+    <div id="warn-capital" style="display:none;margin-top:5px;background:rgba(255,61,90,.1);border:1.5px solid rgba(255,61,90,.5);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--fire)"></div>
+  </div>
+  <div class="r2">
+    <div class="fg"><label class="fl">💸 Valor cuota</label><input type="number" class="fi" id="f-cuo" placeholder="55000" oninput="recalc()"></div>
+    <div class="fg"><label class="fl">🔢 Nº cuotas</label><input type="number" class="fi" id="f-ncu" placeholder="10" oninput="recalc()"></div>
+  </div>
+  <div id="warn-cuotas" style="display:none;background:rgba(255,61,90,.1);border:1.5px solid rgba(255,61,90,.5);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--fire);margin-bottom:4px"></div>
+  <div class="fg"><label class="fl">📅 Modalidad</label>
+    <select class="fsel" id="f-mod" onchange="recalc()">
+      <option value="diario">Diario (hábil CO)</option><option value="semanal">Semanal (lun/mar)</option>
+      <option value="quincenal">Quincenal (lun/mar)</option><option value="mensual">Mensual</option>
+    </select>
+  </div>
+  <div class="fg">
+    <label class="fl">📅 Fecha 1ª cuota <span style="color:var(--jade);font-weight:600">(editable)</span></label>
+    <div class="fi" id="f-ini-display" onclick="openDatePicker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;min-height:42px">
+      <span id="f-ini-label" style="color:var(--smoke)">Seleccionar fecha...</span>
+      <span style="font-size:16px">📅</span>
+    </div>
+    <input type="hidden" id="f-ini">
+    <div class="fhint">Sábados, domingos y festivos bloqueados automáticamente</div>
+  </div>
+  <div class="r2">
+    <div class="fg"><label class="fl">⚠️ Multa mora</label><input type="number" class="fi" id="f-mul" placeholder="20000"></div>
+    <div class="fg"><label class="fl">⏰ Hora límite</label><input type="time" class="fi" id="f-hor" value="15:00"></div>
+  </div>
+  <div class="fg"><label class="fl">📢 Notificaciones al crear/cobrar</label>
+    <div style="display:flex;flex-direction:column;gap:6px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="not-wa" checked style="width:16px;height:16px;accent-color:var(--jade)"> 📲 WhatsApp
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="not-sms" style="width:16px;height:16px;accent-color:var(--jade)"> 💬 SMS
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="not-email" style="width:16px;height:16px;accent-color:var(--jade)"> 📧 Email
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="not-call" style="width:16px;height:16px;accent-color:var(--jade)"> 📞 Llamada (recordatorio manual)
+      </label>
+    </div>
+    <div class="fhint">Selecciona uno o varios canales de notificación</div>
+  </div>
+  <div class="fg"><label class="fl">📸 Comprobante desembolso (opcional)</label>
+    <div class="comp-upload" id="loan-comp-wrap" onclick="document.getElementById('loan-comp-inp').click()">
+      <div style="font-size:26px">📸</div><div class="comp-upload-t">Toca para agregar foto del comprobante</div>
+    </div>
+    <input type="file" id="loan-comp-inp" accept="image/*" style="display:none" onchange="previewComp(this,'loan-comp-wrap','loan-comp-data')">
+    <input type="hidden" id="loan-comp-data">
+  </div>
+  <div id="sched-prev" style="display:none"></div>
+  <div id="loan-warn" style="display:none;background:rgba(255,61,90,.09);border:1.5px solid rgba(255,61,90,.4);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:4px"></div>
+  <div id="cprev" style="display:none" class="prevcalc">
+    <div class="prow"><span>Total a pagar</span><span id="c-tot" class="mono">-</span></div>
+    <div class="prow"><span>Ganancia bruta</span><span id="c-gan" class="mono">-</span></div>
+    <div class="prow"><span>Rentabilidad</span><span id="c-pct" class="mono">-</span></div>
+    <div class="prow"><span>1ª cuota</span><span id="c-1ra" class="mono">-</span></div>
+  </div>
+  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-loan')">Cancelar</button><button class="btn btn-jade btn-w" id="btn-guardar" onclick="saveLoan()">✅ Guardar y notificar</button></div>
+</div></div>
+
+<div class="overlay" id="m-pay"><div class="sheet"><div class="shandle"></div><div class="shtitle" id="pay-title">✅ Pagar Cuota</div><div id="pay-body"></div></div></div>
+<div class="overlay" id="m-renew"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔄 Renovar Crédito</div><div id="renew-body"></div></div></div>
+<div class="overlay" id="m-mora"><div class="sheet"><div class="shandle"></div><div class="shtitle">⚠️ Gestionar Mora</div><div id="mora-body"></div></div></div>
+<div class="overlay" id="m-opts"><div class="sheet"><div class="shandle"></div><div class="shtitle">Opciones</div><div id="opts-body" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+<div class="overlay" id="m-user-menu"><div class="sheet">
+  <div class="shandle"></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    <div class="user-av" style="width:46px;height:46px;font-size:19px" id="um-av">A</div>
+    <div><div style="font-weight:800;font-size:16px" id="um-name">Admin</div><div style="font-size:12px;color:var(--smoke)" id="um-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bcddd8d1d5d2fcdbd1ddd5d092dfd3d1">[email&#160;protected]</a></div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-user-menu')">📁 Mis carteras</button>
+    <button class="btn btn-fire btn-w" onclick="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div></div>
+<div class="overlay" id="m-forgot"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔑 Recuperar Clave</div><div id="forgot-body"></div></div></div>
+
+<div class="overlay" id="m-capital"><div class="sheet">
+  <div class="shandle"></div><div class="shtitle">➕ Agregar Inversión</div>
+  <div id="capital-body-content"></div>
+</div></div>
+
+<div class="overlay" id="m-reinvertir"><div class="sheet">
+  <div class="shandle"></div><div class="shtitle">💹 Reinvertir Ganancias</div>
+  <div id="reinvertir-body"></div>
+</div></div>
+<div class="overlay" id="m-renew-req"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔄 Solicitud de Renovación</div><div id="renew-req-body"></div></div></div>
+<script>
+
+/* ─── CUSTOM DATE PICKER ─── */
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let _dpY,_dpM;
+
+function openDatePicker(){
+  const today=new Date();
+  _dpY=today.getFullYear();_dpM=today.getMonth();
+  renderDp();
+  document.getElementById('date-picker-overlay').classList.add('on');
+}
+function closeDatePicker(){
+  document.getElementById('date-picker-overlay').classList.remove('on');
+}
+function dpNav(dir){
+  _dpM+=dir;
+  if(_dpM>11){_dpM=0;_dpY++;}
+  if(_dpM<0){_dpM=11;_dpY--;}
+  renderDp();
+}
+function renderDp(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const selISO=(document.getElementById('f-ini').value)||'';
+  document.getElementById('dp-month-label').textContent=MESES[_dpM]+' '+_dpY;
+  const grid=document.getElementById('dp-grid');
+  const dows=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html='';
+  for(let i=0;i<7;i++) html+='<div class="dp-dow'+([0,6].includes(i)?' blocked':'')+'">'+dows[i]+'</div>';
+  const first=new Date(_dpY,_dpM,1).getDay();
+  for(let i=0;i<first;i++) html+='<div class="dp-day empty"></div>';
+  const daysInMonth=new Date(_dpY,_dpM+1,0).getDate();
+  const todayISO=today.toISOString().slice(0,10);
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(_dpY,_dpM,d,12,0,0);
+    const iso=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    const dow=dt.getDay();
+    const isPast=dt<today;
+    const blocked=dow===0||dow===6||FEST.has(iso)||isPast;
+    let cls='dp-day'+(blocked?(isPast?' past':' blocked'):' available');
+    if(iso===selISO) cls+=' selected';
+    if(iso===todayISO&&!blocked) cls+=' today';
+    if(blocked){
+      html+='<div class="'+cls+'">'+d+'</div>';
+    } else {
+      html+='<div class="'+cls+'" data-iso="'+iso+'" onclick="dpSelect(this.dataset.iso)">'+d+'</div>';
+    }
+  }
+  grid.innerHTML=html;
+}
+function dpSelect(iso){
+  document.getElementById('f-ini').value=iso;
+  // Update display label
+  const d=new Date(iso+'T12:00:00');
+  const label=d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const lbl=document.getElementById('f-ini-label');
+  if(lbl){lbl.textContent=label;lbl.style.color='var(--white)';}
+  closeDatePicker();
+  recalc();
+}
+
+/* ─── FESTIVOS COLOMBIA 2024-2026 ─── */
+const FEST=new Set(['2024-01-01','2024-01-08','2024-03-25','2024-03-28','2024-03-29','2024-05-01','2024-05-13','2024-06-03','2024-06-10','2024-07-01','2024-07-20','2024-08-07','2024-08-19','2024-10-14','2024-11-04','2024-11-11','2024-12-08','2024-12-25','2025-01-01','2025-01-06','2025-03-24','2025-04-17','2025-04-18','2025-05-01','2025-06-02','2025-06-23','2025-06-30','2025-07-20','2025-08-07','2025-08-18','2025-10-13','2025-11-03','2025-11-17','2025-12-08','2025-12-25','2026-01-01','2026-01-12','2026-03-23','2026-04-02','2026-04-03','2026-05-01','2026-05-18','2026-06-08','2026-06-15','2026-06-29','2026-07-20','2026-08-07','2026-08-17','2026-10-12','2026-11-02','2026-11-16','2026-12-08','2026-12-25']);
+const isoD=d=>new Date(d).toISOString().slice(0,10);
+const isFest=d=>FEST.has(isoD(d));
+const isHabil=d=>new Date(d).getDay()!==0&&!isFest(d);
+function nextHabil(b,sk=1){const r=new Date(b);r.setDate(r.getDate()+sk);while(!isHabil(r))r.setDate(r.getDate()+1);return r;}
+function adjLM(d){const r=new Date(d),w=r.getDay();if(w!==1&&w!==2)r.setDate(r.getDate()+(8-w)%7||7);while(!isHabil(r))r.setDate(r.getDate()+1);return r;}
+function calcFechas(ini,mod,ncu){
+  const out=[];let c=new Date(ini);
+  function step(x,m){const r=new Date(x);if(m==='diario')return nextHabil(r,1);if(m==='semanal'){r.setDate(r.getDate()+7);return adjLM(r);}if(m==='quincenal'){r.setDate(r.getDate()+15);return adjLM(r);}r.setMonth(r.getMonth()+1);return r;}
+  c=step(c,mod);out.push(new Date(c));
+  for(let i=1;i<ncu;i++){c=step(c,mod);out.push(new Date(c));}
+  return out;
+}
+
+/* ─── STATE & DB ─── */
+const DB={
+  users:[],
+  carteras:[]
+};
+const S={user:null,cartera:null,tab:'inicio',lid:null,pendingCid:null};
+
+/* ─── FIRESTORE PERSISTENCE ─── */
+async function fsGuardarCartera(c){
+  try{
+    if(!window._db)return;
+    const data=JSON.parse(JSON.stringify(c));
+    await window._db.collection('carteras').doc(c.id).set(data);
+    console.log('Guardado OK:',c.id);
+  }catch(e){console.warn('fsGuardarCartera error:',e);}
+}
+
+let _unsubFS=null;
+async function fsCargarCarteras(){
+  try{
+    if(!S.user||!window._db)return;
+    if(_unsubFS){_unsubFS();_unsubFS=null;}
+    _unsubFS=window._db.collection('carteras').onSnapshot(function(snap){
+      const nuevas=[];
+      snap.forEach(function(d){
+        const c=d.data();
+        if(c.owner===S.user.id||c.owner===S.user.email||(c.collabs||[]).includes(S.user.email)){
+          nuevas.push(c);
+        }
+      });
+      DB.carteras=nuevas;
+      if(document.getElementById('s-carteras')?.classList.contains('on'))renderCarteras();
+      if(S.cartera){
+        const upd=DB.carteras.find(function(c){return c.id===S.cartera.id;});
+        if(upd){S.cartera=upd;render();updDot();}
+      }
+    },function(e){console.warn('snapshot err:',e);});
+  }catch(e){console.warn('fsCargarCarteras error:',e);}
+}
+
+async function fsEliminarCartera(id){
+  try{
+    if(!window._db)return;
+    await window._db.collection('carteras').doc(id).delete();
+  }catch(e){console.warn('fsEliminarCartera error:',e);}
+}
+
+function fsSave(){
+  if(S.cartera)fsGuardarCartera(S.cartera);
+}
+
+function simHash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffffffff;return h.toString(16);}
+function chkHash(s,h){return simHash(s)===h;}
+
+/* ─── SEED ─── */
+function seed(){
+  // Producción — sin datos demo
+  DB.carteras=[];
+}
+
+function mkLoan(d){
+  const id=Date.now()+Math.floor(Math.random()*999999);
+  const ini=d.ini||new Date();const pag=d.pag||0;
+  // If iniDate provided, use it as first cuota date directly; otherwise derive from ini
+  let fechas;
+  if(d.iniDate){
+    fechas=calcFechasDesde(d.iniDate,d.mod,d.ncu);
+  } else {
+    fechas=calcFechas(ini,d.mod,d.ncu);
+  }
+  const cuotas=fechas.map((f,i)=>{
+    const estado=i<pag?'pagada':isOvd(f,d.hor)?'mora':'pendiente';
+    return{num:i+1,fecha:new Date(f),valor:d.cuo,estado,multa:0,
+      fechaPago:estado==='pagada'?new Date(f):null,pagadoPor:estado==='pagada'?'Sistema':null,comprobante:null};
+  });
+  return{id,nom:d.nom,ape:d.ape,ced:d.ced||'',tel:d.tel,cel2:d.cel2||'',email:d.email||'',cta:d.cta,val:d.val,cuo:d.cuo,
+    mod:d.mod,ncu:d.ncu,mul:d.mul,hor:d.hor,not:d.not,ini,cuotas,activo:true,
+    historico:[],comprobante:null,renewRequest:false};
+}
+
+function off(b,n){const d=new Date(b);d.setDate(d.getDate()+n);return d;}
+function isOvd(f,h){const[hh,mm]=h.split(':');const l=new Date(f);l.setHours(+hh,+mm,0,0);return new Date()>l;}
+function isToday(f){return new Date(f).toDateString()===new Date().toDateString();}
+function fd(d){return new Date(d).toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}
+
+/* ─── AUTH ─── */
+function doGoogleLogin(){
+  // Google OAuth real via popup
+  const clientId='546945851250-3252bpmn4069cf0j6a4p8m9utanfc9oa.apps.googleusercontent.com';
+  const params=new URLSearchParams({
+    client_id:clientId,
+    redirect_uri:window.location.origin+window.location.pathname,
+    response_type:'token',
+    scope:'openid email profile',
+    prompt:'select_account'
+  });
+  const popup=window.open('https://accounts.google.com/o/oauth2/v2/auth?'+params,'google-login','width=500,height=600');
+  const timer=setInterval(()=>{
+    try{
+      if(popup.closed){clearInterval(timer);return;}
+      const url=popup.location.href;
+      if(url.includes('access_token')){
+        clearInterval(timer);popup.close();
+        const token=new URLSearchParams(url.split('#')[1]).get('access_token');
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token='+token)
+          .then(r=>r.json()).then(info=>{
+            const u={id:info.email,name:info.name,email:info.email,avatar:info.picture};
+            DB.users=DB.users.filter(x=>x.id!==u.id);
+            DB.users.push(u);
+            S.user=u;
+            updateUserUI();
+            document.getElementById('s-admin').classList.remove('on');
+            showCarteras();
+            fsCargarCarteras();
+            toast('✅ Sesión iniciada: '+u.name);
+          }).catch(()=>toast('❌ Error al obtener datos de Google'));
+      }
+    }catch(e){}
+  },500);
+}
+
+function _loginDemo(){
+  // Solo para pruebas — NO usar en producción
+  const u={id:'admin@gmail.com',name:'Administrador',email:'admin@gmail.com'};
+  DB.users=[u];S.user=u;updateUserUI();
+  document.getElementById('s-admin').classList.remove('on');
+  showCarteras();
+  toast('✅ Modo prueba — configura Google OAuth');
+}
+
+
+function goAdmin(){
+  document.getElementById('s-inicio').classList.remove('on');
+  document.getElementById('s-admin').classList.add('on');
+}
+function goInicio(){
+  ['s-admin','s-carteras','s-main','s-detail','s-lock','s-portal'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('s-inicio').classList.add('on');
+  if(document.getElementById('inicio-ced'))document.getElementById('inicio-ced').value='';
+}
+function inicioLogin(){
+  const ced=document.getElementById('inicio-ced')?.value.trim();
+  if(!ced){toast('⚠️ Ingresa tu número de cédula');return;}
+  // Buscar TODOS los préstamos activos con esa cédula en todas las carteras
+  const prestamos=[];
+  for(const c of DB.carteras){
+    const loans=c.loans.filter(x=>x.ced===ced&&x.activo);
+    loans.forEach(l=>prestamos.push({loan:l,cartera:c}));
+  }
+  if(!prestamos.length){
+    toast('❌ No se encontró ningún crédito activo con esa cédula');return;
+  }
+  if(prestamos.length===1){
+    showPortal(prestamos[0].loan);
+  } else {
+    showPortalMulti(prestamos);
+  }
+}
+
+function showPortalMulti(prestamos){
+  // Mostrar lista de todos los créditos del cliente
+  ['s-inicio','s-admin','s-carteras','s-main','s-detail','s-lock'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('on');
+  });
+  document.getElementById('s-portal').classList.add('on');
+  const l0=prestamos[0].loan;
+  document.getElementById('portal-bar-name').textContent=l0.nom+' '+l0.ape;
+  const el=document.getElementById('portal-content');
+  el.innerHTML=`
+    <div style="padding:16px">
+      <div style="font-weight:800;font-size:16px;margin-bottom:4px">Tus créditos activos</div>
+      <div style="font-size:12px;color:var(--smoke);margin-bottom:14px">CC ${l0.ced}</div>
+      ${prestamos.map(({loan:l,cartera:c},i)=>{
+        const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
+        const pen=l.cuotas.filter(q=>q.estado==='pendiente').length;
+        const mora=l.cuotas.filter(q=>q.estado==='mora').length;
+        return`<div style="background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:10px;cursor:pointer" onclick="showPortal(DB.carteras.find(c=>c.id==='${c.id}').loans.find(l=>l.id===${l.id}))">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:800">Crédito #${i+1}</div>
+            <div style="font-weight:900;color:var(--jade)">${fmt(l.val)}</div>
+          </div>
+          <div style="font-size:11px;color:var(--smoke);margin-bottom:6px">${c.name}</div>
+          <div style="display:flex;gap:8px;font-size:11px">
+            <span style="color:var(--lime)">✅ ${pag} pagadas</span>
+            <span style="color:var(--sky)">⏳ ${pen} pendientes</span>
+            ${mora>0?`<span style="color:var(--fire)">⚠️ ${mora} mora</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function doClientLogin(){
+  inicioLogin();
+}
+
+function updateUserUI(){
+  const u=S.user;if(!u)return;
+  const av=u.name.charAt(0).toUpperCase();
+  $('uav').textContent=av;$('uname').textContent=u.name.split(' ')[0];
+  $('um-av').textContent=av;$('um-name').textContent=u.name;$('um-email').textContent=u.email;
+}
+
+function logout(){
+  if(_unsubFS){_unsubFS();_unsubFS=null;}
+  S.user=null;S.cartera=null;
+  ['s-carteras','s-admin','s-main','s-detail','s-lock','s-portal'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('s-inicio').classList.add('on');
+  if(document.getElementById('inicio-ced'))document.getElementById('inicio-ced').value='';
+  closeM('m-user-menu');
+}
+
+/* ─── CARTERAS ─── */
+function showCarteras(){
+  ['s-inicio','s-admin','s-main','s-detail','s-lock','s-portal'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('s-carteras').classList.add('on');
+  renderCarteras();
+}
+
+function renderCarteras(){
+  const mine=DB.carteras.filter(c=>c.owner===S.user?.id||c.collabs.includes(S.user?.email||''));
+  const el=$('carteras-list');
+  if(!mine.length){el.innerHTML='<div class="empty"><div class="empty-ico">📁</div><div class="empty-t">Sin carteras</div><div class="empty-s">Crea tu primera cartera abajo</div></div>';return;}
+  el.innerHTML=mine.map(c=>{
+    const icos={'cc-jade':'💚','cc-violet':'💜','cc-amber':'🧡','cc-lime':'🌿'};
+    const n=c.loans.length,cap=c.loans.reduce((s,l)=>s+l.val,0);
+    const mora=c.loans.filter(l=>l.cuotas.some(x=>x.estado==='mora')).length;
+    const hasPass=!!c.passHash;
+    return`<div class="cartera-card ${c.color}">
+      ${hasPass?'<div class="cartera-lock">🔒</div>':''}
+      <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:11px" onclick="openEditCartera('${c.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:11px" onclick="delCartera('${c.id}')">🗑️</button>
+      </div>
+      <div onclick="enterCartera('${c.id}')" style="cursor:pointer">
+      <div class="cartera-ico">${icos[c.color]||'📁'}</div>
+      <div class="cartera-name">${c.name}</div>
+      <div class="cartera-desc">${c.desc||''}</div>
+      <div class="cartera-stats">
+        <div class="cstat"><b>${n}</b> créditos</div>
+        <div class="cstat"><b>${fmt(cap)}</b></div>
+        ${mora>0?`<div class="cstat" style="color:var(--fire)"><b>${mora}</b> mora</div>`:''}
+        ${hasPass?'<div class="cstat">🔒 Protegida</div>':''}
+      </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function delCartera(id){
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede eliminar');return;}
+  if(c.loans.filter(function(l){return l.activo;}).length>0){toast('⛔ Hay créditos activos. No se puede eliminar.');return;}
+  if(!window.confirm('¿Eliminar cartera "'+c.name+'"? No se puede deshacer.'))return;
+  DB.carteras=DB.carteras.filter(function(x){return x.id!==id;});
+  if(window._db)window._db.collection('carteras').doc(id).delete();
+  renderCarteras();toast('🗑️ Cartera eliminada');
+}
+function openEditCartera(id){
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede editar');return;}
+  document.getElementById('nc-name').value=c.name;
+  document.getElementById('nc-desc').value=c.desc||'';
+  document.getElementById('nc-color').value=c.color;
+  document.getElementById('nc-collabs').value=(c.collabs||[]).join(', ');
+  const btn=document.querySelector('#m-new-cartera .btn-jade');
+  const ttl=document.querySelector('#m-new-cartera .shtitle');
+  if(btn){btn.textContent='✅ Guardar cambios';btn.onclick=function(){saveEditCartera(id);};}
+  if(ttl)ttl.textContent='✏️ Editar Cartera';
+  openM('m-new-cartera');
+}
+function saveEditCartera(id){
+  const c=DB.carteras.find(function(x){return x.id===id;});if(!c)return;
+  const name=gv('nc-name').trim();if(!name){toast('⚠️ Nombre requerido');return;}
+  c.name=name;c.desc=gv('nc-desc').trim();c.color=gv('nc-color');
+  c.collabs=gv('nc-collabs').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(window._db)window._db.collection('carteras').doc(id).set(JSON.parse(JSON.stringify(c)));
+  closeM('m-new-cartera');renderCarteras();toast('✅ Cartera actualizada');
+  const btn=document.querySelector('#m-new-cartera .btn-jade');
+  const ttl=document.querySelector('#m-new-cartera .shtitle');
+  if(btn){btn.textContent='✅ Crear cartera';btn.onclick=saveCartera;}
+  if(ttl)ttl.textContent='➕ Nueva Cartera';
+}
+function enterCartera(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  if(c.passHash){
+    S.pendingCid=id;
+    $('lock-title').textContent='🔒 '+c.name;
+    $('lock-pass').value='';
+    document.getElementById('s-carteras').classList.remove('on');
+    document.getElementById('s-lock').classList.add('on');
+  } else openCartera(id);
+}
+
+function tryUnlock(){
+  const c=DB.carteras.find(x=>x.id===S.pendingCid);if(!c)return;
+  if(chkHash(gv('lock-pass'),c.passHash)) openCartera(S.pendingCid);
+  else{toast('❌ Clave incorrecta');$('lock-pass').value='';}
+}
+
+function openCartera(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  S.cartera=c;
+  ['s-lock','s-carteras'].forEach(s=>document.getElementById(s).classList.remove('on'));
+  document.getElementById('s-main').classList.add('on');
+  $('cartera-bar-title').textContent=c.name;
+  goTab('inicio');
+}
+
+function backToCarteras(){
+  S.cartera=null;S.lid=null;
+  ['s-main','s-detail','s-lock'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('s-carteras').classList.add('on');
+  renderCarteras();
+}
+
+function toggleSecretFields(){$('nc-secret-wrap').style.display=gv('nc-pass')?'block':'none';}
+
+function saveCartera(){
+  const name=gv('nc-name').trim();if(!name){toast('⚠️ Nombre requerido');return;}
+  const pass=gv('nc-pass').trim();
+  const id='c'+Date.now();
+  const collabs=gv('nc-collabs').split(',').map(x=>x.trim()).filter(Boolean);
+  const capBase=parseFloat(gv('nc-cap').replace(/[^0-9.]/g,''))||0;
+  const nuevaC={id,name,desc:gv('nc-desc').trim(),color:gv('nc-color'),
+    passHash:pass?simHash(pass):'',collabs,loans:[],cfg:{autoWA:true,grupoWA:''},owner:S.user?.id||'',
+    capital:{base:capBase,histInv:capBase>0?[{fecha:new Date(),monto:capBase,nota:'Inversión inicial'}]:[],histGan:[]},
+    fin:{pctGanancia:20,liberaCapital:true}};
+  DB.carteras.push(nuevaC);
+  if(window._db)window._db.collection("carteras").doc(nuevaC.id).set(JSON.parse(JSON.stringify(nuevaC)));
+  closeM("m-new-cartera");
+  renderCarteras();
+  toast("✅ Cartera creada");
+  ['nc-name','nc-desc','nc-pass','nc-collabs'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  $('nc-secret-wrap').style.display='none';
+  fsSave();
+}
+
+/* ─── RECUPERACIÓN DE CLAVE (email simulado) ─── */
+function openForgot(){
+  const c=DB.carteras.find(x=>x.id===S.pendingCid);if(!c){toast('Sin cartera seleccionada');return;}
+  $('forgot-body').innerHTML=`
+  <div class="info-box">Se enviará una clave temporal al correo Gmail del propietario de la cartera: <b>${c.owner}</b></div>
+  <div class="info-box" style="border-color:rgba(0,229,176,.3)">
+    <b>En producción:</b> esto envía un email con un enlace de restablecimiento.<br><br>
+    <b>Demo:</b> La clave temporal generada es: <b style="color:var(--jade);font-size:16px;font-family:monospace">TEMP${c.id.toUpperCase()}</b>
+  </div>
+  <div class="fg"><label class="fl">Ingresar clave temporal recibida</label>
+    <input type="text" class="fi" id="forgot-temp" placeholder="Ej: TEMPC1" style="font-family:monospace;font-size:15px">
+  </div>
+  <div class="fg"><label class="fl">🔑 Nueva clave</label><input type="password" class="fi" id="forgot-new" placeholder="Nueva clave"></div>
+  <div class="fg"><label class="fl">Confirmar nueva clave</label><input type="password" class="fi" id="forgot-new2" placeholder="Repetir nueva clave"></div>
+  <div class="brow">
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-forgot')">Cancelar</button>
+    <button class="btn btn-jade btn-w" onclick="doForgot('${c.id}')">✅ Restablecer clave</button>
+  </div>`;
+  openM('m-forgot');
+}
+
+function doForgot(id){
+  const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  const temp=gv('forgot-temp').trim().toUpperCase();
+  const expected=('TEMP'+id).toUpperCase();
+  if(temp!==expected){toast('❌ Clave temporal incorrecta');return;}
+  const np=gv('forgot-new').trim(),np2=gv('forgot-new2').trim();
+  if(!np){toast('⚠️ Ingresa la nueva clave');return;}
+  if(np!==np2){toast('❌ Las claves no coinciden');return;}
+  c.passHash=simHash(np);
+  closeM('m-forgot');
+  toast('✅ Clave restablecida. Usa la nueva clave para entrar.');
+  $('lock-pass').value='';
+}
+
+/* ─── RENDER HELPERS ─── */
+function loans(){return (S.cartera?.loans||[]).filter(function(l){return l.activo!==false;});}
+function allLoans(){return S.cartera?.loans||[];}
+function goTab(tab){
+  S.tab=tab;
+  document.querySelectorAll('.nv').forEach(el=>el.classList.remove('on'));
+  document.getElementById('nv-'+tab)?.classList.add('on');
+  render();updDot();
+}
+function goBack(){document.getElementById('s-detail').classList.remove('on');document.getElementById('s-main').classList.add('on');}
+function showLoan(id){
+  S.lid=id;const l=getL(id);if(!l)return;
+  $('dtitle').textContent=l.nom+' '+l.ape;
+  // Inject financial summary after render
+  setTimeout(()=>{const el=document.getElementById('detail-fin-inject');if(el)el.outerHTML=resumenFin;},10);
+  $('dcontent').innerHTML=rDetail(l);
+  document.getElementById('s-main').classList.remove('on');
+  document.getElementById('s-detail').classList.add('on');
+}
+function getL(id){return loans().find(l=>l.id===id);}
+let _cuentaIdx=1;
+function addCuentaRow(){
+  const wrap=document.getElementById('cuentas-wrap');if(!wrap)return;
+  const idx=wrap.querySelectorAll('.cuenta-row').length;
+  const row=document.createElement('div');
+  row.className='cuenta-row';
+  row.style.cssText='display:flex;gap:6px;align-items:center';
+  row.innerHTML='<select class="fsel" id="f-banco-'+idx+'" style="flex:1;min-width:0">'+
+    '<option value="Nequi">📱 Nequi</option><option value="Bancolombia">🏦 Bancolombia</option>'+
+    '<option value="Davivienda">🏦 Davivienda</option><option value="BBVA">🏦 BBVA</option>'+
+    '<option value="Banco de Bogotá">🏦 Banco de Bogotá</option><option value="Daviplata">📱 Daviplata</option>'+
+    '<option value="Efectivo">💵 Efectivo</option><option value="Otro">🏦 Otro</option></select>'+
+    '<input type="text" class="fi" id="f-num-'+idx+'" placeholder="Número" style="flex:1.5">'+
+    '<button type="button" class="btn btn-ghost btn-sm" style="padding:6px 8px" onclick="this.parentElement.remove()">✕</button>';
+  wrap.appendChild(row);
+}
+function openNuevoPrestamoCliente(lid){
+  const l=getL(lid);if(!l)return;
+  openLoanModal();
+  setTimeout(function(){
+    if(document.getElementById('f-ced'))document.getElementById('f-ced').value=l.ced;
+    if(document.getElementById('f-nom'))document.getElementById('f-nom').value=l.nom;
+    if(document.getElementById('f-ape'))document.getElementById('f-ape').value=l.ape;
+    if(document.getElementById('f-tel'))document.getElementById('f-tel').value=l.tel;
+    if(document.getElementById('f-email'))document.getElementById('f-email').value=l.email||'';
+    if(document.getElementById('f-cel2'))document.getElementById('f-cel2').value=l.cel2||'';
+  },300);
+}
+function render(){
+  const el=$('tabcontent'),t=S.tab;
+  if(t==='inicio')    el.innerHTML=rInicio();
+  if(t==='prestamos') el.innerHTML=rPrestamos('todos');
+  if(t==='clientes')  el.innerHTML=rClientes();
+  if(t==='alertas')   el.innerHTML=rAlertas();
+  if(t==='estadis')   el.innerHTML=rEstadis();
+  if(t==='historial') el.innerHTML=rHistorial();
+  if(t==='config')    el.innerHTML=rConfig();
+}
+
+
+/* ─── CAPITAL HELPERS ─── */
+function getCap(c){return c?.capital||{base:0,histInv:[],histGan:[]};}
+
+// Total prestado actualmente (préstamos activos, capital afuera)
+function capPrestado(c){
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>s+l.val,0);
+}
+
+// Cuánto ha regresado de capital (pagos recibidos, hasta el tope del val prestado)
+// Por cada préstamo: min(totalPagado, val) = capital recuperado
+function capRecuperado(c){
+  return (c?.loans||[]).reduce((s,l)=>{
+    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+Math.min(pagado,l.val);
+  },0);
+}
+
+// Ganancias acumuladas basadas en % configurado de la cartera
+// ─── GANANCIA REAL: total cobrado - capital prestado ───
+function gananciaLoan(l){
+  const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor+(x.multa||0);},0);
+  const capRecup=Math.min(cobrado,l.val);
+  const ganCicloActual=Math.max(0,cobrado-capRecup);
+  const ganAnterior=l._ganAnteriorTotal||0;
+  return ganCicloActual+ganAnterior;
+}
+
+function gananciaTotal(c){
+  // Ganancia real ya cobrada en toda la cartera (incluye préstamos eliminados)
+  const ganActiva=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
+  const ganPermanente=((c?.capital?.histGanPermanente)||[]).reduce(function(s,h){return s+h.monto;},0);
+  return ganActiva+ganPermanente;
+}
+
+function gananciaEstimada(c){
+  // Ganancia estimada si todos los activos terminan de pagar
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>s+gananciaEstimadaLoan(l),0);
+}
+
+// Capital recuperado: cuotas pagadas que corresponden al capital (no ganancia)
+function capitalRecuperado(c){
+  return (c?.loans||[]).reduce((s,l)=>{
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+Math.min(cobrado,l.val);
+  },0);
+}
+
+// Ganancia estimada de un préstamo (alias para compatibilidad)
+function gananciaEstimadaLoan(l,_c){
+  const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
+  return Math.max(0, totalCuotas - l.val);
+}
+
+// Capital total por cobrar (cuotas pendientes + mora)
+function totalPorCobrar(c){
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
+    return s+l.cuotas.filter(q=>q.estado!=='pagada').reduce((ss,q)=>ss+q.valor,0);
+  },0);
+}
+
+// Capital disponible para prestar = base - prestado actualmente + recuperado de préstamos activos
+function capDisponible(c){
+  const cap=getCap(c);
+  if(!cap.base)return 0;
+  // Capital afuera = suma de (val - capital ya recuperado) de préstamos activos
+  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    const capRecup=Math.min(cobrado,l.val);
+    return s+(l.val-capRecup);
+  },0);
+  // Capital base + ganancia ya cobrada reinvertible - lo que está prestado afuera
+  const ganCobrada=gananciaTotal(c);
+  return Math.max(0, cap.base + ganCobrada - prestadoActivo);
+}
+
+// Porcentaje del capital en uso
+function capPct(c){
+  const cap=getCap(c);
+  if(!cap.base)return 0;
+  const disp=capDisponible(c);
+  return Math.round((1-(disp/cap.base))*100);
+}
+
+// Cuando se paga una cuota: distribuir entre capital y ganancia
+function distribuirPago(loan, cuota){
+  const c=S.cartera;if(!c)return;
+  const cap=getCap(c);
+  const yaRecup=loan.cuotas.filter(x=>x.estado==='pagada'&&x.num!==cuota.num)
+    .reduce((s,x)=>s+x.valor,0);
+  const faltaRecup=Math.max(0,loan.val-yaRecup);
+  const esCap=Math.min(cuota.valor,faltaRecup); // cuánto va a capital
+  const esGan=cuota.valor-esCap+(cuota.multa||0); // resto va a ganancia
+  if(esGan>0){
+    cap.histGan.push({fecha:new Date(),monto:esGan,lid:loan.id,cliente:loan.nom+' '+loan.ape,nota:`Cuota #${cuota.num}`});
+  }
+}
+
+/* ─── INICIO ─── */
+function rCobrosHoy(act){
+  const cuotasHoy=act.flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha)));
+  const totHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
+  if(!cuotasHoy.length)return'';
+  const rows=act.map(l=>{
+    const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha));
+    if(!qh.length)return'';
+    const tv=qh.reduce((s,q)=>s+q.valor,0);
+    return'<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--line)"><span>'+l.nom+' '+l.ape+'</span><span style="color:var(--jade);font-weight:700">'+fmt(tv)+'</span></div>';
+  }).join('');
+  return'<div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.25);border-radius:var(--r-sm);padding:12px;margin-bottom:10px"><div style="font-weight:800;font-size:12px;color:var(--jade);margin-bottom:8px">💰 Cobros de hoy — '+fmt(totHoy)+'</div>'+rows+'</div>';
+}
+
+function rInicio(){
+  const ls=loans(),act=ls.filter(l=>l.activo);
+  const c=S.cartera;
+  const capBase=getCap(c).base;
+  const disp=capDisponible(c);
+  const pct=capPct(c);
+  const gan=gananciaTotal(c);
+  const mora=act.filter(l=>l.cuotas.some(c=>c.estado==='mora')).length;
+  const hoy=act.filter(l=>l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente')).length;
+  const rewR=ls.filter(l=>l.renewRequest);
+  const als=getAlerts();
+  const noCapWarn=capBase===0?`<div class="no-cap-warn" style="cursor:pointer" onclick="openM_capital()">⚠️ Esta cartera no tiene capital configurado. <b>Toca aquí para agregar una inversión base.</b></div>`:'';
+  return`${noCapWarn}<div class="cap-hero">
+    <div class="cap-row"><span class="cap-lbl" style="color:var(--jade)">💰 Capital de Trabajo</span>
+      <span style="font-size:11px;color:var(--smoke)">Base: <b style="color:var(--white)">${fmt(capBase)}</b></span></div>
+    <div style="margin:6px 0 2px">
+      <div style="font-weight:900;font-size:28px;letter-spacing:-1.5px;color:var(--jade)">${fmt(disp)}</div>
+      <div style="font-size:11px;color:var(--smoke)">disponible para prestar</div>
+    </div>
+    <div class="cap-bar-wrap">
+      <div class="cap-bar-track">
+        <div class="cap-bar-base" style="width:100%"></div>
+        <div class="cap-bar-prestado" style="width:${pct}%"></div>
+      </div>
+      <div class="cap-legend">
+        <span><span class="cap-dot" style="background:var(--fire)"></span>En préstamos: ${fmt(capBase-disp)}</span>
+        <span><span class="cap-dot" style="background:var(--jade)"></span>Disponible: ${fmt(disp)}</span>
+      </div>
+    </div>
+    <div class="cap-actions">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openM_capital()">➕ Agregar inversión</button>
+      ${gan>0?`<button class="btn btn-lime btn-sm" style="flex:1" onclick="openReinvertir()">💹 Reinvertir ganancia</button>`:''}
+    </div>
+  </div>
+  <div class="ganancia-box">
+    <div style="font-size:10px;font-weight:800;color:var(--jade);margin-bottom:8px;letter-spacing:.5px">📊 RESUMEN FINANCIERO</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Capital invertido</div>
+        <div style="font-weight:900;font-size:15px;color:var(--jade)">${fmt(capBase)}</div>
+      </div>
+      <div style="background:rgba(100,200,255,.08);border:1px solid rgba(100,200,255,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">En préstamos</div>
+        <div style="font-weight:900;font-size:15px;color:var(--sky)">${fmt(capBase-disp+gan)}</div>
+      </div>
+      <div style="background:rgba(50,255,120,.08);border:1px solid rgba(50,255,120,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
+        <div style="font-weight:900;font-size:15px;color:var(--lime)">${fmt(gan)}</div>
+      </div>
+      <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
+        <div style="font-weight:900;font-size:15px;color:var(--gold)">${fmt(gananciaEstimada(c))}</div>
+      </div>
+    </div>
+    <div style="background:rgba(0,229,176,.05);border:1px solid rgba(0,229,176,.15);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;color:var(--fog)">Disponible para reinvertir</div>
+        <div style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(disp)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;color:var(--fog)">Capital reinvertido</div>
+        <div style="font-weight:900;font-size:14px;color:var(--violet)">${fmt(capBase>0?act.reduce((s,l)=>s+l.val,0):0)}</div>
+      </div>
+    </div>
+    <div class="ganancia-row" style="margin-top:8px;color:var(--smoke)"><span>Activos: ${act.length}</span><span>Mora: ${mora}</span><span>Cobros hoy: ${hoy}</span></div>
+  </div>
+  ${rCobrosHoy(act)}
+  <div class="stgrid">
+    <div class="stile t-jade"><div class="stico">💳</div><div class="stv">${act.length}</div><div class="stl">Activos</div></div>
+    <div class="stile t-fire"><div class="stico">⚠️</div><div class="stv">${mora}</div><div class="stl">En mora</div></div>
+    <div class="stile t-gold"><div class="stico">📅</div><div class="stv">${hoy}</div><div class="stl">Cobros hoy</div></div>
+    <div class="stile t-sky"><div class="stico">🔄</div><div class="stv" ${rewR.length?'style="color:var(--violet)"':''}>${rewR.length}</div><div class="stl">Sol. renovac.</div></div>
+  </div>
+  ${rewR.length?`<div class="sh"><div class="st">🔄 Solicitudes de Renovación</div></div>
+  ${rewR.map(l=>`<div class="alcard al-renew"><div class="alhead"><div class="alav">${l.nom[0]+l.ape[0]}</div>
+    <div style="flex:1"><div class="alname">${l.nom} ${l.ape}</div><div class="aldet">CC ${l.ced} · Solicita renovación del crédito ${cap(l.mod)}</div>
+    <div class="alamt mono">${fmt(l.val)}</div></div></div>
+    <div class="alact"><button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Revisar y decidir</button><button class="btn btn-ghost btn-sm" onclick="showLoan(${l.id})">👁 Ver</button></div>
+  </div>`).join('')}`:''}
+  ${als.length?`<div class="sh"><div class="st">🚨 Alertas urgentes</div><div class="sl" onclick="goTab('alertas')">Ver todas →</div></div>${als.slice(0,2).map(rAlCard).join('')}`:''}
+  <div class="sh"><div class="st">📋 Préstamos recientes</div><div class="sl" onclick="goTab('prestamos')">Ver todos →</div></div>
+  ${[...ls].reverse().slice(0,3).map(rLCard).join('')}`;
+}
+
+/* ─── PRÉSTAMOS ─── */
+function rPrestamos(flt){
+  let list=flt==='todos'?loans():loans().filter(l=>l.mod===flt);
+  return`<div class="crow">${['todos','diario','semanal','quincenal','mensual'].map(f=>`<div class="cf ${flt===f?'on':''}" onclick="filterL('${f}')">${f==='todos'?'Todos ('+loans().length+')':cap(f)}</div>`).join('')}</div>
+  <div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchL(this.value,'${flt}')"></div>
+  <div id="llist">${list.length?list.map(rLCard).join(''):'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos</div></div>'}</div>`;
+}
+function filterL(f){$('tabcontent').innerHTML=rPrestamos(f);}
+function searchL(q,flt){
+  let list=flt==='todos'?loans():loans().filter(l=>l.mod===flt);
+  if(q)list=list.filter(l=>(l.nom+' '+l.ape+' '+l.ced).toLowerCase().includes(q.toLowerCase()));
+  $('llist').innerHTML=list.map(rLCard).join('');
+}
+function rLCard(l){
+  const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
+  const pct=Math.round(pag/l.cuotas.length*100);
+  const mora=l.cuotas.some(c=>c.estado==='mora'),hoy=l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
+  const ini=(l.nom[0]||'')+(l.ape[0]||'');
+  const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[l.mod]||'bd';
+  return`<div class="lc" onclick="showLoan(${l.id})">
+    <div class="lstripe ${mora?'s-fire':hoy?'s-amber':'s-jade'}"></div>
+    <div class="lhead"><div class="lav">${ini.toUpperCase()}</div>
+    <div style="flex:1;min-width:0"><div class="lname">${l.nom} ${l.ape}</div><div class="lsub">CC ${l.ced} · ${l.tel}</div></div>
+    <div style="text-align:right"><span class="lbadge ${bc}">${l.mod}</span><div class="mono" style="font-weight:700;font-size:12px;margin-top:2px">${fmt(l.val)}</div></div></div>
+    <div class="prog"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div><div class="pb-txt"><span>${pag}/${l.cuotas.length} · ${fmt(l.cuo)}/c</span><span>${pct}%</span></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:6px 0;border-top:1px solid var(--line);margin-top:4px">
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Capital</div>
+        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
+        <div style="font-size:11px;font-weight:800;color:var(--lime)">${fmt(gananciaLoan(l))}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
+        <div style="font-size:11px;font-weight:800;color:var(--gold)">${fmt(gananciaEstimadaLoan(l))}</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--smoke);padding:2px 0">
+      <span>⏳ ${l.cuotas.filter(q=>q.estado!=='pagada').length} cuotas pendientes</span>
+      <span>💵 Total cobrar: <b style="color:var(--ash)">${fmt(l.cuo*l.ncu)}</b></span>
+    </div>
+    <div class="lchips">${mora?'<div class="chip chip-fire">⚠️ Mora</div>':''}${hoy?'<div class="chip chip-amber">📅 Hoy</div>':''}${l.renewRequest?'<div class="chip chip-violet">🔄 Sol. renov.</div>':''}${l.comprobante?'<div class="chip">📸 Comp.</div>':''}<div class="chip">⏰<b>${l.hor}</b></div></div>
+  </div>`;
+}
+
+/* ─── DETAIL ─── */
+function rDetail(l){
+  const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
+  const pen=l.cuotas.filter(c=>c.estado!=='pagada').length;
+  const moraN=l.cuotas.filter(c=>c.estado==='mora').length;
+  const pct=Math.round(pag/l.cuotas.length*100);
+  const sc=score(l),canRenew=pag>=6&&pen>0;
+  const ini=(l.nom[0]||'')+(l.ape[0]||'');
+  const ganR=gananciaLoan(l);
+  const ganE=gananciaEstimadaLoan(l);
+  const resumenFin='<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Análisis financiero</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div><div style="font-size:9px;color:var(--fog)">Prestado</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo*l.ncu)+'</div><div style="font-size:9px;color:var(--fog)">Total a cobrar</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--lime)">'+fmt(ganR)+'</div><div style="font-size:9px;color:var(--fog)">Gan. real cobrada</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--gold)">'+fmt(ganE)+'</div><div style="font-size:9px;color:var(--fog)">Gan. estimada total</div></div>'
+    +'</div>'
+    +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--smoke)">'
+    +'Al terminar: <b style="color:var(--jade)">'+fmt(l.val)+'</b> vuelve al capital + <b style="color:var(--gold)">'+fmt(ganE)+'</b> ganancia'
+    +'</div></div>';
+  const cuotasH=l.cuotas.map(c=>{
+    const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
+    const ms=c.multa>0?` · Multa: ${fmt(c.multa)}`:'';
+    return`<div class="cuota">
+      <div class="cnum ${cls}">${c.num}</div>
+      <div class="cinf">
+        <div class="cfecha">${fd(c.fecha)} ${c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳'}</div>
+        <div class="csub">${c.estado==='pagada'?`Pagada · <b>${c.pagadoPor||'Sistema'}</b>${c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''}`:c.estado==='mora'?'En mora':'Pendiente'}${ms}</div>
+        ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
+        ${c.estado!=='pagada'?`<div class="cact">
+          <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar cuota</button>
+          ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar mora</button>`:''}
+          ${c.estado==='pendiente'&&l.mul>0?`<button class="btn btn-fire btn-sm" onclick="openMora(${l.id},${c.num})">💸 Cobrar multa</button>`:''}
+          <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
+        </div>`:''}
+      </div>
+      <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
+    </div>`;
+  }).join('');
+  return`<div class="dhero">
+    <div class="dav">${ini.toUpperCase()}</div>
+    <div class="dname">${l.nom} ${l.ape}</div>
+    <div id="detail-fin-inject"></div>
+    <div class="dinfo">🪪 CC ${l.ced}</div>
+    <div class="dinfo">📱 WA: ${l.tel}${l.cel2?" · 📞 "+l.cel2:""}${l.email?" · 📧 "+l.email:""}</div>
+    ${l.cta?`<div class="dinfo">🏦 ${l.cta}</div>`:""}
+    <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not} · ⚠️ ${fmt(l.mul)}</div>
+    ${l.creadoPor?`<div class="dinfo" style="color:var(--smoke)">📝 Creado por: <b style="color:var(--jade)">${l.creadoPor}</b>${l.fechaCreacion?' · '+new Date(l.fechaCreacion).toLocaleDateString('es-CO'):''}</div>`:''}
+    ${l.renewRequest?'<div style="margin-top:7px"><span class="badge-violet">🔄 Solicitud de renovación pendiente</span></div>':''}
+    <div class="dstats">
+      <div class="dstat"><div class="dstat-v" style="color:var(--jade)">${fmt(l.val)}</div><div class="dstat-l">Préstamo</div></div>
+      <div class="dstat"><div class="dstat-v" style="color:var(--lime)">${fmt(pag*l.cuo)}</div><div class="dstat-l">Pagado</div></div>
+      <div class="dstat"><div class="dstat-v" style="color:${sc.col}">${sc.l}</div><div class="dstat-l">Calific.</div></div>
+    </div>
+    <div style="margin-top:8px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
+    <div class="pb-txt" style="margin-top:2px"><span>${pag}/${l.cuotas.length} · ${moraN} mora</span><span>${pct}%</span></div></div>
+  </div>
+  ${l.comprobante?`<div style="margin-bottom:10px"><div class="st" style="margin-bottom:5px">📸 Comprobante desembolso</div><img src="${l.comprobante}" style="width:100%;max-height:140px;object-fit:contain;border-radius:var(--r-sm);border:1px solid var(--line2);cursor:pointer" onclick="viewImg('${l.comprobante}')"></div>`:''}
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+    <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
+    <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})">🔄 Renovar</button>
+    <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
+    ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
+  </div>
+  <div class="sh"><div class="st">📋 Plan de cuotas (${l.ncu})</div></div>${cuotasH}
+  ${l.historico.length?`<div class="hr"></div><div class="st" style="margin-bottom:6px">📜 Historial completo (${l.historico.length})</div>${l.historico.map(h=>`<div class="hitem">${h}</div>`).join('')}`:''}`;
+}
+
+/* ─── CLIENTES ─── */
+function rHistorial(){
+  const cerrados=(S.cartera?.loans||[]).filter(function(l){return !l.activo;});
+  if(!cerrados.length)return '<div class="empty"><div class="empty-ico">📜</div><div class="empty-t">Sin historial</div><div class="empty-s">Los créditos completados aparecerán aquí automáticamente</div></div>';
+  const totalGanado=cerrados.reduce(function(s,l){
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(ss,c){return ss+c.valor+(c.multa||0);},0);
+    return s+Math.max(0,cobrado-l.val);
+  },0);
+  let html='<div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.2);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between">'+
+    '<div><div style="font-size:10px;color:var(--fog)">Créditos completados</div><div style="font-weight:900;font-size:18px">'+cerrados.length+'</div></div>'+
+    '<div><div style="font-size:10px;color:var(--fog)">Ganancia total</div><div style="font-weight:900;font-size:18px;color:var(--gold)">'+fmt(totalGanado)+'</div></div>'+
+  '</div>';
+  html+=cerrados.map(function(l){
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(s,c){return s+c.valor+(c.multa||0);},0);
+    const ganancia=Math.max(0,cobrado-l.val);
+    const ini=(l.nom[0]||'')+(l.ape[0]||'');
+    return '<div class="lc" onclick="showLoan('+l.id+')" style="opacity:.9">'+
+      '<div class="lstripe s-jade"></div>'+
+      '<div class="lhead">'+
+        '<div class="lav" style="background:var(--ink3)">'+ini.toUpperCase()+'</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="lname">'+l.nom+' '+l.ape+'</div>'+
+          '<div class="lsub">CC '+l.ced+' · '+cap(l.mod)+(l.fechaCierre?' · '+new Date(l.fechaCierre).toLocaleDateString('es-CO'):'')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-size:10px;color:var(--lime);font-weight:700">✅ Completado</div>'+
+          '<div class="mono" style="font-weight:700;font-size:12px">'+fmt(l.val)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:6px 0;border-top:1px solid var(--line);margin-top:6px;font-size:10px">'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Prestado</div><div style="font-weight:800;color:var(--sky)">'+fmt(l.val)+'</div></div>'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Cobrado</div><div style="font-weight:800;color:var(--lime)">'+fmt(cobrado)+'</div></div>'+
+        '<div style="text-align:center"><div style="color:var(--fog)">Ganancia</div><div style="font-weight:800;color:var(--gold)">'+fmt(ganancia)+'</div></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  return html;
+}
+function rClientes(){
+  // Solo agrupar clientes con préstamos ACTIVOS
+  const map={};
+  allLoans().forEach(function(l){
+    if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,email:l.email||'',loans:[]};
+    map[l.ced].loans.push(l);
+  });
+  const cl=Object.values(map);
+  if(!cl.length)return'<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">Sin clientes</div></div>';
+  return`<div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchCl(this.value)"></div>
+  <div id="cllist">${renderClList(cl)}</div>`;
+}
+function renderClList(cl){return cl.map(function(c){
+  const sc=clientSc(c.loans);
+  const activos=c.loans.filter(function(l){return l.activo;});
+  const cerrados=c.loans.filter(function(l){return !l.activo;});
+  const totalActivo=activos.reduce(function(s,l){return s+l.val;},0);
+  const pend=activos.reduce(function(s,l){return s+l.cuotas.filter(function(x){return x.estado!=='pagada';}).length;},0);
+  const mora=activos.some(function(l){return l.cuotas.some(function(x){return x.estado==='mora';});});
+  const ini=(c.loans[0].nom[0]||'')+(c.loans[0].ape[0]||'');
+  // Si tiene múltiples activos, mostrar lista expandible
+  const multiLoans=activos.length>1;
+  const clickAction=multiLoans?'toggleClientLoans("cl-'+c.ced+'")':(activos.length?'showLoan('+activos[0].id+')':'showLoan('+c.loans[0].id+')');
+  let html='<div class="clcard" style="cursor:pointer">'+
+    '<div class="lstripe '+(mora?'s-fire':pend>0?'s-amber':'s-jade')+'"></div>'+
+    '<div style="display:flex;align-items:center;gap:10px" onclick="'+clickAction+'">'+
+      '<div class="lav">'+ini.toUpperCase()+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:700;font-size:13px">'+c.nom+'</div>'+
+        '<div style="font-size:10px;color:var(--smoke)">CC '+c.ced+' · '+c.tel+'</div>'+
+        (c.email?'<div style="font-size:10px;color:var(--fog)">'+c.email+'</div>':'')+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div class="mono" style="font-weight:700;font-size:11px">'+fmt(totalActivo)+'</div>'+
+        '<div style="font-size:10px;color:'+(pend>0?'var(--amber)':'var(--lime)')+'">'+
+          (multiLoans?activos.length+' créditos activos':pend+' cuotas pend.')+
+        '</div>'+
+        (cerrados.length?'<div style="font-size:9px;color:var(--fog)">'+cerrados.length+' histórico</div>':'')+
+      '</div>'+
+    '</div>';
+  // Expandible con lista de préstamos si tiene varios
+  if(multiLoans){
+    html+='<div id="cl-'+c.ced+'" style="display:none;margin-top:8px;border-top:1px solid var(--line);padding-top:8px">'+
+      activos.map(function(l){
+        const lPag=l.cuotas.filter(function(q){return q.estado==='pagada';}).length;
+        const lMora=l.cuotas.some(function(q){return q.estado==='mora';});
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer" onclick="showLoan('+l.id+')">'+
+          '<div>'+
+            '<span class="lbadge '+(l.mod==='diario'?'bd':l.mod==='semanal'?'bs':l.mod==='quincenal'?'bq':'bm')+'">'+l.mod+'</span>'+
+            ' <span style="font-size:11px">'+fmt(l.val)+'</span>'+
+          '</div>'+
+          '<div style="font-size:10px;color:'+(lMora?'var(--fire)':'var(--smoke)')+'">'+lPag+'/'+l.cuotas.length+' cuotas</div>'+
+        '</div>';
+      }).join('')+
+      '<button class="btn btn-jade btn-sm" style="width:100%;margin-top:8px" onclick="openNuevoPrestamoCliente('+activos[0].id+')">➕ Nuevo crédito</button>'+
+    '</div>';
+  }
+  html+='</div>';
+  return html;
+}).join('');}
+function toggleClientLoans(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+function searchCl(q){const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,loans:[]};map[l.ced].loans.push(l);});$('cllist').innerHTML=renderClList(Object.values(map).filter(c=>c.nom.toLowerCase().includes(q.toLowerCase())||c.ced.includes(q)));}
+
+/* ─── ALERTAS ─── */
+function getAlerts(){
+  const out=[];
+  loans().forEach(l=>l.cuotas.forEach(c=>{
+    if(c.estado==='mora')out.push({l,c,tipo:'mora'});
+    else if(c.estado==='pendiente'&&isToday(c.fecha))out.push({l,c,tipo:'hoy'});
+  }));
+  loans().filter(l=>l.renewRequest).forEach(l=>out.push({l,c:null,tipo:'renew'}));
+  return out;
+}
+function rAlertas(){
+  const al=getAlerts();
+  if(!al.length)return'<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">¡Todo al día!</div></div>';
+  return`<div class="crow"><div class="cf on">Todas (${al.length})</div><div class="cf">Mora (${al.filter(a=>a.tipo==='mora').length})</div><div class="cf">Hoy (${al.filter(a=>a.tipo==='hoy').length})</div></div>${al.map(rAlCard).join('')}`;
+}
+function rAlCard(a){
+  if(a.tipo==='renew')return`<div class="alcard al-renew">
+    <div class="alhead"><div class="alav">${a.l.nom[0]+a.l.ape[0]}</div>
+    <div style="flex:1"><div class="alname">${a.l.nom} ${a.l.ape}</div><div class="aldet">🔄 Solicita renovación · CC ${a.l.ced}</div></div></div>
+    <div class="alact"><button class="btn btn-violet btn-sm" onclick="openRenewReq(${a.l.id})">📋 Revisar</button></div>
+  </div>`;
+  const ini=(a.l.nom[0]||'')+(a.l.ape[0]||''),isMora=a.tipo==='mora';
+  return`<div class="alcard ${isMora?'al-mora':'al-hoy'}">
+    <div class="alhead"><div class="alav">${ini.toUpperCase()}</div>
+    <div style="flex:1"><div class="alname">${a.l.nom} ${a.l.ape}</div>
+    <div class="aldet">${isMora?'🔴 En mora':'📅 Cobro hoy'} · Cuota #${a.c.num}</div>
+    <div class="alamt mono">${fmt(a.c.valor)}${a.c.multa>0?' + Multa '+fmt(a.c.multa):''}</div></div></div>
+    <div class="alact">
+      <button class="btn btn-lime btn-sm" onclick="openPay(${a.l.id},${a.c.num})">✅ Pagar</button>
+      <button class="btn btn-sky btn-sm" onclick="sendWA(${a.l.id})">📲 WA</button>
+      ${isMora?`<button class="btn btn-amber btn-sm" onclick="openMora(${a.l.id},${a.c.num})">⚠️ Gestionar</button>`:''}
+      <button class="btn btn-ghost btn-sm" onclick="showLoan(${a.l.id})">👁 Ver</button>
+    </div>
+  </div>`;
+}
+function updDot(){const n=getAlerts().length;const d=$('ndot');d.style.display=n?'flex':'none';d.textContent=n;}
+
+/* ─── ESTADÍSTICAS ─── */
+function rEstadis(){
+  const c=S.cartera;const ls=loans();const act=ls.filter(l=>l.activo);
+  const capObj=getCap(c);
+  const gan=gananciaTotal(c);const disp=capDisponible(c);
+  const ganEst=gananciaEstimada(c);
+  const totalPrestado=act.reduce((s,l)=>s+l.val,0);
+  const totalCobrado=ls.reduce((s,l)=>s+l.cuotas.filter(q=>q.estado==='pagada').reduce((ss,q)=>ss+q.valor,0),0);
+  const totalPendiente=act.reduce((s,l)=>s+l.cuotas.filter(q=>q.estado!=='pagada').reduce((ss,q)=>ss+q.valor,0),0);
+  const capRecup=capitalRecuperado(c);
+  const mora=act.filter(l=>l.cuotas.some(q=>q.estado==='mora'));
+
+  // Tabla por cliente
+  const filas=ls.map(l=>{
+    const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
+    const ganR=gananciaLoan(l);
+    const ganE=gananciaEstimadaLoan(l);
+    const pct=Math.round(pag/l.cuotas.length*100);
+    const esMora=l.cuotas.some(q=>q.estado==='mora');
+    return`<tr>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line)">
+        <div style="font-weight:700;font-size:12px">${l.nom} ${l.ape}</div>
+        <div style="font-size:10px;color:var(--smoke)">CC ${l.ced} · ${l.mod}</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:right">
+        <div style="font-weight:800;color:var(--sky);font-size:12px">${fmt(l.val)}</div>
+        <div style="font-size:9px;color:var(--fog)">${pag}/${l.cuotas.length} cuotas</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:right">
+        <div style="font-weight:800;color:var(--lime);font-size:12px">${fmt(ganR)}</div>
+        <div style="font-size:9px;color:var(--fog)">est: ${fmt(ganE)}</div>
+      </td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line);text-align:center">
+        <div style="font-size:11px;font-weight:700;color:${pct>=100?'var(--jade)':pct>=50?'var(--gold)':'var(--sky)'}">${pct}%</div>
+        ${esMora?'<div style="font-size:9px;color:var(--fire)">⚠️ mora</div>':''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  const el=$('estadis-root');
+  el.innerHTML=`
+    <div style="padding:14px">
+      <!-- RESUMEN GENERAL -->
+      <div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:10px;letter-spacing:.5px">📊 RESUMEN GENERAL</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Capital base</div>
+          <div style="font-weight:900;font-size:16px;color:var(--jade)">${fmt(capObj.base)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Total prestado</div>
+          <div style="font-weight:900;font-size:16px;color:var(--sky)">${fmt(totalPrestado)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Capital recuperado</div>
+          <div style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(capRecup)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Disponible reinvertir</div>
+          <div style="font-weight:900;font-size:16px;color:var(--jade)">${fmt(disp)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Ganancia cobrada</div>
+          <div style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</div>
+        </div>
+        <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Ganancia estimada</div>
+          <div style="font-weight:900;font-size:16px;color:var(--gold)">${fmt(ganEst)}</div>
+        </div>
+      </div>
+
+      <!-- BARRA VISUAL -->
+      <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--smoke);margin-bottom:6px">Flujo de capital</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          ${capObj.base>0?`
+          <div style="flex:${totalPrestado};background:var(--sky);height:8px;border-radius:4px" title="En préstamos"></div>
+          <div style="flex:${disp};background:var(--jade);height:8px;border-radius:4px" title="Disponible"></div>
+          `:'<div style="color:var(--fog);font-size:11px">Sin capital configurado</div>'}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px">
+          <span><span style="color:var(--sky)">■</span> Prestado: ${fmt(totalPrestado)}</span>
+          <span><span style="color:var(--jade)">■</span> Disponible: ${fmt(disp)}</span>
+        </div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-size:11px;display:flex;justify-content:space-between">
+          <span>Por cobrar pendiente:</span><span style="font-weight:800;color:var(--gold)">${fmt(totalPendiente)}</span>
+        </div>
+      </div>
+
+      <!-- TABLA CLIENTES -->
+      ${ls.length?`
+      <div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px;letter-spacing:.5px">👥 DETALLE POR CLIENTE</div>
+      <div style="overflow-x:auto;border:1px solid var(--line);border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:var(--ink3)">
+              <th style="padding:8px 6px;text-align:left;font-size:10px;color:var(--smoke)">Cliente</th>
+              <th style="padding:8px 6px;text-align:right;font-size:10px;color:var(--smoke)">Capital</th>
+              <th style="padding:8px 6px;text-align:right;font-size:10px;color:var(--smoke)">Ganancia</th>
+              <th style="padding:8px 6px;text-align:center;font-size:10px;color:var(--smoke)">Avance</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+          <tfoot>
+            <tr style="background:var(--ink3)">
+              <td style="padding:8px 6px;font-weight:800;font-size:11px">TOTAL</td>
+              <td style="padding:8px 6px;text-align:right;font-weight:900;color:var(--sky)">${fmt(totalPrestado)}</td>
+              <td style="padding:8px 6px;text-align:right">
+                <div style="font-weight:900;color:var(--lime)">${fmt(gan)}</div>
+                <div style="font-size:9px;color:var(--gold)">est: ${fmt(ganEst)}</div>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`:'<div class="empty"><div class="empty-ico">📊</div><div class="empty-t">Sin préstamos</div></div>'}
+
+      <!-- EN MORA -->
+      ${mora.length?`
+      <div style="font-size:11px;font-weight:800;color:var(--fire);margin:12px 0 8px;letter-spacing:.5px">⚠️ EN MORA (${mora.length})</div>
+      ${mora.map(l=>`<div style="background:rgba(255,80,60,.08);border:1px solid rgba(255,80,60,.25);border-radius:8px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-weight:700;font-size:12px">${l.nom} ${l.ape}</div>
+        <div style="font-size:10px;color:var(--smoke)">${l.cuotas.filter(q=>q.estado==='mora').length} cuota(s) en mora</div></div>
+        <button class="btn btn-sm btn-amber" onclick="showLoan(${l.id})">Ver</button>
+      </div>`).join('')}`:''}
+    </div>`;
+}
+
+function addCollab(){
+  const c=S.cartera;if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede agregar colaboradores');return;}
+  const email=document.getElementById('new-collab-input')?.value.trim().toLowerCase();
+  if(!email||!email.includes('@')){toast('⚠️ Ingresa un email válido');return;}
+  if(email===c.owner){toast('⚠️ Ese email es el dueño de la cartera');return;}
+  if(!c.collabs)c.collabs=[];
+  if(c.collabs.includes(email)){toast('⚠️ Ese colaborador ya existe');return;}
+  c.collabs.push(email);
+  document.getElementById('new-collab-input').value='';
+  fsSave();
+  goTab('config');
+  toast('✅ Colaborador agregado: '+email);
+}
+
+function removeCollab(email){
+  const c=S.cartera;if(!c)return;
+  if(c.owner!==S.user?.id&&c.owner!==S.user?.email){toast('⛔ Solo el dueño puede quitar colaboradores');return;}
+  c.collabs=(c.collabs||[]).filter(e=>e!==email);
+  fsSave();
+  goTab('config');
+  toast('🗑️ Colaborador eliminado');
+}
+
+function rConfig(){
+  const c=S.cartera;
+  const fin=c?.fin||{pctGanancia:20,liberaCapital:true};
+  // Cuotas cobradas hoy
+  const hoy=new Date().toDateString();
+  const cuotasHoy=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy));
+  const totalHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
+  // Cuotas próximos 7 días
+  const en7=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>{
+    if(q.estado!=='pendiente')return false;
+    const d=new Date(q.fecha);const hoy2=new Date();
+    return d>=hoy2&&d<=new Date(hoy2.getTime()+7*86400000);
+  }));
+  const total7=en7.reduce((s,q)=>s+q.valor,0);
+  return`
+  <div class="cfg-grp">
+    <div class="cfg-title">💹 Configuración Financiera</div>
+    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
+      <div style="font-size:11px;color:var(--jade);font-weight:800;margin-bottom:10px">¿Cómo se distribuye cada cuota?</div>
+      <div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.6">
+        Cada cuota cobrada se divide en <b>capital</b> (recuperación del préstamo) y <b>ganancia</b>.
+        El capital liberado vuelve al disponible para prestar a nuevos clientes.
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--smoke);font-weight:700;display:block;margin-bottom:6px">% Ganancia por préstamo (sobre el total)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="cfg-pct" min="1" max="100" value="${fin.pctGanancia||20}"
+            oninput="this.nextElementSibling.textContent=this.value+'%';updateFinPreview(this.value)"
+            style="flex:1;accent-color:var(--jade)">
+          <span style="font-weight:900;font-size:18px;color:var(--jade);min-width:42px;text-align:right">${fin.pctGanancia||20}%</span>
+        </div>
+        <div id="fin-preview" style="font-size:11px;color:var(--smoke);margin-top:6px"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)">
+        <div>
+          <div style="font-size:13px;font-weight:700">Liberar capital al cobrar</div>
+          <div style="font-size:11px;color:var(--smoke)">El capital recuperado vuelve al disponible</div>
+        </div>
+        <div class="toggle ${fin.liberaCapital!==false?'on':''}" onclick="togFinCfg('liberaCapital',this)"></div>
+      </div>
+      <button class="btn btn-jade btn-w" style="margin-top:10px" onclick="saveFinCfg()">💾 Guardar configuración</button>
+    </div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px">
+      <div style="font-size:11px;color:var(--amber);font-weight:800;margin-bottom:8px">📋 Ejemplo con configuración actual</div>
+      <div id="fin-ejemplo"></div>
+    </div>
+  </div>
+
+  <div class="cfg-grp">
+    <div class="cfg-title">📅 Cobros programados</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:12px;text-align:center">
+        <div style="font-weight:900;font-size:22px;color:var(--jade)">${fmt(totalHoy)}</div>
+        <div style="font-size:10px;color:var(--smoke);margin-top:2px">💰 Cobros hoy (${cuotasHoy.length})</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--sky);border-radius:var(--r-sm);padding:12px;text-align:center">
+        <div style="font-weight:900;font-size:22px;color:var(--sky)">${fmt(total7)}</div>
+        <div style="font-size:10px;color:var(--smoke);margin-top:2px">📆 Próximos 7 días (${en7.length})</div>
+      </div>
+    </div>
+    ${cuotasHoy.length?`<div style="font-size:11px;color:var(--smoke);margin-bottom:6px;font-weight:700">Detalle de hoy:</div>
+    ${loans().filter(l=>l.activo).map(l=>{
+      const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy);
+      if(!qh.length)return'';
+      return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px">
+        <span>${l.nom} ${l.ape}</span>
+        <span style="color:var(--jade);font-weight:700">${fmt(qh.reduce((s,q)=>s+q.valor,0))}</span>
+      </div>`;
+    }).join('')}`:'<div style="font-size:12px;color:var(--fog);text-align:center;padding:8px 0">Sin cobros programados para hoy</div>'}
+  </div>
+
+  <div class="cfg-grp"><div class="cfg-title">Cartera: ${c?.name}</div>
+    <div class="cfg-row"><div class="cfg-ico">📲</div><div style="flex:1"><div class="cfg-lbl">WA automático</div><div class="cfg-sub">Al crear/renovar y recordatorios</div></div><div class="toggle ${c?.cfg?.autoWA?'on':''}" onclick="togCfg('autoWA',this)"></div></div>
+  </div>
+  <div class="cfg-grp"><div class="cfg-title">📢 Grupo WA Empresa</div>
+    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:11px;margin-bottom:5px">
+      <div style="font-size:10px;font-weight:800;color:var(--jade);margin-bottom:6px">Link del grupo o número cobrador</div>
+      <input type="text" class="fi" id="cfg-grupo" placeholder="https://chat.whatsapp.com/..." value="${c?.cfg?.grupoWA||''}" oninput="S.cartera.cfg.grupoWA=this.value" style="font-size:12px">
+    </div>
+  </div>
+  <div class="cfg-grp">
+    <div class="cfg-title">👥 Colaboradores de esta cartera</div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Personas con acceso a esta cartera:</div>
+      <div id="collabs-list">
+        ${(c?.collabs||[]).length?
+          (c.collabs.map(email=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
+              <span style="font-size:12px">${email}</span>
+              <button class="btn btn-ghost btn-sm" style="color:var(--fire);font-size:11px" onclick="removeCollab('${email}')">✕ Quitar</button>
+            </div>`).join(''))
+          :'<div style="font-size:12px;color:var(--fog);padding:4px 0">Solo tú tienes acceso</div>'}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input type="email" class="fi" id="new-collab-input" placeholder="nuevo@gmail.com" style="flex:1;font-size:13px">
+      <button class="btn btn-jade" onclick="addCollab()">➕ Agregar</button>
+    </div>
+  </div>
+  <div class="cfg-grp"><div class="cfg-title">Cuenta</div>
+    <div class="cfg-row"><div class="cfg-ico">👤</div><div style="flex:1"><div class="cfg-lbl">${S.user?.name}</div><div class="cfg-sub">${S.user?.email}</div></div></div>
+    <div class="cfg-row" onclick="backToCarteras()" style="cursor:pointer"><div class="cfg-ico">📁</div><div style="flex:1"><div class="cfg-lbl">Cambiar de cartera</div></div></div>
+    <div class="cfg-row" onclick="logout()" style="cursor:pointer"><div class="cfg-ico">🚪</div><div style="flex:1"><div class="cfg-lbl" style="color:var(--fire)">Cerrar sesión</div></div></div>
+  </div>
+  <div style="text-align:center;color:var(--fog);font-size:11px;padding:4px 0 20px">PrestaMax v3.0 · Carteras independientes · Google Auth · Calendario hábil CO 🇨🇴</div>`;
+}
+
+function togFinCfg(key,el){
+  if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
+  S.cartera.fin[key]=!S.cartera.fin[key];el.classList.toggle('on');
+}
+
+function saveFinCfg(){
+  if(!S.cartera)return;
+  if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
+  const pct=parseInt(document.getElementById('cfg-pct')?.value||20);
+  S.cartera.fin.pctGanancia=pct;
+  toast('✅ Configuración financiera guardada');fsSave();
+  renderTab(S.tab);
+}
+
+function updateFinPreview(pct){
+  const el=document.getElementById('fin-preview');
+  const ej=document.getElementById('fin-ejemplo');
+  const p=parseInt(pct);
+  const ejemploVal=500000,ejemploCuo=550000;
+  const ganEj=Math.round(ejemploVal*p/100);
+  const capEj=ejemploVal-ganEj;
+  if(el)el.textContent=`Ejemplo: préstamo $500.000 → ganancia $${ganEj.toLocaleString('es-CO')} · capital recuperado $${capEj.toLocaleString('es-CO')}`;
+  if(ej)ej.innerHTML=`
+    <div style="font-size:11px;color:var(--ash)">Préstamo: <b>$500.000</b> · 10 cuotas de <b>$55.000</b></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+      <div style="background:rgba(0,229,176,.08);border-radius:6px;padding:8px;text-align:center">
+        <div style="font-weight:800;color:var(--jade)">$${Math.round(550000*p/100).toLocaleString('es-CO')}</div>
+        <div style="font-size:9px;color:var(--fog)">Ganancia total (${p}%)</div>
+      </div>
+      <div style="background:rgba(0,153,255,.08);border-radius:6px;padding:8px;text-align:center">
+        <div style="font-weight:800;color:var(--sky)">$${Math.round(550000*(100-p)/100).toLocaleString('es-CO')}</div>
+        <div style="font-size:9px;color:var(--fog)">Capital recuperado</div>
+      </div>
+    </div>`;
+}
+function togCfg(key,el){if(S.cartera?.cfg)S.cartera.cfg[key]=!S.cartera.cfg[key];el.classList.toggle('on');}
+
+function openLoanModal(){
+  openM('m-loan');
+  // Date picker handles ini date — just reset label
+  const lbl2=document.getElementById('f-ini-label');
+  if(lbl2&&!document.getElementById('f-ini').value){lbl2.textContent='Seleccionar fecha...';lbl2.style.color='var(--smoke)';}
+  // Reset inline warnings
+  ['warn-capital','warn-cuotas','loan-warn'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});
+  const btnG=$('btn-guardar');
+  if(btnG){btnG.disabled=false;btnG.style.opacity='1';}
+  recalc();
+}
+/* ─── NUEVO PRÉSTAMO ─── */
+function checkCedDup(){
+  // Múltiples préstamos por cliente permitidos — sin bloqueo
+}
+function getIniDate(){
+  // Returns the base date to calculate cuotas from
+  // If user set a custom first date, use that as the "today" for calcFechas
+  const raw=gv('f-ini');
+  if(raw){
+    // f-ini is the FIRST cuota date — we need the day BEFORE so calcFechas produces it
+    const d=new Date(raw+'T12:00:00');
+    // We'll pass it directly as override
+    return d;
+  }
+  return new Date();
+}
+
+function recalc(){
+  const val=+gv('f-val')||0,cuo=+gv('f-cuo')||0,n=+gv('f-ncu')||0,mod=gv('f-mod');
+
+  // ── Aviso capital insuficiente (solo necesita val) ──
+  const wCap=$('warn-capital');
+  if(wCap){
+    if(val>0&&S.cartera){
+      const disp=capDisponible(S.cartera);
+      const capBase=getCap(S.cartera).base;
+      if(capBase>0&&val>disp){
+        wCap.style.display='block';
+        wCap.innerHTML=`🔴 Capital insuficiente — disponible: <b>${fmt(disp)}</b>, estás pidiendo <b>${fmt(val)}</b>. Faltan <b>${fmt(val-disp)}</b>.`;
+      } else { wCap.style.display='none'; }
+    } else { wCap.style.display='none'; }
+  }
+
+  if(val>0&&cuo>0&&n>0){
+    const total=cuo*n;
+    const gan=total-val;
+    const pct=((gan/val)*100);
+    const noCubre=total<=val; // must earn something, not just cover
+
+    // ── Aviso cuotas ──
+    const wCuo=$('warn-cuotas');
+    if(wCuo){
+      if(total<val){
+        wCuo.style.cssText='display:block;background:rgba(255,61,90,.1);border:1.5px solid rgba(255,61,90,.5);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--fire);margin-bottom:4px';
+        wCuo.innerHTML=`🔴 Las cuotas <b>no cubren</b> el préstamo: ${n}×${fmt(cuo)} = <b>${fmt(total)}</b>, prestaste <b>${fmt(val)}</b>. Perderías <b>${fmt(val-total)}</b>.`;
+      } else if(gan===0){
+        wCuo.style.cssText='display:block;background:rgba(255,180,0,.08);border:1.5px solid rgba(255,180,0,.5);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--amber);margin-bottom:4px';
+        wCuo.innerHTML=`⚠️ Las cuotas cubren exactamente el préstamo pero <b>no generan ninguna ganancia</b>.`;
+      } else { wCuo.style.display='none'; }
+    }
+
+    // ── Bloquear guardar si no hay ganancia ──
+    const btnG=$('btn-guardar');
+    const bloquear=(total<=val);
+    if(btnG){btnG.disabled=bloquear;btnG.style.opacity=bloquear?'.35':'1';btnG.style.cursor=bloquear?'not-allowed':'pointer';}
+
+    // ── Preview de cálculo ──
+    $('c-tot').textContent=fmt(total);
+    $('c-gan').textContent=fmt(gan);
+    $('c-gan').style.color=gan<=0?'var(--fire)':'var(--lime)';
+    $('c-pct').textContent=pct.toFixed(1)+'%';
+    $('c-pct').style.color=gan<=0?'var(--fire)':'var(--sky)';
+    $('cprev').style.display='block';
+    const wGen=$('loan-warn');if(wGen)wGen.style.display='none';
+    // Use custom ini date if set, otherwise today
+    const iniRaw=gv('f-ini');
+    let baseDate=new Date();
+    let fechas;
+    if(iniRaw){
+      // User set explicit first cuota date — build schedule starting from day before
+      const primeraCuota=new Date(iniRaw+'T12:00:00');
+      fechas=calcFechasDesde(primeraCuota,mod,Math.min(n,6));
+    } else {
+      fechas=calcFechas(baseDate,mod,Math.min(n,6));
+    }
+    $('c-1ra').textContent=fd(fechas[0]);
+    $('sched-prev').innerHTML=`<div class="sched-box"><div class="sched-title">📅 Plan de cuotas${iniRaw?' — fecha personalizada ✏️':''}</div>
+      ${fechas.map((f,i)=>{const lm=(mod==='semanal'||mod==='quincenal')&&([1,2].includes(new Date(f).getDay()));
+      return`<div class="sched-row"><span style="color:var(--jade);font-weight:700;width:52px;flex-shrink:0">Cuota ${i+1}</span><span style="flex:1">${fd(f)}</span>${lm?'<span class="tag-ok">✓ lun/mar</span>':''}</div>`;}).join('')}
+      ${n>6?`<div style="font-size:10px;color:var(--fog);padding:4px 0 0">+${n-6} cuotas más...</div>`:''}
+    </div>`;
+    $('sched-prev').style.display='block';
+  }else{$('cprev').style.display='none';$('sched-prev').style.display='none';}
+}
+
+// calcFechasDesde: builds schedule where primeraCuota IS the first date (not derived)
+function calcFechasDesde(primera,mod,ncu){
+  const out=[new Date(primera)];
+  let c=new Date(primera);
+  function step(x){
+    const r=new Date(x);
+    if(mod==='diario')return nextHabil(r,1);
+    if(mod==='semanal'){r.setDate(r.getDate()+7);return adjLM(r);}
+    if(mod==='quincenal'){r.setDate(r.getDate()+15);return adjLM(r);}
+    r.setMonth(r.getMonth()+1);return r;
+  }
+  for(let i=1;i<ncu;i++){c=step(c);out.push(new Date(c));}
+  return out;
+}
+function saveLoan(){
+  const nom=gv('f-nom').trim(),ape=gv('f-ape').trim(),ced=gv('f-ced').trim(),tel=gv('f-tel').trim();
+  // Leer cuentas bancarias dinámicas
+  const cuentas=[];
+  document.querySelectorAll('.cuenta-row').forEach(function(row,i){
+    const banco=document.getElementById('f-banco-'+i)?.value||'';
+    const num=document.getElementById('f-num-'+i)?.value.trim()||'';
+    if(num)cuentas.push(banco+': '+num);
+  });
+  const cta=cuentas.join(' | ')||'';
+  const email=gv('f-email').trim();
+  const cel2=gv('f-cel2').trim();
+  const val=+gv('f-val')||0,cuo=+gv('f-cuo')||0;
+  const mod=gv('f-mod'),ncu=+gv('f-ncu')||0,mul=+gv('f-mul')||0;
+  const hor=gv('f-hor')||'15:00';
+  const notChs=[];
+  if(document.getElementById('not-wa')?.checked)notChs.push('whatsapp');
+  if(document.getElementById('not-sms')?.checked)notChs.push('sms');
+  if(document.getElementById('not-email')?.checked)notChs.push('email');
+  if(document.getElementById('not-call')?.checked)notChs.push('llamada');
+  const not=notChs.length?notChs.join(','):'ninguno';
+  if(!nom||!ape||!ced||!tel||val<=0||cuo<=0||ncu<=0){toast('⚠️ Completa todos los campos requeridos (incluyendo cédula)');return;}
+  if(cuo*ncu<val){toast(`⛔ Las cuotas no cubren el préstamo (${fmt(cuo*ncu)} < ${fmt(val)}). Corrígelo antes de guardar.`);return;}
+  // Se permite múltiples préstamos activos por cédula
+  const dispAhora=capDisponible(S.cartera);
+  if(getCap(S.cartera).base>0&&val>dispAhora){toast(`❌ Capital insuficiente. Disponible: ${fmt(dispAhora)}`);return;}
+  const iniRaw=(gv('f-ini')||'').trim();
+  let iniDate=null;
+  if(iniRaw){try{const d=new Date(iniRaw+'T12:00:00');if(!isNaN(d))iniDate=d;}catch(e){}}
+  const loan=mkLoan({nom,ape,ced,tel,cel2,email,cta,val,cuo,mod,ncu,mul,hor,not,iniDate});
+  loan.comprobante=gv('loan-comp-data')||null;
+  loan.creadoPor=S.user?.name||S.user?.email||'Desconocido';
+  loan.creadoPorEmail=S.user?.email||'';
+  loan.fechaCreacion=new Date().toISOString();
+  S.cartera.loans.unshift(loan);
+  closeM('m-loan');toast('✅ Préstamo guardado');fsSave();
+  setTimeout(()=>sendWACreacion(loan),400);
+  if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('nuevo',loan),900);
+  render();updDot();
+  ['f-nom','f-ape','f-ced','f-tel','f-cel2','f-email','f-val','f-cuo','f-ncu','f-mul','f-ini'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  // Reset cuentas
+  const cw=document.getElementById('cuentas-wrap');if(cw){cw.innerHTML='<div class="cuenta-row" style="display:flex;gap:6px;align-items:center"><select class="fsel" id="f-banco-0" style="flex:1;min-width:0"><option value="Nequi">📱 Nequi</option><option value="Bancolombia">🏦 Bancolombia</option><option value="Davivienda">🏦 Davivienda</option><option value="BBVA">🏦 BBVA</option><option value="Banco de Bogotá">🏦 Banco de Bogotá</option><option value="Daviplata">📱 Daviplata</option><option value="Efectivo">💵 Efectivo</option><option value="Otro">🏦 Otro</option></select><input type="text" class="fi" id="f-num-0" placeholder="Número de cuenta" style="flex:1.5"></div>';}
+  const lbl=document.getElementById('f-ini-label');if(lbl){lbl.textContent='Seleccionar fecha...';lbl.style.color='var(--smoke)';};
+  ['not-wa','not-sms','not-email','not-call'].forEach(i=>{const e=document.getElementById(i);if(e)e.checked=(i==='not-wa');});;
+  $('cprev').style.display='none';$('sched-prev').style.display='none';$('ced-dup-warn').style.display='none';
+  resetComp('loan-comp-wrap','loan-comp-data');
+}
+
+/* ─── COMPROBANTES ─── */
+function previewRenComp(inp){previewComp(inp,'ren-comp-wrap','ren-comp-data');}
+function previewComp(inp,wrapId,dataId){
+  const file=inp.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const data=e.target.result;
+    document.getElementById(dataId).value=data;
+    document.getElementById(wrapId).innerHTML=`<div class="comp-preview"><img src="${data}" alt=""><button class="comp-del" onclick="resetComp('${wrapId}','${dataId}')">✕ Eliminar</button></div>`;
+  };r.readAsDataURL(file);
+}
+function resetComp(wrapId,dataId){
+  const w=document.getElementById(wrapId);const d=document.getElementById(dataId);
+  if(w)w.innerHTML='<div style="font-size:24px">📸</div><div class="comp-upload-t">Toca para agregar foto del comprobante</div>';
+  if(d)d.value='';
+}
+function viewImg(src){$('img-src').src=src;$('img-viewer').classList.add('on');}
+
+/* ─── PAGO ─── */
+function openPay(lid,cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  S.lid=lid;$('pay-title').textContent='✅ Pagar Cuota #'+cn;
+  $('pay-body').innerHTML=`<div class="calcbox" style="margin-bottom:10px">
+    <div class="crow2"><span>Cliente</span><span>${l.nom} ${l.ape} · CC ${l.ced}</span></div>
+    <div class="crow2"><span>Cuota #${cn}</span><span class="mono">${fmt(c.valor)}</span></div>
+    ${c.multa>0?`<div class="crow2"><span>⚠️ Multa</span><span class="mono" style="color:var(--fire)">${fmt(c.multa)}</span></div>`:''}
+    <div class="crow2"><span>Total</span><span class="mono">${fmt(c.valor+(c.multa||0))}</span></div></div>
+  <div class="fg"><label class="fl">Registrado por</label><select class="fsel" id="pw-who">${DB.users.map(u=>`<option>${u.name}</option>`).join('')}</select></div>
+  <div class="fg"><label class="fl">Método</label><select class="fsel" id="pw-met"><option>Efectivo</option><option>Transferencia</option><option>Nequi</option><option>Daviplata</option></select></div>
+  <div class="fg"><label class="fl">📸 Comprobante (opcional)</label>
+    <div class="comp-upload" id="pay-comp-wrap" onclick="document.getElementById('pay-comp-inp').click()"><div style="font-size:22px">📸</div><div class="comp-upload-t">Agregar foto comprobante de pago</div></div>
+    <input type="file" id="pay-comp-inp" accept="image/*" style="display:none" onchange="previewComp(this,'pay-comp-wrap','pay-comp-data')">
+    <input type="hidden" id="pay-comp-data">
+  </div>
+  <div class="brow"><button class="btn btn-ghost btn-w" onclick="closeM('m-pay')">Cancelar</button><button class="btn btn-lime btn-w" onclick="confirmPay(${lid},${cn})">✅ Confirmar pago</button></div>`;
+  openM('m-pay');
+}
+function confirmPay(lid,cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  const who=document.getElementById('pw-who')?.value||S.user?.name;
+  const met=document.getElementById('pw-met')?.value||'Efectivo';
+  const comp=gv('pay-comp-data')||null;
+  c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;
+  distribuirPago(l,c);
+  l.historico.push(`✅ Cuota #${cn} pagada por ${who} vía ${met}${comp?' 📸':''}  — ${new Date().toLocaleDateString('es-CO')}`);
+  const todasPagadas=l.cuotas.every(function(q){return q.estado==='pagada';});
+  if(todasPagadas){
+    l.activo=false;
+    l.fechaCierre=new Date().toISOString();
+    l.historico.push('🏁 Préstamo completado — '+new Date().toLocaleDateString('es-CO'));
+    closeM('m-pay');toast('🎉 ¡Préstamo completado! Pasó al historial');
+  } else {
+    closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
+  }
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+}
+
+/* ─── MORA ─── */
+let _mop=0;
+function nextFecha(c, l){
+  // Moves cuota to the next scheduled slot according to modalidad
+  const base=new Date(c.fecha);
+  if(l.mod==='diario'){
+    return nextHabil(base,1); // siguiente día hábil
+  }
+  if(l.mod==='semanal'){
+    const nf=new Date(base);nf.setDate(nf.getDate()+7);
+    return adjLM(nf); // siguiente lun/mar
+  }
+  if(l.mod==='quincenal'){
+    const nf=new Date(base);nf.setDate(nf.getDate()+15);
+    return adjLM(nf); // siguiente lun/mar quincenal
+  }
+  // mensual
+  const nf=new Date(base);nf.setMonth(nf.getMonth()+1);
+  return nf;
+}
+
+function openMora(lid,cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  S.lid=lid;
+  const nfAdj=nextFecha(c,l);
+  $('mora-body').innerHTML=`
+    <div class="calcbox" style="margin-bottom:12px">
+      <div class="crow2"><span>Cliente</span><span style="font-weight:700">${l.nom} ${l.ape}</span></div>
+      <div class="crow2"><span>Cédula</span><span>CC ${l.ced}</span></div>
+      <div class="crow2"><span>Cuota #${cn}</span><span class="mono" style="color:var(--fire)">${fmt(c.valor)}</span></div>
+      <div class="crow2"><span>Multa acordada</span><span class="mono" style="color:var(--amber);font-weight:800">${fmt(l.mul)}</span></div>
+    </div>
+
+    <div style="font-weight:800;font-size:14px;margin-bottom:10px;color:var(--white)">¿El cliente paga la multa?</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div id="mora-si" style="background:rgba(57,216,112,.08);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(true,${lid},${cn})">
+        <div style="font-size:28px;margin-bottom:4px">✅</div>
+        <div style="font-weight:800;font-size:14px;color:var(--lime)">SÍ paga</div>
+        <div style="font-size:11px;color:var(--smoke);margin-top:3px">Cobra multa<br><b style="color:var(--white)">${fmt(l.mul)}</b></div>
+        <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota queda pagada</div>
+      </div>
+      <div id="mora-no" style="background:rgba(255,61,90,.06);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(false,${lid},${cn})">
+        <div style="font-size:28px;margin-bottom:4px">❌</div>
+        <div style="font-weight:800;font-size:14px;color:var(--fire)">NO paga</div>
+        <div style="font-size:11px;color:var(--smoke);margin-top:3px">Multa perdonada<br><b style="color:var(--white)">${fmt(0)}</b></div>
+        <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota → ${fd(nfAdj)}</div>
+      </div>
+    </div>
+
+    <div id="mora-confirm-area" style="display:none"></div>
+
+    <div style="display:flex;gap:7px;margin-top:4px">
+      <button class="btn btn-sky btn-sm" style="flex:1" onclick="sendWA(${lid});closeM('m-mora')">📲 WA recordatorio</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeM('m-mora')">✕ Cerrar</button>
+    </div>
+  `;
+  openM('m-mora');
+}
+
+function selMulta(paga, lid, cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  const nfAdj=nextFecha(c,l);
+  // Highlight selected card
+  document.getElementById('mora-si').style.borderColor = paga ? 'var(--lime)' : 'var(--line)';
+  document.getElementById('mora-si').style.background  = paga ? 'rgba(57,216,112,.15)' : 'rgba(57,216,112,.08)';
+  document.getElementById('mora-no').style.borderColor = !paga ? 'var(--fire)' : 'var(--line)';
+  document.getElementById('mora-no').style.background  = !paga ? 'rgba(255,61,90,.15)' : 'rgba(255,61,90,.06)';
+
+  const area=document.getElementById('mora-confirm-area');
+  if(paga){
+    area.style.display='block';
+    area.innerHTML=`
+      <div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.25);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--ash);margin-bottom:6px">💰 El cliente paga <b style="color:var(--lime)">${fmt(c.valor + l.mul)}</b> en total:</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span>Cuota #${cn}</span><span class="mono">${fmt(c.valor)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span>Multa</span><span class="mono" style="color:var(--amber)">${fmt(l.mul)}</span></div>
+      </div>
+      <button class="btn btn-lime btn-w" onclick="doMora(${lid},${cn},true)">✅ Confirmar — cobrar multa ${fmt(l.mul)}</button>`;
+  } else {
+    area.style.display='block';
+    area.innerHTML=`
+      <div style="background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--ash);margin-bottom-4px">🤝 Multa perdonada — <b style="color:var(--fire)">$0</b></div>
+        <div style="font-size:11px;color:var(--smoke);margin-top:4px">La cuota #${cn} se reprograma al próximo día hábil:<br><b style="color:var(--white)">${fd(nfAdj)}</b></div>
+      </div>
+      <button class="btn btn-fire btn-w" onclick="doMora(${lid},${cn},false)">🤝 Confirmar — multa perdonada y correr cuota</button>`;
+  }
+}
+
+function doMora(lid, cn, pagaMulta){
+  const l=getL(lid),c=l?.cuotas.find(function(x){return x.num===cn;});if(!l||!c)return;
+  const nfAdj=nextFecha(c,l);
+  if(pagaMulta){
+    // SOLO cobra la multa - la cuota se reprograma al siguiente slot
+    // La multa va ÍNTEGRA a ganancia
+    if(!l.histMultas)l.histMultas=[];
+    l.histMultas.push({fecha:new Date().toISOString(),cuota:cn,monto:l.mul,cobradoPor:S.user?.name||''});
+    // Registrar la multa en histGan de la cartera
+    const cap=getCap(S.cartera);
+    if(cap)cap.histGan.push({fecha:new Date(),monto:l.mul,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
+    // Reprogramar la cuota
+    c.fecha=nfAdj;
+    c.estado='pendiente';
+    c.multa=(c.multa||0)+l.mul; // acumular multa pagada para registro
+    l.historico.push('💸 Multa cuota #'+cn+' cobrada: '+fmt(l.mul)+' → cuota reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
+    toast('✅ Multa cobrada: '+fmt(l.mul)+'. Cuota reprogramada al '+fd(nfAdj));
+  } else {
+    c.fecha=nfAdj;
+    c.estado='pendiente';
+    l.historico.push('🤝 Multa cuota #'+cn+' perdonada · reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
+    toast('🤝 Multa perdonada. Cuota → '+fd(nfAdj));
+  }
+  closeM('m-mora');
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+}
+
+/* ─── RENOVAR ─── */
+function openRenew(lid){
+  const l=getL(lid);if(!l)return;
+  const pend=l.cuotas.filter(function(c){return c.estado!=='pagada';}).length;
+  const deuda=pend*l.cuo;
+  const trans=Math.max(0,l.val-deuda);
+  const totalNuevo=l.ncu*l.cuo;
+  const ganNueva=totalNuevo-l.val;
+  const html=[
+    '<div class="calcbox" style="margin-bottom:10px">',
+    '<div class="crow2"><span>Préstamo original</span><span class="mono">'+fmt(l.val)+'</span></div>',
+    '<div class="crow2"><span>Deuda pendiente ('+pend+'×'+fmt(l.cuo)+')</span><span class="mono" style="color:var(--fire)">-'+fmt(deuda)+'</span></div>',
+    '<div class="crow2"><span>💸 Efectivo al cliente</span><span class="mono" style="color:var(--lime);font-weight:900">'+fmt(trans)+'</span></div>',
+    '<div style="border-top:1px solid var(--line);margin:8px 0;padding-top:8px">',
+    '<div class="crow2"><span>Nuevo ciclo ('+l.ncu+'×'+fmt(l.cuo)+')</span><span class="mono">'+fmt(totalNuevo)+'</span></div>',
+    '<div class="crow2"><span>Ganancia nueva</span><span class="mono" style="color:var(--gold);font-weight:900">'+fmt(ganNueva)+'</span></div>',
+    '</div></div>',
+    '<div class="renewal-box">El cliente recibe <b>'+fmt(trans)+'</b> en efectivo. El préstamo sigue siendo <b>'+fmt(l.val)+'</b> y pagará <b>'+fmt(totalNuevo)+'</b> en nuevo ciclo.</div>',
+    '<div class="fg"><label class="fl">📸 Comprobante (opcional)</label>',
+    '<div class="comp-upload" id="ren-comp-wrap" onclick="openRenCompInp()">',
+    '<div style="font-size:22px">📸</div><div class="comp-upload-t">Foto transferencia</div></div>',
+    '<input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewRenComp(this)">',
+    '<input type="hidden" id="ren-comp-data"></div>'
+  ].join('');
+  // Agregar botón confirmar al final
+  $('renew-body').innerHTML=html+
+    '<div class="brow" style="margin-top:12px">'+
+    '<button class="btn btn-ghost btn-w" onclick="closeM(String.fromCharCode(109,45,114,101,110,101,119))">Cancelar</button>'+
+    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+trans+','+pend+')">🔄 Confirmar renovación</button>'+
+    '</div>';
+  closeM('m-opts');openM('m-renew');
+}
+
+function confirmRenew(lid,trans,pend){
+  const l=getL(lid);if(!l)return;
+  const comp=gv('ren-comp-data')||null;
+  // Preservar ganancia del ciclo anterior ANTES de resetear cuotas
+  const ganAnterior=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(s,c){return s+c.valor+(c.multa||0);},0) - (l._valOriginal||l.val);
+  const cap=getCap(S.cartera);
+  if(ganAnterior>0&&cap){
+    if(!cap.histGanPermanente)cap.histGanPermanente=[];
+    cap.histGanPermanente.push({fecha:new Date().toISOString(),monto:ganAnterior,cliente:l.nom+' '+l.ape,nota:'Ganancia ciclo anterior (renovación)'});
+  }
+  // El valor original del préstamo se mantiene
+  if(!l._valOriginal)l._valOriginal=l.val;
+  l.historico.push('🔄 Renovación · '+pend+' cuotas descontadas · efectivo al cliente: '+fmt(trans)+(ganAnterior>0?' · ganancia ciclo ant: '+fmt(ganAnterior):'')+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
+  l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
+  const fechas=calcFechas(new Date(),l.mod,l.ncu);
+  l.cuotas=fechas.map(function(f,i){return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null};});
+  closeM('m-renew');toast('🔄 Crédito renovado');
+  fsSave();
+  setTimeout(function(){sendWARenovacion(l,pend,trans);},400);
+  if(S.cartera.cfg&&S.cartera.cfg.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans});},900);
+  $('dcontent').innerHTML=rDetail(l);updDot();render();
+}
+
+/* ─── SOLICITUD DE RENOVACIÓN (desde portal cliente) ─── */
+function openRenewReq(lid){
+  const l=getL(lid);if(!l)return;
+  const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
+  const desc=pend*l.cuo,trans=Math.max(0,l.val-desc);
+  const canRenew=l.cuotas.filter(c=>c.estado==='pagada').length>=6&&pend>0;
+  $('renew-req-body').innerHTML=`<div class="calcbox" style="margin-bottom:9px">
+    <div class="crow2"><span>Cliente</span><span>${l.nom} ${l.ape} · CC ${l.ced}</span></div>
+    <div class="crow2"><span>Crédito</span><span class="mono">${fmt(l.val)} · ${cap(l.mod)}</span></div>
+    <div class="crow2"><span>Cuotas pagadas</span><span>${l.cuotas.filter(c=>c.estado==='pagada').length}/${l.cuotas.length}</span></div>
+    <div class="crow2"><span>Pendientes (${pend}×${fmt(l.cuo)})</span><span class="mono" style="color:var(--fire)">-${fmt(desc)}</span></div>
+    <div class="crow2"><span>Transferencia al cliente</span><span class="mono" style="color:var(--lime)">${fmt(trans)}</span></div></div>
+  ${!canRenew?'<div class="warn-box">⚠️ El cliente no cumple el mínimo de 6 cuotas pagadas para renovar.</div>':''}
+  <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">El cliente solicitó renovar su crédito desde el portal. Puedes aprobar o rechazar.</div>
+  <div class="brow" style="flex-direction:column;gap:8px">
+    ${canRenew?`<button class="btn btn-lime btn-w" onclick="approveRenew(${lid})">✅ Aprobar renovación</button>`:''}
+    <button class="btn btn-fire btn-w" onclick="rejectRenew(${lid})">❌ Rechazar solicitud</button>
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-renew-req')">Cerrar</button>
+  </div>`;
+  openM('m-renew-req');
+}
+function approveRenew(lid){
+  closeM('m-renew-req');
+  openRenew(lid);
+}
+function rejectRenew(lid){
+  const l=getL(lid);if(!l)return;
+  l.renewRequest=false;
+  l.historico.push(`❌ Solicitud de renovación rechazada — ${new Date().toLocaleDateString('es-CO')}`);
+  closeM('m-renew-req');toast('❌ Solicitud rechazada');
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+}
+
+/* ─── OPCIONES ─── */
+function openOpts(){
+  const l=getL(S.lid);if(!l)return;
+  const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
+  const canRenew=pag>=6&&l.cuotas.filter(c=>c.estado!=='pagada').length>0;
+  $('opts-body').innerHTML=`
+  <button class="btn btn-sky btn-w"   onclick="sendWA(${l.id});closeM('m-opts')">📲 Recordatorio WhatsApp</button>
+  <button class="btn btn-ghost btn-w" onclick="notifGrupo('pago',getL(${l.id}),{cn:'próxima',val:${l.cuo}});closeM('m-opts')">📢 Avisar grupo empresa</button>
+  ${canRenew?`<button class="btn btn-amber btn-w" onclick="openRenew(${l.id})">🔄 Renovar crédito</button>`:''}
+  <div class="hr"></div>
+  <button class="btn btn-fire btn-w" onclick="delLoan(${l.id})">🗑️ Eliminar préstamo</button>`;
+  openM('m-opts');
+}
+function delLoan(id){
+  const l=S.cartera.loans.find(function(x){return x.id===id;});
+  if(l){
+    // Preservar ganancia en histGan ANTES de eliminar
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(s,c){return s+c.valor+(c.multa||0);},0);
+    const ganancia=Math.max(0,cobrado-l.val);
+    const cap=getCap(S.cartera);
+    if(ganancia>0&&cap){
+      // Registrar ganancia permanente para que no se pierda
+      if(!cap.histGanPermanente)cap.histGanPermanente=[];
+      cap.histGanPermanente.push({
+        fecha:new Date().toISOString(),
+        monto:ganancia,
+        cliente:l.nom+' '+l.ape,
+        nota:'Ganancia preservada al eliminar préstamo'
+      });
+    }
+    // Registrar eliminación
+    if(!S.cartera.histAcciones)S.cartera.histAcciones=[];
+    S.cartera.histAcciones.push({accion:'eliminó préstamo',cliente:l.nom+' '+l.ape,gananciaPreservada:ganancia,por:S.user?.name||S.user?.email,fecha:new Date().toISOString()});
+  }
+  S.cartera.loans=S.cartera.loans.filter(function(x){return x.id!==id;});
+  closeM('m-opts');goBack();toast('🗑️ Eliminado');render();updDot();fsSave();
+}
+
+/* ─── PORTAL CLIENTE ─── */
+function showPortal(loan){
+  ['s-inicio','s-carteras','s-main','s-detail'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('s-portal').classList.add('on');
+  renderPortal(loan);
+}
+function renderPortal(l){
+  const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
+  const pen=l.cuotas.filter(c=>c.estado!=='pagada').length;
+  const moraN=l.cuotas.filter(c=>c.estado==='mora').length;
+  const pct=Math.round(pag/l.cuotas.length*100);
+  const canSolicit=pag>=6&&pen>0&&!l.renewRequest;
+  const ini=(l.nom[0]||'')+(l.ape[0]||'');
+  const cuotasH=l.cuotas.map(c=>`<div class="portal-row">
+    <div class="cnum ${c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p'}" style="flex-shrink:0">${c.num}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:600;font-size:11px">${fd(c.fecha)}</div>
+      <div style="font-size:10px;color:var(--smoke)">${c.estado==='pagada'?'✅ Pagada':c.estado==='mora'?'🔴 Mora':'⏳ Pendiente'}</div>
+    </div>
+    <div class="mono" style="font-size:11px;font-weight:700;color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
+    ${c.comprobante?`<img src="${c.comprobante}" style="width:28px;height:28px;border-radius:5px;object-fit:cover;border:1px solid var(--line2);cursor:pointer;margin-left:5px" onclick="viewImg('${c.comprobante}')">`:
+    (c.estado!=='pagada'?`<label style="margin-left:5px;cursor:pointer"><input type="file" accept="image/*" style="display:none" onchange="uploadClientComp(this,${l.id},${c.num})"><span style="font-size:10px;color:var(--jade)">📸 Adjuntar</span></label>`:'')}
+  </div>`).join('');
+  $('portal-content').innerHTML=`<div class="portal-loan">
+    <div class="portal-loan-head">
+      <div class="portal-loan-av">${ini.toUpperCase()}</div>
+      <div><div style="font-weight:800;font-size:16px">${l.nom} ${l.ape}</div>
+      <div style="font-size:11px;color:var(--smoke)">CC ${l.ced} · ${cap(l.mod)}</div></div>
+    </div>
+    <div class="portal-stat-grid">
+      <div class="portal-stat"><div class="portal-stat-v" style="color:var(--jade)">${fmt(l.val)}</div><div class="portal-stat-l">Préstamo</div></div>
+      <div class="portal-stat"><div class="portal-stat-v" style="color:var(--sky)">${fmt(l.cuo)}</div><div class="portal-stat-l">Valor cuota</div></div>
+      <div class="portal-stat"><div class="portal-stat-v" style="color:var(--lime)">${pag}</div><div class="portal-stat-l">Cuotas pagadas</div></div>
+      <div class="portal-stat"><div class="portal-stat-v" style="color:${pen>0?'var(--amber)':'var(--lime)'}">${pen}</div><div class="portal-stat-l">Cuotas pendientes</div></div>
+    </div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:11px;color:var(--smoke)">Total a pagar</div>
+      <div style="font-weight:900;color:var(--white);font-size:15px">${fmt(l.cuo*l.ncu)}</div>
+    </div>
+    <div style="margin-bottom:12px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--smoke);margin-top:2px"><span>Progreso: ${pct}%</span>${moraN>0?`<span style="color:var(--fire)">${moraN} en mora</span>`:''}</div></div>
+    ${l.renewRequest?'<div style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--violet);margin-bottom:10px">🔄 Tu solicitud de renovación está siendo revisada por el administrador.</div>':''}
+    ${canSolicit?`<div class="renew-box"><div class="renew-box-t">¿Quieres renovar tu crédito?</div><div class="renew-box-s">Has pagado ${pag} cuotas. Puedes solicitar una renovación.<br>El administrador revisará y aprobará si cumples los requisitos.</div><button class="btn btn-violet btn-w" onclick="solicitarRenovacion(${l.id})">🔄 Solicitar renovación</button></div>`:''}
+    <div class="sh" style="margin-top:10px"><div class="st">Estado de cuotas</div></div>
+    ${cuotasH}
+    <div class="brow" style="margin-top:12px"><button class="btn btn-ghost btn-w" onclick="portalLogout()">← Volver al inicio</button></div>
+  </div>`;
+}
+function solicitarRenovacion(lid){
+  // Find loan across all carteras
+  let found=null;
+  for(const c of DB.carteras){const l=c.loans.find(x=>x.id===lid);if(l){found=l;break;}}
+  if(!found)return;
+  found.renewRequest=true;
+  found.historico.push(`🔄 Cliente solicitó renovación desde portal — ${new Date().toLocaleDateString('es-CO')}`);
+  renderPortal(found);
+  toast('✅ Solicitud enviada al administrador');
+}
+function uploadClientComp(inp,lid,cn){
+  let loan=null;
+  for(const c of DB.carteras){const l=c.loans.find(x=>x.id===lid);if(l){loan=l;break;}}
+  if(!loan)return;
+  const cuota=loan.cuotas.find(c=>c.num===cn);if(!cuota)return;
+  const file=inp.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    cuota.comprobante=e.target.result;
+    loan.historico.push(`📸 Cliente adjuntó comprobante cuota #${cn} — ${new Date().toLocaleDateString('es-CO')}`);
+    renderPortal(loan);toast('📸 Comprobante adjuntado');
+  };r.readAsDataURL(file);
+}
+function portalLogout(){
+  document.getElementById('s-portal').classList.remove('on');
+  document.getElementById('s-inicio').classList.add('on');
+  if(document.getElementById('inicio-ced'))document.getElementById('inicio-ced').value='';
+}
+
+/* ─── MENSAJES WHATSAPP ─── */
+function sendWACreacion(l){
+  if(!S.cartera?.cfg?.autoWA)return;
+  if(!l.not||l.not==='ninguno'||!l.not.includes('whatsapp'))return;
+  const f1=l.cuotas[0]?.fecha,fU=l.cuotas[l.cuotas.length-1]?.fecha;
+  const msg=`💰 *PrestaMax — Confirmación de Crédito*\n\nEstimado/a *${l.nom} ${l.ape}*\nCC: *${l.ced}*\n\nSe ha generado su crédito *${cap(l.mod)}*:\n\n• Valor: *${fmt(l.val)}*\n• Cuotas: *${l.ncu} × ${fmt(l.cuo)}*\n• Total a pagar: *${fmt(l.ncu*l.cuo)}*\n• Multa por mora: *${fmt(l.mul)}* por cuota\n• Hora límite: *${l.hor}*\n• 1ª cuota: *${fd(f1)}*\n• Última: *${fd(fU)}*\n\n⚠️ Recuerde pagar puntualmente al señor ${l.nom} ${l.ape} con cédula ${l.ced} para evitar multas o calificación negativa que limite futuros préstamos.\n\n_PrestaMax 🇨🇴_`;
+  openWA(l.tel,msg);
+}
+function sendWARenovacion(l,pend,trans){
+  if(!S.cartera?.cfg?.autoWA)return;
+  const msg=`🔄 *PrestaMax — Renovación de Crédito*\n\nEstimado/a *${l.nom} ${l.ape}* (CC: ${l.ced})\n\nSu crédito ha sido *renovado exitosamente*.\n\n• Modalidad: *${cap(l.mod)}*\n• Valor renovado: *${fmt(l.val)}*\n• ${pend} cuotas descontadas\n• 💸 Transferencia recibida: *${fmt(trans)}*\n• Nuevas cuotas: *${l.ncu} × ${fmt(l.cuo)}*\n• 1ª cuota: *${fd(l.cuotas[0]?.fecha)}*\n\n⚠️ Recuerde pagar puntualmente.\n\n_PrestaMax 🇨🇴_`;
+  openWA(l.tel,msg);
+}
+function sendWA(lid){
+  const l=getL(lid);if(!l)return;
+  const p=l.cuotas.find(c=>c.estado==='mora')||l.cuotas.find(c=>c.estado==='pendiente');
+  if(!p){toast('✅ Sin cuotas pendientes');return;}
+  const isMora=p.estado==='mora';
+  const msg=isMora
+    ?`⚠️ *PrestaMax — Cuota en Mora*\n\nEstimado/a *${l.nom} ${l.ape}* (CC: ${l.ced}),\n\nRecuerde realizar el pago de su cuota por el valor de *${fmt(p.valor)}* (Cuota #${p.num}).\n\nSi por alguna razón desea pagar la multa de *${fmt(l.mul)}* y reprogramar la cuota, por favor confírmelo respondiendo:\n\n*1️⃣* → Pagar cuota completa: *${fmt(p.valor+(p.multa||0))}*\n*2️⃣* → Pagar solo la multa: *${fmt(l.mul)}*\n\nEl incumplimiento afecta su calificación crediticia.\n\n_PrestaMax 🇨🇴_`
+    :`🔔 *PrestaMax — Recordatorio de Pago*\n\nEstimado/a *${l.nom} ${l.ape}* (CC: ${l.ced}),\n\nRecuerde realizar el pago de su cuota por el valor de *${fmt(p.valor)}*.\n\n📅 Fecha: *${fd(p.fecha)}*\n⏰ Hora límite: *${l.hor}*\n\nEvite una multa de ${fmt(l.mul)} pagando antes de la hora límite.\n\n_PrestaMax 🇨🇴_`;
+  openWA(l.tel,msg);
+  l.historico.push(`📲 Recordatorio WA cuota #${p.num} — ${new Date().toLocaleDateString('es-CO')}`);
+  toast('📲 Abriendo WhatsApp...');
+}
+function notifGrupo(tipo,l,extra={}){
+  const dest=S.cartera?.cfg?.grupoWA;if(!dest){toast('💡 Configura el grupo WA en ⚙️ Config');return;}
+  let msg='';
+  if(tipo==='nuevo')    msg=`📥 NUEVO CRÉDITO\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 ${fmt(l.val)} · ${l.ncu}×${fmt(l.cuo)} · ${cap(l.mod)}\n1ª cuota: ${fd(l.cuotas[0]?.fecha)}\nPor: ${S.user?.name}`;
+  if(tipo==='multa')    msg=`⚠️ CLIENTE CONFIRMA PAGAR MULTA\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💸 Multa cuota #${extra.cn}: ${fmt(l.mul)}\nPor favor gestionar cobro.`;
+  if(tipo==='pago')     msg=`✅ AVISO DE PAGO PRÓXIMO\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 Cuota ${extra.cn}: ${fmt(extra.val)}\nVerificar pago.`;
+  if(tipo==='renovacion')msg=`🔄 RENOVACIÓN\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 ${fmt(l.val)} · Transferencia: ${fmt(extra.trans)}\nPor: ${S.user?.name}`;
+  if(dest.startsWith('https://chat.whatsapp.com/')){
+    window.open(dest,'_blank');
+    if(navigator.clipboard)navigator.clipboard.writeText(msg).then(()=>toast('📋 Aviso copiado — pégalo en el grupo'));
+  }else openWA(dest,msg);
+}
+function openRenCompInp(){const el=document.getElementById('ren-comp-inp');if(el)el.click();}
+function openWA(tel,msg){
+  // Limpiar número: quitar todo excepto dígitos, agregar 57 si no tiene código
+  let num=tel.replace(/\D/g,'');
+  if(num.startsWith('0'))num=num.substring(1);
+  if(!num.startsWith('57')&&num.length===10)num='57'+num;
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+
+/* ─── CAPITAL MANAGEMENT ─── */
+function openM_capital(){
+  renderCapitalModal();
+  openM('m-capital');
+}
+
+function renderCapitalModal(){
+  const c=S.cartera;const cap=getCap(c);
+  const disp=capDisponible(c);const gan=gananciaTotal(c);
+  const prestado=Math.max(0,cap.base-disp);
+  const tieneInv=cap.histInv.length>0;
+  const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
+
+  // ── SI NO HAY INVERSIÓN: solo mostrar formulario de creación ──
+  if(!tieneInv){
+    document.getElementById('capital-body-content').innerHTML=`
+      <div class="info-box" style="margin-bottom:12px">Esta cartera aún no tiene capital base configurado. Ingresa el monto que vas a invertir para comenzar a prestar.</div>
+      <div class="fg"><label class="fl">💵 Monto de inversión inicial</label>
+        <input type="number" class="fi" id="cap-add-val" placeholder="Ej: 5000000" oninput="prevCapAdd()">
+      </div>
+      <div id="cap-add-prev" style="display:none;font-size:11px;color:var(--jade);padding:4px 6px;background:rgba(0,229,176,.08);border-radius:6px;margin-bottom:7px"></div>
+      <div class="fg"><label class="fl">📝 Nota (opcional)</label>
+        <input type="text" class="fi" id="cap-add-nota" placeholder="Ej: Inversión inicial enero 2025">
+      </div>
+      <div style="display:flex;gap:7px;margin-top:4px">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeM('m-capital')">✕ Cerrar</button>
+        <button class="btn btn-jade" style="flex:2" onclick="confirmarCapital()">✅ Establecer capital</button>
+      </div>
+    `;
+    return;
+  }
+
+  // ── SI YA HAY INVERSIÓN: mostrar resumen + editar/eliminar ──
+  const h=cap.histInv[0];
+  const canDel=!tieneActivos;
+  const delBtn=canDel
+    ? `<button class="btn btn-fire btn-sm" style="padding:5px 10px" onclick="capInvDel(0)">🗑️ Eliminar</button>`
+    : `<button class="btn btn-fire btn-sm" style="padding:5px 10px;opacity:.4;cursor:not-allowed" title="Hay préstamos activos — no se puede eliminar">🗑️ Eliminar</button>`;
+
+  document.getElementById('capital-body-content').innerHTML=`
+    <div class="calcbox" style="margin-bottom:12px">
+      <div class="crow2"><span>Capital base</span><span class="mono" style="font-weight:800;color:var(--jade)">${fmt(cap.base)}</span></div>
+      <div class="crow2"><span>Disponible para prestar</span><span class="mono" style="color:var(--jade)">${fmt(disp)}</span></div>
+      <div class="crow2"><span>En préstamos activos</span><span class="mono" style="color:var(--fire)">${fmt(prestado)}</span></div>
+      <div class="crow2"><span>Ganancias acumuladas</span><span class="mono" style="color:var(--lime)">${fmt(gan)}</span></div>
+    </div>
+
+    <div id="cap-inv-0" style="margin-bottom:10px">
+      <div class="cap-inv-view" style="background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:12px;font-weight:700">${h.nota||'Inversión base'}</div>
+            <div style="font-size:10px;color:var(--smoke)">${new Date(h.fecha).toLocaleDateString('es-CO')}</div>
+          </div>
+          <div class="mono" style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(h.monto)}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="capInvEdit(0)">✏️ Modificar</button>
+          ${delBtn}
+        </div>
+        ${!canDel?`<div style="font-size:10px;color:var(--fog);margin-top:6px;text-align:center">⚠️ No se puede eliminar mientras haya préstamos activos</div>`:''}
+      </div>
+      <div class="cap-inv-edit" style="display:none;background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:12px;margin-top:4px">
+        <div class="fg"><label class="fl">💵 Nuevo monto</label>
+          <input type="number" class="fi" id="cap-edit-val-0" value="${h.monto}">
+        </div>
+        <div class="fg"><label class="fl">📝 Nota</label>
+          <input type="text" class="fi" id="cap-edit-nota-0" value="${h.nota||''}">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="capInvCancel(0)">✕ Cancelar</button>
+          <button class="btn btn-jade btn-sm" style="flex:1" onclick="capInvSave(0)">✅ Guardar</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-w" style="margin-top:4px" onclick="closeM('m-capital')">← Volver a la cartera</button>
+  `;
+}
+
+function prevCapAdd(){
+  const val=parseFloat(document.getElementById('cap-add-val')?.value)||0;
+  const prev=document.getElementById('cap-add-prev');
+  if(val>0&&prev){prev.style.display='block';prev.innerHTML=`Capital base: <b style="color:var(--jade)">${fmt(val)}</b>`;}
+  else if(prev)prev.style.display='none';
+}
+
+function confirmarCapital(){
+  const val=parseFloat(document.getElementById('cap-add-val')?.value)||0;
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const nota=document.getElementById('cap-add-nota')?.value.trim()||'Inversión base';
+  const cap=getCap(S.cartera);
+  cap.base=val;
+  cap.histInv=[{fecha:new Date(),monto:val,nota}];
+  toast(`✅ Capital establecido: ${fmt(val)}`);
+  closeM('m-capital');render();
+}
+
+function capInvEdit(i){
+  document.querySelector(`#cap-inv-${i} .cap-inv-view`).style.display='none';
+  document.querySelector(`#cap-inv-${i} .cap-inv-edit`).style.display='block';
+}
+function capInvCancel(i){
+  document.querySelector(`#cap-inv-${i} .cap-inv-view`).style.display='block';
+  document.querySelector(`#cap-inv-${i} .cap-inv-edit`).style.display='none';
+}
+function capInvSave(i){
+  const val=parseFloat(document.getElementById(`cap-edit-val-${i}`)?.value)||0;
+  const nota=document.getElementById(`cap-edit-nota-${i}`)?.value.trim()||'Inversión base';
+  if(val<=0){toast('⚠️ Monto inválido');return;}
+  const cap=getCap(S.cartera);
+  const disp=capDisponible(S.cartera);
+  const prestado=Math.max(0,cap.base-disp);
+  if(val<prestado){toast(`❌ No puedes bajar el capital a ${fmt(val)} — hay ${fmt(prestado)} en préstamos activos`);return;}
+  cap.histInv[i].monto=val;cap.histInv[i].nota=nota;
+  cap.base=val;
+  toast(`✅ Capital actualizado: ${fmt(val)}`);
+  closeM('m-capital');render();
+}
+function capInvDel(i){
+  const c=S.cartera;
+  const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
+  if(tieneActivos){toast('❌ No se puede eliminar mientras haya préstamos activos');return;}
+  const cap=getCap(c);
+  // Show inline confirm instead of confirm() which doesn't work in iframes
+  const confirmDiv=document.getElementById('cap-del-confirm');
+  if(confirmDiv){confirmDiv.style.display='block';return;}
+  // Inject confirm UI into modal
+  const area=document.getElementById('capital-body-content');
+  const warn=document.createElement('div');
+  warn.id='cap-del-confirm';
+  warn.style.cssText='background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.4);border-radius:8px;padding:12px;margin-top:10px';
+  warn.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--fire);margin-bottom:6px">⚠️ ¿Confirmar eliminación?</div>
+    <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">La cartera quedará sin capital base de <b>${fmt(cap.base)}</b>.</div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cap-del-confirm').remove()">Cancelar</button>
+      <button class="btn btn-fire btn-sm" style="flex:1" onclick="confirmarEliminarInv()">🗑️ Sí, eliminar</button>
+    </div>`;
+  area.appendChild(warn);
+}
+
+function confirmarEliminarInv(){
+  const c=S.cartera;const cap=getCap(c);
+  cap.base=0;cap.histInv=[];
+  toast('🗑️ Inversión eliminada.');
+  closeM('m-capital');render();
+}
+
+
+function openReinvertir(){
+  const c=S.cartera;const cap=getCap(c);
+  const gan=gananciaTotal(c);
+  document.getElementById('reinvertir-body').innerHTML=`
+    <div class="ganancia-box" style="margin-bottom:10px">
+      <div class="ganancia-row"><span style="font-weight:700">Ganancias disponibles</span><span class="mono" style="color:var(--lime);font-size:16px;font-weight:800">${fmt(gan)}</span></div>
+    </div>
+    <div class="info-box">Al reinvertir, las ganancias se suman a la base de capital. En el historial de ganancias quedarán como <b>reinvertidas</b> para siempre.</div>
+    <div class="fg"><label class="fl">💵 Monto a reinvertir</label>
+      <input type="number" class="fi" id="reinv-val" placeholder="${gan}" value="${gan}" max="${gan}" oninput="prevReinv(${gan})">
+    </div>
+    <div id="reinv-prev" class="info-box" style="margin-bottom:8px">
+      Base actual: <b>${fmt(cap.base)}</b> → Nueva base: <b style="color:var(--jade)">${fmt(cap.base+gan)}</b>
+    </div>
+    <div class="brow">
+      <button class="btn btn-ghost btn-w" onclick="closeM('m-reinvertir')">Cancelar</button>
+      <button class="btn btn-lime btn-w" onclick="confirmarReinversion(${gan})">💹 Reinvertir</button>
+    </div>
+    ${cap.histGan.length?`<div class="hr"></div>
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">📜 Historial de ganancias</div>
+    <div class="ganancia-hist">
+    ${[...cap.histGan].reverse().map(h=>`<div class="gitem">
+      <span style="flex:1">${new Date(h.fecha).toLocaleDateString('es-CO')} · ${h.cliente} · ${h.nota}${h.reinvertido?' <span style="color:var(--jade);font-size:10px">↩ reinvertida</span>':''}</span>
+      <span class="mono" style="color:var(--lime);margin-left:8px">${fmt(h.monto)}</span>
+    </div>`).join('')}
+    </div>`:''}
+  `;
+  openM('m-reinvertir');
+}
+
+function prevReinv(maxGan){
+  const val=parseFloat(document.getElementById('reinv-val')?.value)||0;
+  const c=S.cartera;const cap=getCap(c);
+  const prev=document.getElementById('reinv-prev');
+  if(prev)prev.innerHTML=`Base actual: <b>${fmt(cap.base)}</b> → Nueva base: <b style="color:var(--jade)">${fmt(cap.base+Math.min(val,maxGan))}</b>`;
+}
+
+function confirmarReinversion(maxGan){
+  const val=Math.min(parseFloat(document.getElementById('reinv-val')?.value)||0, maxGan);
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const c=S.cartera;const cap=getCap(c);
+  cap.base+=val;
+  cap.histInv.push({fecha:new Date(),monto:val,nota:'Reinversión de ganancias'});
+  // Mark histGan entries as reinverted (most recent first, up to amount)
+  let rem=val;
+  for(let i=cap.histGan.length-1;i>=0&&rem>0;i--){
+    if(!cap.histGan[i].reinvertido){cap.histGan[i].reinvertido=true;rem-=cap.histGan[i].monto;}
+  }
+  closeM('m-reinvertir');
+  toast(`💹 ${fmt(val)} reinvertidos. Nueva base: ${fmt(cap.base)}`);
+  render();
+}
+
+/* ─── SCORING ─── */
+function score(l){
+  const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
+  const mora=l.cuotas.filter(c=>c.estado==='mora').length;
+  const pct=l.cuotas.length>0?pag/l.cuotas.length:0;
+  if(mora===0&&pct>0.8)return{l:'A',col:'var(--lime)'};
+  if(mora<=1&&pct>0.5)return{l:'B',col:'var(--sky)'};
+  if(mora<=2)return{l:'C',col:'var(--amber)'};
+  return{l:'D',col:'var(--fire)'};
+}
+function clientSc(loans){
+  const s=loans.map(l=>score(l).l);
+  if(s.some(x=>x==='D'))return'D';if(s.some(x=>x==='C'))return'C';if(s.some(x=>x==='B'))return'B';return'A';
+}
+
+/* ─── UTILS ─── */
+function fmt(n){return'$'+Math.round(n||0).toLocaleString('es-CO');}
+function sfmt(n){if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'K';return fmt(n);}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function gv(id){return document.getElementById(id)?.value||'';}
+function $(id){return document.getElementById(id);}
+function openM(id){$(id)?.classList.add('on');}
+function closeM(id){$(id)?.classList.remove('on');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');});});
+let _tt;
+function toast(msg){
+  clearTimeout(_tt);document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);_tt=setTimeout(()=>t.remove(),3200);
+}
+seed();
+</script>
+</body>
+</html>
