@@ -1162,8 +1162,10 @@ function gananciaLoan(l){
 }
 
 function gananciaTotal(c){
-  // Ganancia real ya cobrada en toda la cartera
-  return (c?.loans||[]).reduce((s,l)=>s+gananciaLoan(l),0);
+  // Ganancia real ya cobrada en toda la cartera (incluye préstamos eliminados)
+  const ganActiva=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
+  const ganPermanente=((c?.capital?.histGanPermanente)||[]).reduce(function(s,h){return s+h.monto;},0);
+  return ganActiva+ganPermanente;
 }
 
 function gananciaEstimada(c){
@@ -1481,7 +1483,13 @@ function rHistorial(){
   return html;
 }
 function rClientes(){
-  const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,loans:[]};map[l.ced].loans.push(l);});
+  // Incluir TODOS los préstamos (activos y cerrados) para agrupar por cliente
+  const allLoans=(S.cartera?.loans||[]);
+  const map={};
+  allLoans.forEach(function(l){
+    if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,email:l.email||'',loans:[]};
+    map[l.ced].loans.push(l);
+  });
   const cl=Object.values(map);
   if(!cl.length)return'<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">Sin clientes</div></div>';
   return`<div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchCl(this.value)"></div>
@@ -1497,6 +1505,7 @@ function renderClList(cl){return cl.map(function(c){
   const ini=(c.loans[0].nom[0]||'')+(c.loans[0].ape[0]||'');
   // Si tiene múltiples activos, mostrar lista expandible
   const multiLoans=activos.length>1;
+  const clickAction=multiLoans?'toggleClientLoans("cl-'+c.ced+'")':(activos.length?'showLoan('+activos[0].id+')':'showLoan('+c.loans[0].id+')');
   let html='<div class="clcard" style="cursor:pointer">'+
     '<div class="lstripe '+(mora?'s-fire':pend>0?'s-amber':'s-jade')+'"></div>'+
     '<div style="display:flex;align-items:center;gap:10px" onclick="'+clickAction+'">'+
@@ -2230,7 +2239,12 @@ function openRenew(lid){
     '<input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewRenComp(this)">',
     '<input type="hidden" id="ren-comp-data"></div>'
   ].join('');
-  $('renew-body').innerHTML=html;
+  // Agregar botón confirmar al final
+  $('renew-body').innerHTML=html+
+    '<div class="brow" style="margin-top:12px">'+
+    '<button class="btn btn-ghost btn-w" onclick="closeM(String.fromCharCode(109,45,114,101,110,101,119))">Cancelar</button>'+
+    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+trans+','+pend+')">🔄 Confirmar renovación</button>'+
+    '</div>';
   closeM('m-opts');openM('m-renew');
 }
 
@@ -2296,13 +2310,27 @@ function openOpts(){
   openM('m-opts');
 }
 function delLoan(id){
-  const l=S.cartera.loans.find(x=>x.id===id);
+  const l=S.cartera.loans.find(function(x){return x.id===id;});
   if(l){
-    // Registrar en historial de la cartera quién eliminó
+    // Preservar ganancia en histGan ANTES de eliminar
+    const cobrado=l.cuotas.filter(function(c){return c.estado==='pagada';}).reduce(function(s,c){return s+c.valor+(c.multa||0);},0);
+    const ganancia=Math.max(0,cobrado-l.val);
+    const cap=getCap(S.cartera);
+    if(ganancia>0&&cap){
+      // Registrar ganancia permanente para que no se pierda
+      if(!cap.histGanPermanente)cap.histGanPermanente=[];
+      cap.histGanPermanente.push({
+        fecha:new Date().toISOString(),
+        monto:ganancia,
+        cliente:l.nom+' '+l.ape,
+        nota:'Ganancia preservada al eliminar préstamo'
+      });
+    }
+    // Registrar eliminación
     if(!S.cartera.histAcciones)S.cartera.histAcciones=[];
-    S.cartera.histAcciones.push({accion:'eliminó préstamo',cliente:l.nom+' '+l.ape,por:S.user?.name||S.user?.email,email:S.user?.email,fecha:new Date().toISOString()});
+    S.cartera.histAcciones.push({accion:'eliminó préstamo',cliente:l.nom+' '+l.ape,gananciaPreservada:ganancia,por:S.user?.name||S.user?.email,fecha:new Date().toISOString()});
   }
-  S.cartera.loans=S.cartera.loans.filter(x=>x.id!==id);
+  S.cartera.loans=S.cartera.loans.filter(function(x){return x.id!==id;});
   closeM('m-opts');goBack();toast('🗑️ Eliminado');render();updDot();fsSave();
 }
 
@@ -2421,7 +2449,13 @@ function notifGrupo(tipo,l,extra={}){
   }else openWA(dest,msg);
 }
 function openRenCompInp(){const el=document.getElementById('ren-comp-inp');if(el)el.click();}
-function openWA(tel,msg){window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');}
+function openWA(tel,msg){
+  // Limpiar número: quitar todo excepto dígitos, agregar 57 si no tiene código
+  let num=tel.replace(/\D/g,'');
+  if(num.startsWith('0'))num=num.substring(1);
+  if(!num.startsWith('57')&&num.length===10)num='57'+num;
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+}
 
 
 /* ─── CAPITAL MANAGEMENT ─── */
