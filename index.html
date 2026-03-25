@@ -1025,7 +1025,7 @@ function saveCartera(){
   const pass=gv('nc-pass').trim();
   const id='c'+Date.now();
   const collabs=gv('nc-collabs').split(',').map(x=>x.trim()).filter(Boolean);
-  const capBase=parseFloat(gv('nc-cap').replace(/[^0-9.]/g,''))||0;
+  const capBase=parseFloat((gv('nc-cap')||'').replace(/[^0-9]/g,''))||0;
   const nuevaC={id,name,desc:gv('nc-desc').trim(),color:gv('nc-color'),
     passHash:pass?simHash(pass):'',collabs,loans:[],cfg:{autoWA:true,grupoWA:''},owner:S.user?.id||'',
     capital:{base:capBase,histInv:capBase>0?[{fecha:new Date(),monto:capBase,nota:'Inversión inicial'}]:[],histGan:[]},
@@ -1076,7 +1076,8 @@ function doForgot(id){
 }
 
 /* ─── RENDER HELPERS ─── */
-function loans(){return S.cartera?.loans||[];}
+function loans(){return (S.cartera?.loans||[]).filter(function(l){return l.activo!==false;});}
+function allLoans(){return S.cartera?.loans||[];}
 function goTab(tab){
   S.tab=tab;
   document.querySelectorAll('.nv').forEach(el=>el.classList.remove('on'));
@@ -1154,11 +1155,11 @@ function capRecuperado(c){
 // Ganancias acumuladas basadas en % configurado de la cartera
 // ─── GANANCIA REAL: total cobrado - capital prestado ───
 function gananciaLoan(l){
-  // Ganancia real cobrada en este préstamo
-  const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((s,x)=>s+x.valor+(x.multa||0),0);
-  // Cuánto del capital ya se recuperó (no puede exceder val)
+  const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor+(x.multa||0);},0);
   const capRecup=Math.min(cobrado,l.val);
-  return Math.max(0, cobrado-capRecup);
+  const ganCicloActual=Math.max(0,cobrado-capRecup);
+  const ganAnterior=l._ganAnteriorTotal||0;
+  return ganCicloActual+ganAnterior;
 }
 
 function gananciaTotal(c){
@@ -1407,8 +1408,9 @@ function rDetail(l){
         <div class="csub">${c.estado==='pagada'?`Pagada · <b>${c.pagadoPor||'Sistema'}</b>${c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''}`:c.estado==='mora'?'En mora':'Pendiente'}${ms}</div>
         ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
         ${c.estado!=='pagada'?`<div class="cact">
-          <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar</button>
-          ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar</button>`:''}
+          <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar cuota</button>
+          ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar mora</button>`:''}
+          ${c.estado==='pendiente'&&l.mul>0?`<button class="btn btn-fire btn-sm" onclick="openMora(${l.id},${c.num})">💸 Cobrar multa</button>`:''}
           <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
         </div>`:''}
       </div>
@@ -1483,10 +1485,9 @@ function rHistorial(){
   return html;
 }
 function rClientes(){
-  // Incluir TODOS los préstamos (activos y cerrados) para agrupar por cliente
-  const allLoans=(S.cartera?.loans||[]);
+  // Solo agrupar clientes con préstamos ACTIVOS
   const map={};
-  allLoans.forEach(function(l){
+  allLoans().forEach(function(l){
     if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,email:l.email||'',loans:[]};
     map[l.ced].loans.push(l);
   });
@@ -2218,51 +2219,81 @@ function doMora(lid, cn, pagaMulta){
 /* ─── RENOVAR ─── */
 function openRenew(lid){
   const l=getL(lid);if(!l)return;
-  const pend=l.cuotas.filter(function(c){return c.estado!=='pagada';}).length;
-  const deuda=pend*l.cuo;
-  const trans=Math.max(0,l.val-deuda);
-  const totalNuevo=l.ncu*l.cuo;
-  const ganNueva=totalNuevo-l.val;
+  const total=l.cuotas.length;
+  const pagadas=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+  if(pagadas<Math.ceil(total/2)){
+    toast('⚠️ El cliente debe pagar al menos el 50% de las cuotas para renovar ('+pagadas+'/'+total+')');
+    return;
+  }
+  const cobrado=pagadas*l.cuo;               // lo que ya se recibió
+  const ganTotal=l.ncu*l.cuo-l.val;         // ganancia total del préstamo
+  const ganProporcional=Math.round(ganTotal*pagadas/total); // ganancia proporcional a cuotas pagadas
+  const efectivoCliente=cobrado-ganProporcional; // lo que recibe el cliente
+  const ganCiclo2=ganTotal;                  // ganancia del nuevo ciclo completo
   const html=[
     '<div class="calcbox" style="margin-bottom:10px">',
-    '<div class="crow2"><span>Préstamo original</span><span class="mono">'+fmt(l.val)+'</span></div>',
-    '<div class="crow2"><span>Deuda pendiente ('+pend+'×'+fmt(l.cuo)+')</span><span class="mono" style="color:var(--fire)">-'+fmt(deuda)+'</span></div>',
-    '<div class="crow2"><span>💸 Efectivo al cliente</span><span class="mono" style="color:var(--lime);font-weight:900">'+fmt(trans)+'</span></div>',
-    '<div style="border-top:1px solid var(--line);margin:8px 0;padding-top:8px">',
-    '<div class="crow2"><span>Nuevo ciclo ('+l.ncu+'×'+fmt(l.cuo)+')</span><span class="mono">'+fmt(totalNuevo)+'</span></div>',
-    '<div class="crow2"><span>Ganancia nueva</span><span class="mono" style="color:var(--gold);font-weight:900">'+fmt(ganNueva)+'</span></div>',
-    '</div></div>',
-    '<div class="renewal-box">El cliente recibe <b>'+fmt(trans)+'</b> en efectivo. El préstamo sigue siendo <b>'+fmt(l.val)+'</b> y pagará <b>'+fmt(totalNuevo)+'</b> en nuevo ciclo.</div>',
-    '<div class="fg"><label class="fl">📸 Comprobante (opcional)</label>',
+    '<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">📊 Ciclo actual</div>',
+    '<div class="crow2"><span>Cuotas pagadas</span><span class="mono">'+pagadas+'/'+total+' ('+fmt(cobrado)+')</span></div>',
+    '<div class="crow2"><span>Interés ganado (proporcional)</span><span class="mono" style="color:var(--lime)">'+fmt(ganProporcional)+'</span></div>',
+    '<div class="crow2" style="border-top:1px solid var(--line);padding-top:6px;margin-top:4px">',
+    '<span>💸 Efectivo al cliente</span>',
+    '<span class="mono" style="color:var(--sky);font-weight:900">'+fmt(efectivoCliente)+'</span></div>',
+    '</div>',
+    '<div class="calcbox" style="margin-bottom:10px">',
+    '<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:8px">🔄 Nuevo ciclo</div>',
+    '<div class="crow2"><span>Valor préstamo</span><span class="mono">'+fmt(l.val)+'</span></div>',
+    '<div class="crow2"><span>Total a cobrar ('+l.ncu+'×'+fmt(l.cuo)+')</span><span class="mono">'+fmt(l.ncu*l.cuo)+'</span></div>',
+    '<div class="crow2"><span>Ganancia ciclo 2</span><span class="mono" style="color:var(--gold)">'+fmt(ganCiclo2)+'</span></div>',
+    '</div>',
+    '<div style="background:rgba(255,208,96,.1);border:1px solid rgba(255,208,96,.4);border-radius:10px;padding:12px;margin-bottom:12px">',
+    '<div style="font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px">💰 Total al finalizar ambos ciclos</div>',
+    '<div class="crow2"><span>Capital</span><span class="mono" style="color:var(--sky)">'+fmt(l.val)+'</span></div>',
+    '<div class="crow2"><span>Ganancia total (ciclo1 + ciclo2)</span><span class="mono" style="color:var(--gold);font-weight:900">'+fmt(ganProporcional+ganCiclo2)+'</span></div>',
+    '</div>',
+    '<div class="fg"><label class="fl">📸 Comprobante transferencia (opcional)</label>',
     '<div class="comp-upload" id="ren-comp-wrap" onclick="openRenCompInp()">',
-    '<div style="font-size:22px">📸</div><div class="comp-upload-t">Foto transferencia</div></div>',
+    '<div style="font-size:22px">📸</div>',
+    '<div class="comp-upload-t">Foto de la transferencia de '+fmt(efectivoCliente)+'</div></div>',
     '<input type="file" id="ren-comp-inp" accept="image/*" style="display:none" onchange="previewRenComp(this)">',
-    '<input type="hidden" id="ren-comp-data"></div>'
+    '<input type="hidden" id="ren-comp-data"></div>',
+    '<div class="brow" style="margin-top:12px">',
+    '<button class="btn btn-ghost btn-w" onclick="closeM(String.fromCharCode(109,45,114,101,110,101,119))">Cancelar</button>',
+    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+efectivoCliente+','+ganProporcional+')">🔄 Confirmar renovación</button>',
+    '</div>'
   ].join('');
-  // Agregar botón confirmar al final
-  $('renew-body').innerHTML=html+
-    '<div class="brow" style="margin-top:12px">'+
-    '<button class="btn btn-ghost btn-w" onclick="closeM(String.fromCharCode(109,45,114,101,110,101,119))">Cancelar</button>'+
-    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+trans+','+pend+')">🔄 Confirmar renovación</button>'+
-    '</div>';
+  $('renew-body').innerHTML=html;
   closeM('m-opts');openM('m-renew');
 }
 
-function confirmRenew(lid,trans,pend){
+function confirmRenew(lid,efectivoCliente,ganCiclo1){
   const l=getL(lid);if(!l)return;
   const comp=gv('ren-comp-data')||null;
-  l.historico.push(`🔄 Renovación · ${pend} cuotas descontadas · transferencia ${fmt(trans)}${comp?' 📸':''} — ${new Date().toLocaleDateString('es-CO')}`);
+  // Guardar ganancia ciclo 1 permanentemente
+  const cap=getCap(S.cartera);
+  if(ganCiclo1>0&&cap){
+    if(!cap.histGanPermanente)cap.histGanPermanente=[];
+    cap.histGanPermanente.push({
+      fecha:new Date().toISOString(),
+      monto:ganCiclo1,
+      cliente:l.nom+' '+l.ape,
+      nota:'Interés ciclo 1 (renovación)'
+    });
+  }
+  l._ganAnteriorTotal=(l._ganAnteriorTotal||0)+ganCiclo1;
+  if(!l._valOriginal)l._valOriginal=l.val;
+  l.historico.push('🔄 Renovación · efectivo al cliente: '+fmt(efectivoCliente)+' · interés ciclo1 guardado: '+fmt(ganCiclo1)+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
   l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
   const fechas=calcFechas(new Date(),l.mod,l.ncu);
-  l.cuotas=fechas.map((f,i)=>({num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null}));
-  closeM('m-renew');toast('🔄 Crédito renovado');
+  l.cuotas=fechas.map(function(f,i){return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null};});
+  closeM('m-renew');
+  toast('🔄 Renovado · Interés asegurado: '+fmt(ganCiclo1));
   fsSave();
-  setTimeout(function(){sendWARenovacion(l,pend,trans);},400);
-  if(S.cartera.cfg?.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans});},900);
+  setTimeout(function(){sendWARenovacion(l,0,efectivoCliente);},400);
+  if(S.cartera.cfg&&S.cartera.cfg.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans:efectivoCliente});},900);
   $('dcontent').innerHTML=rDetail(l);updDot();render();
 }
 
-/* ─── SOLICITUD DE RENOVACIÓN (desde portal cliente) ─── */
+
 function openRenewReq(lid){
   const l=getL(lid);if(!l)return;
   const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
@@ -2676,7 +2707,10 @@ function clientSc(loans){
 }
 
 /* ─── UTILS ─── */
-function fmt(n){return'$'+Math.round(n||0).toLocaleString('es-CO');}
+function fmt(n){
+  const v=Math.round(n||0);
+  return '$'+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
 function sfmt(n){if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'K';return fmt(n);}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function gv(id){return document.getElementById(id)?.value||'';}
