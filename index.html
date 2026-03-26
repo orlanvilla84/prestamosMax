@@ -1163,10 +1163,10 @@ function gananciaLoan(l){
 }
 
 function gananciaTotal(c){
-  // Ganancia real ya cobrada en toda la cartera (incluye préstamos eliminados)
-  const ganActiva=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
-  const ganPermanente=((c?.capital?.histGanPermanente)||[]).reduce(function(s,h){return s+h.monto;},0);
-  return ganActiva+ganPermanente;
+  // Ganancia real ya cobrada en toda la cartera.
+  // NOTA: gananciaLoan() ya incluye l._ganAnteriorTotal (intereses de ciclos anteriores guardados
+  // en confirmRenew), por lo que NO se suma histGanPermanente para evitar doble conteo.
+  return (c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
 }
 
 function gananciaEstimada(c){
@@ -1526,7 +1526,7 @@ function rDetail(l){
         ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
         ${c.estado!=='pagada'?`<div class="cact">
           <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar cuota</button>
-          ${c.estado!=='pagada'&&l.mul>0?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Multa</button>`:''}
+          ${c.estado!=='pagada'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Multa/Aplazar</button>`:''}
           <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
         </div>`:''}
       </div>
@@ -1694,7 +1694,7 @@ function rAlCard(a){
     <div class="alact">
       <button class="btn btn-lime btn-sm" onclick="openPay(${a.l.id},${a.c.num})">✅ Pagar</button>
       <button class="btn btn-sky btn-sm" onclick="sendWA(${a.l.id})">📲 WA</button>
-      ${isMora?`<button class="btn btn-amber btn-sm" onclick="openMora(${a.l.id},${a.c.num})">⚠️ Gestionar</button>`:''}
+      <button class="btn btn-amber btn-sm" onclick="openMora(${a.l.id},${a.c.num})">⚠️ Multa/Aplazar</button>
       <button class="btn btn-ghost btn-sm" onclick="showLoan(${a.l.id})">👁 Ver</button>
     </div>
   </div>`;
