@@ -1276,6 +1276,20 @@ function rInicio(){
         <span><span class="cap-dot" style="background:var(--jade)"></span>Disponible: ${fmt(disp)}</span>
       </div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Inversión</div>
+        <div style="font-weight:900;font-size:13px;color:var(--jade)">${fmt(capBase)}</div>
+      </div>
+      <div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.2);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Ganancia</div>
+        <div style="font-weight:900;font-size:13px;color:var(--lime)">${fmt(gan)}</div>
+      </div>
+      <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:9px;color:var(--fog)">Total</div>
+        <div style="font-weight:900;font-size:13px;color:var(--gold)">${fmt(capBase+gan)}</div>
+      </div>
+    </div>
     <div class="cap-actions">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openM_capital()">✏️ Modificar capital</button>
     </div>
@@ -1442,43 +1456,60 @@ function rDetail(l){
   const ganE=gananciaEstimadaLoan(l);
   const ganAnt=l._ganAnteriorTotal||0;
   const ciclosAnt=l._ciclos||0;
+  const interesFijo=l.ncu*l.cuo-l.val; // ganancia fija del ciclo actual
+  // Construir filas de ciclos guardados
   let ciclosHtml='';
   if(ciclosAnt>0){
     const capObj=getCap(S.cartera);
-    const histPerm=(capObj.histGanPermanente||[]).filter(h=>h.cliente===(l.nom+' '+l.ape));
+    const histPerm=(capObj.histGanPermanente||[]).filter(function(h){return h.cliente===(l.nom+' '+l.ape);});
     let rows='';
     for(let ci=1;ci<=ciclosAnt;ci++){
-      const entry=histPerm.find(h=>h.nota&&h.nota.includes('ciclo '+ci));
+      const entry=histPerm.find(function(h){return h.nota&&h.nota.includes('ciclo '+ci);});
       const monto=entry?entry.monto:Math.round(ganAnt/ciclosAnt);
-      rows+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(57,216,112,.2)">'
-        +'<span style="font-size:11px;color:var(--smoke)">💰 Interés ciclo '+ci+'</span>'
-        +'<span class="mono" style="font-size:12px;font-weight:800;color:var(--lime)">'+fmt(monto)+'</span>'
+      rows+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(57,216,112,.15)">'
+        +'<span style="font-size:12px;color:var(--smoke)">💰 Ganancia ciclo '+ci+'</span>'
+        +'<span class="mono" style="font-size:13px;font-weight:900;color:var(--lime)">+'+fmt(monto)+'</span>'
         +'</div>';
     }
-    ciclosHtml='<div style="background:rgba(57,216,112,.07);border:1px solid rgba(57,216,112,.3);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">'
-      +'<div style="font-size:11px;font-weight:800;color:var(--lime);margin-bottom:6px">🔄 Intereses guardados por ciclo</div>'
+    ciclosHtml='<div style="background:rgba(57,216,112,.07);border:1.5px solid rgba(57,216,112,.35);border-radius:var(--r-sm);padding:12px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:800;color:var(--lime);margin-bottom:8px;letter-spacing:.3px">🔐 GANANCIAS GUARDADAS POR CICLO</div>'
       +rows
-      +'<div style="display:flex;justify-content:space-between;padding-top:6px;margin-top:2px">'
-      +'<span style="font-size:11px;font-weight:700;color:var(--ash)">Total guardado</span>'
-      +'<span class="mono" style="font-size:13px;font-weight:900;color:var(--lime)">'+fmt(ganAnt)+'</span>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:4px;border-top:1px solid rgba(57,216,112,.3)">'
+      +'<span style="font-size:12px;font-weight:800;color:var(--ash)">Total guardado</span>'
+      +'<span class="mono" style="font-size:15px;font-weight:900;color:var(--lime)">'+fmt(ganAnt)+'</span>'
       +'</div></div>';
   }
-  const resumenFin=ciclosHtml+'<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
-    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Análisis financiero — Ciclo '+(ciclosAnt+1)+'</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div><div style="font-size:9px;color:var(--fog)">Prestado</div></div>'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo*l.ncu)+'</div><div style="font-size:9px;color:var(--fog)">Total a cobrar</div></div>'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--lime)">'+fmt(ganR)+'</div><div style="font-size:9px;color:var(--fog)">Gan. ciclo actual</div></div>'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--gold)">'+fmt(ganE)+'</div><div style="font-size:9px;color:var(--fog)">Gan. estimada ciclo</div></div>'
+  // Resumen financiero del ciclo actual
+  const gananciaActualEstimada=interesFijo;
+  const totalFinal=l.val+ganAnt+gananciaActualEstimada;
+  const resumenFin=ciclosHtml
+    +'<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Ciclo '+(ciclosAnt+1)+' — Análisis</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">'
+    +'<div style="text-align:center;background:rgba(0,229,176,.06);border-radius:6px;padding:7px">'
+      +'<div style="font-weight:900;font-size:15px;color:var(--jade)">'+fmt(l.val)+'</div>'
+      +'<div style="font-size:9px;color:var(--fog)">Capital</div></div>'
+    +'<div style="text-align:center;background:rgba(255,196,0,.06);border-radius:6px;padding:7px">'
+      +'<div style="font-weight:900;font-size:15px;color:var(--gold)">'+fmt(interesFijo)+'</div>'
+      +'<div style="font-size:9px;color:var(--fog)">Ganancia ciclo '+(ciclosAnt+1)+'</div></div>'
+    +'<div style="text-align:center;background:rgba(57,216,112,.06);border-radius:6px;padding:7px">'
+      +'<div style="font-weight:900;font-size:15px;color:var(--lime)">'+fmt(ganR)+'</div>'
+      +'<div style="font-size:9px;color:var(--fog)">Cobrado ya</div></div>'
+    +'<div style="text-align:center;background:rgba(100,200,255,.06);border-radius:6px;padding:7px">'
+      +'<div style="font-weight:900;font-size:15px;color:var(--sky)">'+fmt(l.cuo*l.ncu)+'</div>'
+      +'<div style="font-size:9px;color:var(--fog)">Total a cobrar</div></div>'
     +'</div>'
-    +(ganAnt>0
-      ?'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between">'
-        +'<span style="font-size:11px;color:var(--smoke)">Total acumulado todos ciclos</span>'
-        +'<span class="mono" style="font-weight:900;color:var(--gold)">'+fmt(l.val+ganAnt+ganE)+'</span>'
-        +'</div>'
-      :'')
-    +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--smoke)">'
-    +'Al terminar: <b style="color:var(--jade)">'+fmt(l.val)+'</b> capital + <b style="color:var(--gold)">'+fmt(ganAnt+ganE)+'</b> ganancia total'
+    +'<div style="background:rgba(255,208,96,.08);border:1px solid rgba(255,208,96,.3);border-radius:8px;padding:10px">'
+      +'<div style="font-size:10px;color:var(--fog);margin-bottom:4px">Al terminar ciclo '+(ciclosAnt+1)+' completo recibirás:</div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);padding:2px 0">'
+        +'<span>Capital</span><span class="mono" style="color:var(--jade)">'+fmt(l.val)+'</span></div>'
+      +(ganAnt>0?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);padding:2px 0">'
+        +'<span>Ganancias ciclos anteriores</span><span class="mono" style="color:var(--lime)">+'+fmt(ganAnt)+'</span></div>':'')
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);padding:2px 0">'
+        +'<span>Ganancia ciclo '+(ciclosAnt+1)+'</span><span class="mono" style="color:var(--gold)">+'+fmt(interesFijo)+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:1px solid rgba(255,208,96,.3);margin-top:5px;padding-top:5px">'
+        +'<span style="color:var(--gold)">TOTAL</span>'
+        +'<span class="mono" style="color:var(--gold)">'+fmt(totalFinal)+'</span></div>'
     +'</div></div>';
   const cuotasH=l.cuotas.map(c=>{
     const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
@@ -2286,24 +2317,33 @@ function doMora(lid, cn, pagaMulta){
   const l=getL(lid),c=l?.cuotas.find(function(x){return x.num===cn;});if(!l||!c)return;
   const nfAdj=nextFecha(c,l);
   if(pagaMulta){
-    // SOLO cobra la multa - la cuota se reprograma al siguiente slot
-    // La multa va ÍNTEGRA a ganancia
+    // Cobrar multa: registrar y correr ESTA cuota + todas las siguientes un slot
     if(!l.histMultas)l.histMultas=[];
     l.histMultas.push({fecha:new Date().toISOString(),cuota:cn,monto:l.mul,cobradoPor:S.user?.name||''});
-    // Registrar la multa en histGan de la cartera
+    // Registrar multa en histGan de la cartera (suma a ganancias)
     const cap=getCap(S.cartera);
     if(cap)cap.histGan.push({fecha:new Date(),monto:l.mul,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
-    // Reprogramar la cuota
-    c.fecha=nfAdj;
-    c.estado='pendiente';
-    c.multa=(c.multa||0)+l.mul; // acumular multa pagada para registro
-    l.historico.push('💸 Multa cuota #'+cn+' cobrada: '+fmt(l.mul)+' → cuota reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
-    toast('✅ Multa cobrada: '+fmt(l.mul)+'. Cuota reprogramada al '+fd(nfAdj));
+    // Registrar multa en el préstamo acumulada
+    c.multa=(c.multa||0)+l.mul;
+    // Correr esta cuota y TODAS las pendientes siguientes un slot
+    const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
+    for(let i=0;i<pendSig.length;i++){
+      const qc=pendSig[i];
+      const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
+      qc.fecha=nextFecha({fecha:base},l);
+    }
+    l.historico.push('💸 Multa cuota #'+cn+': '+fmt(l.mul)+' cobrada · cuota y siguientes corridas un día — '+new Date().toLocaleDateString('es-CO'));
+    toast('✅ Multa '+fmt(l.mul)+' cobrada. Cuota #'+cn+' y siguientes reprogramadas');
   } else {
-    c.fecha=nfAdj;
-    c.estado='pendiente';
-    l.historico.push('🤝 Multa cuota #'+cn+' perdonada · reprogramada al '+fd(nfAdj)+' — '+new Date().toLocaleDateString('es-CO'));
-    toast('🤝 Multa perdonada. Cuota → '+fd(nfAdj));
+    // Sin multa: solo correr esta cuota y las siguientes
+    const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
+    for(let i=0;i<pendSig.length;i++){
+      const qc=pendSig[i];
+      const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
+      qc.fecha=nextFecha({fecha:base},l);
+    }
+    l.historico.push('🤝 Multa cuota #'+cn+' perdonada · cuota y siguientes reprogramadas — '+new Date().toLocaleDateString('es-CO'));
+    toast('🤝 Multa perdonada. Cuotas reprogramadas');
   }
   closeM('m-mora');
   fsSave();
@@ -2320,11 +2360,11 @@ function openRenew(lid){
     toast('⚠️ El cliente debe pagar al menos el 50% de las cuotas para renovar ('+pagadas+'/'+total+')');
     return;
   }
+  const interesCiclo=l.ncu*l.cuo-l.val;     // interés FIJO del ciclo siempre
+  const efectivoCliente=l.val-interesCiclo;  // capital - interés = lo que se entrega al cliente
   const cobrado=pagadas*l.cuo;
   const pendientes=total-pagadas;
   const deuda=pendientes*l.cuo;
-  const interesCiclo=l.ncu*l.cuo-l.val;     // interés FIJO del ciclo siempre
-  const efectivoCliente=l.val-deuda;         // capital - deuda pendiente
   const ganAcumulada=(l._ganAnteriorTotal||0);
   const cicloActual=(l._ciclos||0)+1;
   const html=[
