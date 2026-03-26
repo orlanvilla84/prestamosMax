@@ -1163,10 +1163,11 @@ function gananciaLoan(l){
 }
 
 function gananciaTotal(c){
-  // Ganancia real ya cobrada en toda la cartera.
-  // NOTA: gananciaLoan() ya incluye l._ganAnteriorTotal (intereses de ciclos anteriores guardados
-  // en confirmRenew), por lo que NO se suma histGanPermanente para evitar doble conteo.
-  return (c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
+  // gananciaLoan() ya incluye _ganAnteriorTotal de ciclos anteriores -> NO sumar histGanPermanente
+  // de renovaciones (doble conteo). Solo se suma histGanEliminados: ganancias de prestamos borrados.
+  const ganLoans=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
+  const ganEliminados=((c?.capital?.histGanEliminados)||[]).reduce(function(s,h){return s+h.monto;},0);
+  return ganLoans+ganEliminados;
 }
 
 function gananciaEstimada(c){
@@ -1185,7 +1186,9 @@ function capitalRecuperado(c){
 // Ganancia estimada de un préstamo (alias para compatibilidad)
 function gananciaEstimadaLoan(l,_c){
   const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
-  return Math.max(0, totalCuotas - l.val);
+  const ganCicloActual=Math.max(0,totalCuotas-l.val);
+  const ganAnterior=l._ganAnteriorTotal||0; // ganancias de ciclos anteriores ya aseguradas
+  return ganCicloActual+ganAnterior;
 }
 
 // Capital total por cobrar (cuotas pendientes + mora)
@@ -2532,9 +2535,9 @@ function delLoan(id){
     const ganancia=Math.max(0,cobrado-l.val);
     const cap=getCap(S.cartera);
     if(ganancia>0&&cap){
-      // Registrar ganancia permanente para que no se pierda
-      if(!cap.histGanPermanente)cap.histGanPermanente=[];
-      cap.histGanPermanente.push({
+      // Guardar en histGanEliminados (no en histGanPermanente que es solo para display de ciclos)
+      if(!cap.histGanEliminados)cap.histGanEliminados=[];
+      cap.histGanEliminados.push({
         fecha:new Date().toISOString(),
         monto:ganancia,
         cliente:l.nom+' '+l.ape,
