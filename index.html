@@ -626,6 +626,7 @@ window._db = firebase.firestore();
   <div id="reinvertir-body"></div>
 </div></div>
 <div class="overlay" id="m-renew-req"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔄 Solicitud de Renovación</div><div id="renew-req-body"></div></div></div>
+<div class="overlay" id="m-edit-cliente"><div class="sheet"><div class="shandle"></div><div class="shtitle">✏️ Editar Cliente</div><div id="edit-cliente-body"></div></div></div>
 <script>
 
 /* ─── CUSTOM DATE PICKER ─── */
@@ -1276,8 +1277,7 @@ function rInicio(){
       </div>
     </div>
     <div class="cap-actions">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openM_capital()">➕ Agregar inversión</button>
-      ${gan>0?`<button class="btn btn-lime btn-sm" style="flex:1" onclick="openReinvertir()">💹 Reinvertir ganancia</button>`:''}
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openM_capital()">✏️ Modificar capital</button>
     </div>
   </div>
   <div class="ganancia-box">
@@ -1313,11 +1313,23 @@ function rInicio(){
     <div class="ganancia-row" style="margin-top:8px;color:var(--smoke)"><span>Activos: ${act.length}</span><span>Mora: ${mora}</span><span>Cobros hoy: ${hoy}</span></div>
   </div>
   ${rCobrosHoy(act)}
-  <div class="stgrid">
-    <div class="stile t-jade"><div class="stico">💳</div><div class="stv">${act.length}</div><div class="stl">Activos</div></div>
-    <div class="stile t-fire"><div class="stico">⚠️</div><div class="stv">${mora}</div><div class="stl">En mora</div></div>
-    <div class="stile t-gold"><div class="stico">📅</div><div class="stv">${hoy}</div><div class="stl">Cobros hoy</div></div>
-    <div class="stile t-sky"><div class="stico">🔄</div><div class="stv" ${rewR.length?'style="color:var(--violet)"':''}>${rewR.length}</div><div class="stl">Sol. renovac.</div></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+    <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:6px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:var(--jade)">${act.length}</div>
+      <div style="font-size:9px;color:var(--fog)">Activos</div>
+    </div>
+    <div style="background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);border-radius:8px;padding:6px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:var(--fire)">${mora}</div>
+      <div style="font-size:9px;color:var(--fog)">Mora</div>
+    </div>
+    <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:6px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:var(--gold)">${hoy}</div>
+      <div style="font-size:9px;color:var(--fog)">Hoy</div>
+    </div>
+    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:6px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:${rewR.length?'var(--violet)':'var(--sky)'}">${rewR.length}</div>
+      <div style="font-size:9px;color:var(--fog)">Renov.</div>
+    </div>
   </div>
   ${rewR.length?`<div class="sh"><div class="st">🔄 Solicitudes de Renovación</div></div>
   ${rewR.map(l=>`<div class="alcard al-renew"><div class="alhead"><div class="alav">${l.nom[0]+l.ape[0]}</div>
@@ -1327,7 +1339,55 @@ function rInicio(){
   </div>`).join('')}`:''}
   ${als.length?`<div class="sh"><div class="st">🚨 Alertas urgentes</div><div class="sl" onclick="goTab('alertas')">Ver todas →</div></div>${als.slice(0,2).map(rAlCard).join('')}`:''}
   <div class="sh"><div class="st">📋 Préstamos recientes</div><div class="sl" onclick="goTab('prestamos')">Ver todos →</div></div>
-  ${[...ls].reverse().slice(0,3).map(rLCard).join('')}`;
+  ${rClientesAgrupados([...ls].reverse().slice(0,6))}\`;
+}
+
+function rClientesAgrupados(lista){
+  // Agrupar por cédula
+  const mapa={};
+  lista.forEach(function(l){
+    if(!mapa[l.ced])mapa[l.ced]={l,todos:[]};
+    mapa[l.ced].todos.push(l);
+  });
+  return Object.values(mapa).map(function(g){
+    const l=g.l;
+    const todos=g.todos;
+    const mora=todos.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
+    const hoy=todos.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
+    const ini=(l.nom[0]||'')+(l.ape[0]||'');
+    const multipleTag=todos.length>1?'<span style="background:rgba(0,229,176,.15);color:var(--jade);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700">'+todos.length+' créditos</span>':'';
+    const inner=todos.length>1
+      ? todos.map(function(x){
+          const pp=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+          const pt=Math.round(pp/x.cuotas.length*100);
+          const xmora=x.cuotas.some(function(c){return c.estado==='mora';});
+          const xhoy=x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
+          return '<div onclick="event.stopPropagation();showLoan('+x.id+')" style="background:var(--ink3);border-radius:6px;padding:6px 8px;margin-top:5px;cursor:pointer;border:1px solid var(--line)">'
+            +'<div style="display:flex;justify-content:space-between;align-items:center">'
+            +'<span style="font-size:11px;font-weight:700">'+fmt(x.val)+' · '+x.mod+'</span>'
+            +(xmora?'<span style="font-size:9px;color:var(--fire)">⚠️ Mora</span>':xhoy?'<span style="font-size:9px;color:var(--amber)">📅 Hoy</span>':'<span style="font-size:9px;color:var(--jade)">✅ Al día</span>')
+            +'</div>'
+            +'<div class="pb-track" style="height:2px;margin-top:3px"><div class="pb-fill" style="width:'+pt+'%"></div></div>'
+            +'<div style="font-size:9px;color:var(--smoke);margin-top:1px">'+pp+'/'+x.cuotas.length+' cuotas · '+pt+'%</div>'
+            +'</div>';
+        }).join('')
+      : '';
+    const clickFn=todos.length===1?'showLoan('+l.id+')':'';
+    return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+'  style="padding:8px 10px;cursor:'+(todos.length===1?'pointer':'default')+'">'
+      +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>'
+      +'<div class="lhead" style="margin-bottom:4px">'
+      +'<div class="lav" style="width:32px;height:32px;font-size:12px">'+ini.toUpperCase()+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</div>'
+      +'<div class="lsub" style="font-size:10px">CC '+l.ced+'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'
+      +multipleTag
+      +(mora?'<div class="chip chip-fire" style="font-size:9px;padding:1px 5px">⚠️ Mora</div>':hoy?'<div class="chip chip-amber" style="font-size:9px;padding:1px 5px">📅 Hoy</div>':'')
+      +'</div></div>'
+      +inner
+      +'</div>';
+  }).join('');
 }
 
 /* ─── PRÉSTAMOS ─── */
@@ -1349,31 +1409,24 @@ function rLCard(l){
   const mora=l.cuotas.some(c=>c.estado==='mora'),hoy=l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[l.mod]||'bd';
-  return`<div class="lc" onclick="showLoan(${l.id})">
+  return`<div class="lc" onclick="showLoan(${l.id})" style="padding:8px 10px">
     <div class="lstripe ${mora?'s-fire':hoy?'s-amber':'s-jade'}"></div>
-    <div class="lhead"><div class="lav">${ini.toUpperCase()}</div>
-    <div style="flex:1;min-width:0"><div class="lname">${l.nom} ${l.ape}</div><div class="lsub">CC ${l.ced} · ${l.tel}</div></div>
-    <div style="text-align:right"><span class="lbadge ${bc}">${l.mod}</span><div class="mono" style="font-weight:700;font-size:12px;margin-top:2px">${fmt(l.val)}</div></div></div>
-    <div class="prog"><div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div><div class="pb-txt"><span>${pag}/${l.cuotas.length} · ${fmt(l.cuo)}/c</span><span>${pct}%</span></div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:6px 0;border-top:1px solid var(--line);margin-top:4px">
-      <div style="text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Capital</div>
-        <div style="font-size:11px;font-weight:800;color:var(--sky)">${fmt(l.val)}</div>
+    <div class="lhead" style="margin-bottom:4px">
+      <div class="lav" style="width:32px;height:32px;font-size:12px">${ini.toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="lname" style="font-size:13px">${l.nom} ${l.ape}</div>
+        <div class="lsub" style="font-size:10px">CC ${l.ced}</div>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
-        <div style="font-size:11px;font-weight:800;color:var(--lime)">${fmt(gananciaLoan(l))}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
-        <div style="font-size:11px;font-weight:800;color:var(--gold)">${fmt(gananciaEstimadaLoan(l))}</div>
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span class="lbadge ${bc}" style="font-size:9px">${l.mod}</span>
+        <div class="mono" style="font-weight:700;font-size:11px">${fmt(l.val)}</div>
+        ${mora?'<div class="chip chip-fire" style="font-size:9px;padding:1px 5px">⚠️ Mora</div>':hoy?'<div class="chip chip-amber" style="font-size:9px;padding:1px 5px">📅 Hoy</div>':''}
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--smoke);padding:2px 0">
-      <span>⏳ ${l.cuotas.filter(q=>q.estado!=='pagada').length} cuotas pendientes</span>
-      <span>💵 Total cobrar: <b style="color:var(--ash)">${fmt(l.cuo*l.ncu)}</b></span>
+    <div class="pb-track" style="height:3px"><div class="pb-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke);margin-top:2px">
+      <span>${pag}/${l.cuotas.length} cuotas · ${fmt(l.cuo)}/c</span><span>${pct}%</span>
     </div>
-    <div class="lchips">${mora?'<div class="chip chip-fire">⚠️ Mora</div>':''}${hoy?'<div class="chip chip-amber">📅 Hoy</div>':''}${l.renewRequest?'<div class="chip chip-violet">🔄 Sol. renov.</div>':''}${l.comprobante?'<div class="chip">📸 Comp.</div>':''}<div class="chip">⏰<b>${l.hor}</b></div></div>
   </div>`;
 }
 
@@ -1383,7 +1436,7 @@ function rDetail(l){
   const pen=l.cuotas.filter(c=>c.estado!=='pagada').length;
   const moraN=l.cuotas.filter(c=>c.estado==='mora').length;
   const pct=Math.round(pag/l.cuotas.length*100);
-  const sc=score(l),canRenew=pag>=6&&pen>0;
+  const sc=score(l),canRenew=pag>=Math.ceil(l.cuotas.length/2)&&pen>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const ganR=gananciaLoan(l);
   const ganE=gananciaEstimadaLoan(l);
@@ -1409,8 +1462,7 @@ function rDetail(l){
         ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
         ${c.estado!=='pagada'?`<div class="cact">
           <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar cuota</button>
-          ${c.estado==='mora'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar mora</button>`:''}
-          ${c.estado==='pendiente'&&l.mul>0?`<button class="btn btn-fire btn-sm" onclick="openMora(${l.id},${c.num})">💸 Cobrar multa</button>`:''}
+          ${(c.estado==='mora'||(c.estado==='pendiente'&&(new Date(c.fecha)<new Date(new Date().toDateString())||(isToday(c.fecha)&&new Date().getHours()>=18))))?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Gestionar mora</button>`:''}
           <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
         </div>`:''}
       </div>
@@ -1438,7 +1490,8 @@ function rDetail(l){
   ${l.comprobante?`<div style="margin-bottom:10px"><div class="st" style="margin-bottom:5px">📸 Comprobante desembolso</div><img src="${l.comprobante}" style="width:100%;max-height:140px;object-fit:contain;border-radius:var(--r-sm);border:1px solid var(--line2);cursor:pointer" onclick="viewImg('${l.comprobante}')"></div>`:''}
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
     <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
-    <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})">🔄 Renovar</button>
+    <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})" ${pag<Math.ceil(l.cuotas.length/2)||pen===0?'style="opacity:.45"':''}>🔄 Renovar</button>
+    <button class="btn btn-ghost btn-sm" onclick="openEditCliente(${l.id})">✏️ Editar</button>
     <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
     ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
   </div>
@@ -1642,7 +1695,7 @@ function rEstadis(){
           <div style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(capRecup)}</div>
         </div>
         <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Disponible reinvertir</div>
+          <div style="font-size:9px;color:var(--fog);margin-bottom:2px">Disponible prestar</div>
           <div style="font-weight:900;font-size:16px;color:var(--jade)">${fmt(disp)}</div>
         </div>
         <div style="background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center">
@@ -2011,7 +2064,20 @@ function saveLoan(){
   if(document.getElementById('not-email')?.checked)notChs.push('email');
   if(document.getElementById('not-call')?.checked)notChs.push('llamada');
   const not=notChs.length?notChs.join(','):'ninguno';
-  if(!nom||!ape||!ced||!tel||val<=0||cuo<=0||ncu<=0){toast('⚠️ Completa todos los campos requeridos (incluyendo cédula)');return;}
+  // Marcar campos vacíos en rojo
+  const camposReq=[['f-nom',nom],['f-ape',ape],['f-ced',ced],['f-tel',tel]];
+  let hayError=false;
+  camposReq.forEach(function([id,val]){
+    const el=document.getElementById(id);
+    if(!val){if(el)el.style.borderColor='var(--fire)';hayError=true;}
+    else{if(el)el.style.borderColor='';}
+  });
+  ['f-val','f-cuo','f-ncu'].forEach(function(id){
+    const el=document.getElementById(id);const v=parseFloat(el?.value)||0;
+    if(v<=0){if(el)el.style.borderColor='var(--fire)';hayError=true;}
+    else{if(el)el.style.borderColor='';}
+  });
+  if(hayError){toast('⚠️ Completa los campos marcados en rojo');return;}
   if(cuo*ncu<val){toast(`⛔ Las cuotas no cubren el préstamo (${fmt(cuo*ncu)} < ${fmt(val)}). Corrígelo antes de guardar.`);return;}
   // Se permite múltiples préstamos activos por cédula
   const dispAhora=capDisponible(S.cartera);
@@ -2225,30 +2291,37 @@ function openRenew(lid){
     toast('⚠️ El cliente debe pagar al menos el 50% de las cuotas para renovar ('+pagadas+'/'+total+')');
     return;
   }
-  const cobrado=pagadas*l.cuo;               // lo que ya se recibió
-  const ganTotal=l.ncu*l.cuo-l.val;         // ganancia total del préstamo
-  const ganProporcional=Math.round(ganTotal*pagadas/total); // ganancia proporcional a cuotas pagadas
-  const efectivoCliente=cobrado-ganProporcional; // lo que recibe el cliente
-  const ganCiclo2=ganTotal;                  // ganancia del nuevo ciclo completo
+  const cobrado=pagadas*l.cuo;
+  const pendientes=total-pagadas;
+  const deuda=pendientes*l.cuo;
+  const interesCiclo=l.ncu*l.cuo-l.val;     // interés FIJO del ciclo siempre
+  const efectivoCliente=l.val-deuda;         // capital - deuda pendiente
+  const ganAcumulada=(l._ganAnteriorTotal||0);
+  const cicloActual=(l._ciclos||0)+1;
   const html=[
     '<div class="calcbox" style="margin-bottom:10px">',
-    '<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">📊 Ciclo actual</div>',
-    '<div class="crow2"><span>Cuotas pagadas</span><span class="mono">'+pagadas+'/'+total+' ('+fmt(cobrado)+')</span></div>',
-    '<div class="crow2"><span>Interés ganado (proporcional)</span><span class="mono" style="color:var(--lime)">'+fmt(ganProporcional)+'</span></div>',
+    '<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">📊 Ciclo '+cicloActual+' (actual)</div>',
+    '<div class="crow2"><span>Cuotas pagadas</span><span class="mono">'+pagadas+'/'+total+'</span></div>',
+    '<div class="crow2"><span>Total cobrado</span><span class="mono">'+fmt(cobrado)+'</span></div>',
+    '<div class="crow2"><span>Cuotas pendientes (deuda)</span><span class="mono" style="color:var(--fire)">'+pendientes+' cuotas = '+fmt(deuda)+'</span></div>',
     '<div class="crow2" style="border-top:1px solid var(--line);padding-top:6px;margin-top:4px">',
     '<span>💸 Efectivo al cliente</span>',
     '<span class="mono" style="color:var(--sky);font-weight:900">'+fmt(efectivoCliente)+'</span></div>',
     '</div>',
     '<div class="calcbox" style="margin-bottom:10px">',
-    '<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:8px">🔄 Nuevo ciclo</div>',
-    '<div class="crow2"><span>Valor préstamo</span><span class="mono">'+fmt(l.val)+'</span></div>',
+    '<div style="font-size:11px;font-weight:800;color:var(--amber);margin-bottom:8px">🔄 Nuevo ciclo '+(cicloActual+1)+'</div>',
+    '<div class="crow2"><span>Capital prestado</span><span class="mono">'+fmt(l.val)+'</span></div>',
     '<div class="crow2"><span>Total a cobrar ('+l.ncu+'×'+fmt(l.cuo)+')</span><span class="mono">'+fmt(l.ncu*l.cuo)+'</span></div>',
-    '<div class="crow2"><span>Ganancia ciclo 2</span><span class="mono" style="color:var(--gold)">'+fmt(ganCiclo2)+'</span></div>',
+    '<div class="crow2"><span>Interés ciclo '+(cicloActual+1)+'</span><span class="mono" style="color:var(--gold)">'+fmt(interesCiclo)+'</span></div>',
     '</div>',
     '<div style="background:rgba(255,208,96,.1);border:1px solid rgba(255,208,96,.4);border-radius:10px;padding:12px;margin-bottom:12px">',
-    '<div style="font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px">💰 Total al finalizar ambos ciclos</div>',
+    '<div style="font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px">💰 Si termina el ciclo '+(cicloActual+1)+' completo</div>',
     '<div class="crow2"><span>Capital</span><span class="mono" style="color:var(--sky)">'+fmt(l.val)+'</span></div>',
-    '<div class="crow2"><span>Ganancia total (ciclo1 + ciclo2)</span><span class="mono" style="color:var(--gold);font-weight:900">'+fmt(ganProporcional+ganCiclo2)+'</span></div>',
+    ganAcumulada>0?'<div class="crow2"><span>Intereses ciclos anteriores</span><span class="mono" style="color:var(--lime)">'+fmt(ganAcumulada)+'</span></div>':'',
+    '<div class="crow2"><span>Interés ciclo '+(cicloActual+1)+'</span><span class="mono" style="color:var(--gold)">'+fmt(interesCiclo)+'</span></div>',
+    '<div class="crow2" style="border-top:1px solid var(--line);padding-top:6px;margin-top:4px">',
+    '<span style="font-weight:900">Total acumulado</span>',
+    '<span class="mono" style="color:var(--gold);font-weight:900">'+fmt(l.val+ganAcumulada+interesCiclo)+'</span></div>',
     '</div>',
     '<div class="fg"><label class="fl">📸 Comprobante transferencia (opcional)</label>',
     '<div class="comp-upload" id="ren-comp-wrap" onclick="openRenCompInp()">',
@@ -2258,41 +2331,79 @@ function openRenew(lid){
     '<input type="hidden" id="ren-comp-data"></div>',
     '<div class="brow" style="margin-top:12px">',
     '<button class="btn btn-ghost btn-w" onclick="closeM(String.fromCharCode(109,45,114,101,110,101,119))">Cancelar</button>',
-    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+efectivoCliente+','+ganProporcional+')">🔄 Confirmar renovación</button>',
+    '<button class="btn btn-amber btn-w" onclick="confirmRenew('+lid+','+efectivoCliente+','+interesCiclo+')">🔄 Confirmar renovación</button>',
     '</div>'
   ].join('');
   $('renew-body').innerHTML=html;
   closeM('m-opts');openM('m-renew');
 }
 
-function confirmRenew(lid,efectivoCliente,ganCiclo1){
+function confirmRenew(lid,efectivoCliente,interesCiclo){
   const l=getL(lid);if(!l)return;
   const comp=gv('ren-comp-data')||null;
-  // Guardar ganancia ciclo 1 permanentemente
+  const cicloNum=(l._ciclos||0)+1;
+  // Guardar interés del ciclo permanentemente
   const cap=getCap(S.cartera);
-  if(ganCiclo1>0&&cap){
+  if(interesCiclo>0&&cap){
     if(!cap.histGanPermanente)cap.histGanPermanente=[];
     cap.histGanPermanente.push({
       fecha:new Date().toISOString(),
-      monto:ganCiclo1,
+      monto:interesCiclo,
       cliente:l.nom+' '+l.ape,
-      nota:'Interés ciclo 1 (renovación)'
+      nota:'Interés ciclo '+cicloNum+' (renovación)'
     });
   }
-  l._ganAnteriorTotal=(l._ganAnteriorTotal||0)+ganCiclo1;
+  l._ganAnteriorTotal=(l._ganAnteriorTotal||0)+interesCiclo;
+  l._ciclos=cicloNum;
   if(!l._valOriginal)l._valOriginal=l.val;
-  l.historico.push('🔄 Renovación · efectivo al cliente: '+fmt(efectivoCliente)+' · interés ciclo1 guardado: '+fmt(ganCiclo1)+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
+  l.historico.push('🔄 Renovación ciclo '+cicloNum+'→'+(cicloNum+1)+' · efectivo al cliente: '+fmt(efectivoCliente)+' · interés ciclo '+cicloNum+' guardado: '+fmt(interesCiclo)+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
   l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
   const fechas=calcFechas(new Date(),l.mod,l.ncu);
   l.cuotas=fechas.map(function(f,i){return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null};});
   closeM('m-renew');
-  toast('🔄 Renovado · Interés asegurado: '+fmt(ganCiclo1));
+  toast('🔄 Renovado · Interés ciclo '+cicloNum+' asegurado: '+fmt(interesCiclo));
   fsSave();
   setTimeout(function(){sendWARenovacion(l,0,efectivoCliente);},400);
   if(S.cartera.cfg&&S.cartera.cfg.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans:efectivoCliente});},900);
   $('dcontent').innerHTML=rDetail(l);updDot();render();
 }
 
+
+function openEditCliente(lid){
+  const l=getL(lid);if(!l)return;
+  document.getElementById('edit-cliente-body').innerHTML=`
+    <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="ec-nom" value="${l.nom}"></div>
+    <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="ec-ape" value="${l.ape}"></div>
+    <div class="fg"><label class="fl">Cédula</label><input type="text" class="fi" id="ec-ced" value="${l.ced}"></div>
+    <div class="fg"><label class="fl">WhatsApp / Teléfono</label><input type="text" class="fi" id="ec-tel" value="${l.tel}"></div>
+    <div class="fg"><label class="fl">Teléfono 2 (opcional)</label><input type="text" class="fi" id="ec-cel2" value="${l.cel2||''}"></div>
+    <div class="fg"><label class="fl">Email (opcional)</label><input type="text" class="fi" id="ec-email" value="${l.email||''}"></div>
+    <div class="fg"><label class="fl">Hora de pago</label><input type="time" class="fi" id="ec-hor" value="${l.hor||'15:00'}"></div>
+    <div class="fg"><label class="fl">Multa por mora</label><input type="number" class="fi" id="ec-mul" value="${l.mul||0}"></div>
+    <div class="brow">
+      <button class="btn btn-ghost btn-w" onclick="closeM('m-edit-cliente')">Cancelar</button>
+      <button class="btn btn-jade btn-w" onclick="saveEditCliente(${lid})">✅ Guardar cambios</button>
+    </div>`;
+  closeM('m-opts');openM('m-edit-cliente');
+}
+function saveEditCliente(lid){
+  const l=getL(lid);if(!l)return;
+  const nom=document.getElementById('ec-nom')?.value.trim();
+  const ape=document.getElementById('ec-ape')?.value.trim();
+  const ced=document.getElementById('ec-ced')?.value.trim();
+  const tel=document.getElementById('ec-tel')?.value.trim();
+  if(!nom||!ape||!ced||!tel){toast('⚠️ Nombre, apellido, cédula y teléfono son obligatorios');return;}
+  l.nom=nom;l.ape=ape;l.ced=ced;l.tel=tel;
+  l.cel2=document.getElementById('ec-cel2')?.value.trim()||'';
+  l.email=document.getElementById('ec-email')?.value.trim()||'';
+  l.hor=document.getElementById('ec-hor')?.value||'15:00';
+  l.mul=parseFloat(document.getElementById('ec-mul')?.value)||0;
+  l.historico.push('✏️ Datos editados — '+new Date().toLocaleDateString('es-CO'));
+  closeM('m-edit-cliente');
+  toast('✅ Cliente actualizado');
+  fsSave();
+  $('dcontent').innerHTML=rDetail(l);updDot();render();
+}
 
 function openRenewReq(lid){
   const l=getL(lid);if(!l)return;
@@ -2546,7 +2657,7 @@ function renderCapitalModal(){
           <div class="mono" style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(h.monto)}</div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="capInvEdit(0)">✏️ Modificar</button>
+          <button class="btn btn-jade btn-sm" style="flex:1" onclick="abrirModificarCapital()">✏️ Modificar capital</button>
           ${delBtn}
         </div>
         ${!canDel?`<div style="font-size:10px;color:var(--fog);margin-top:6px;text-align:center">⚠️ No se puede eliminar mientras haya préstamos activos</div>`:''}
@@ -2635,6 +2746,47 @@ function confirmarEliminarInv(){
   cap.base=0;cap.histInv=[];
   toast('🗑️ Inversión eliminada.');
   closeM('m-capital');render();
+}
+
+function abrirModificarCapital(){
+  const cap=getCap(S.cartera);
+  const area=document.getElementById('capital-body-content');
+  // Remove existing modifier if open
+  const existing=document.getElementById('mod-cap-form');
+  if(existing){existing.remove();return;}
+  const form=document.createElement('div');
+  form.id='mod-cap-form';
+  form.style.cssText='background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:12px;margin-top:10px';
+  form.innerHTML=`
+    <div style="font-size:12px;font-weight:800;color:var(--jade);margin-bottom:8px">✏️ Modificar capital base</div>
+    <div style="font-size:11px;color:var(--smoke);margin-bottom:10px">Capital actual: <b style="color:var(--jade)">${fmt(cap.base)}</b><br>Ingresa el nuevo monto total que deseas establecer.</div>
+    <div class="fg"><label class="fl">💵 Nuevo monto de capital</label>
+      <input type="number" class="fi" id="mod-cap-val" placeholder="Ej: 6000000" value="${cap.base}">
+    </div>
+    <div class="fg"><label class="fl">📝 Nota (opcional)</label>
+      <input type="text" class="fi" id="mod-cap-nota" placeholder="Ej: Agregué 1 millón">
+    </div>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('mod-cap-form').remove()">✕ Cancelar</button>
+      <button class="btn btn-jade btn-sm" style="flex:1" onclick="confirmarModificarCapital()">✅ Guardar</button>
+    </div>`;
+  area.appendChild(form);
+}
+
+function confirmarModificarCapital(){
+  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
+  const nota=document.getElementById('mod-cap-nota')?.value.trim()||'Modificación de capital';
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const cap=getCap(S.cartera);
+  const disp=capDisponible(S.cartera);
+  const prestado=Math.max(0,cap.base-disp);
+  if(val<prestado){toast('❌ No puedes bajar el capital a '+fmt(val)+' — hay '+fmt(prestado)+' en préstamos activos');return;}
+  const diff=val-cap.base;
+  cap.base=val;
+  cap.histInv[0]={fecha:new Date(),monto:val,nota};
+  if(diff!==0)cap.histInv.push({fecha:new Date(),monto:diff,nota:(diff>0?'➕ ':'➖ ')+nota});
+  toast('✅ Capital actualizado: '+fmt(val)+(diff>0?' (+'+fmt(diff)+')':diff<0?' ('+fmt(diff)+')':''));
+  fsSave();closeM('m-capital');render();
 }
 
 
