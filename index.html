@@ -1440,16 +1440,45 @@ function rDetail(l){
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const ganR=gananciaLoan(l);
   const ganE=gananciaEstimadaLoan(l);
-  const resumenFin='<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
-    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Análisis financiero</div>'
+  const ganAnt=l._ganAnteriorTotal||0;
+  const ciclosAnt=l._ciclos||0;
+  let ciclosHtml='';
+  if(ciclosAnt>0){
+    const capObj=getCap(S.cartera);
+    const histPerm=(capObj.histGanPermanente||[]).filter(h=>h.cliente===(l.nom+' '+l.ape));
+    let rows='';
+    for(let ci=1;ci<=ciclosAnt;ci++){
+      const entry=histPerm.find(h=>h.nota&&h.nota.includes('ciclo '+ci));
+      const monto=entry?entry.monto:Math.round(ganAnt/ciclosAnt);
+      rows+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(57,216,112,.2)">'
+        +'<span style="font-size:11px;color:var(--smoke)">💰 Interés ciclo '+ci+'</span>'
+        +'<span class="mono" style="font-size:12px;font-weight:800;color:var(--lime)">'+fmt(monto)+'</span>'
+        +'</div>';
+    }
+    ciclosHtml='<div style="background:rgba(57,216,112,.07);border:1px solid rgba(57,216,112,.3);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:800;color:var(--lime);margin-bottom:6px">🔄 Intereses guardados por ciclo</div>'
+      +rows
+      +'<div style="display:flex;justify-content:space-between;padding-top:6px;margin-top:2px">'
+      +'<span style="font-size:11px;font-weight:700;color:var(--ash)">Total guardado</span>'
+      +'<span class="mono" style="font-size:13px;font-weight:900;color:var(--lime)">'+fmt(ganAnt)+'</span>'
+      +'</div></div>';
+  }
+  const resumenFin=ciclosHtml+'<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Análisis financiero — Ciclo '+(ciclosAnt+1)+'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
     +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div><div style="font-size:9px;color:var(--fog)">Prestado</div></div>'
     +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo*l.ncu)+'</div><div style="font-size:9px;color:var(--fog)">Total a cobrar</div></div>'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--lime)">'+fmt(ganR)+'</div><div style="font-size:9px;color:var(--fog)">Gan. real cobrada</div></div>'
-    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--gold)">'+fmt(ganE)+'</div><div style="font-size:9px;color:var(--fog)">Gan. estimada total</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--lime)">'+fmt(ganR)+'</div><div style="font-size:9px;color:var(--fog)">Gan. ciclo actual</div></div>'
+    +'<div style="text-align:center"><div style="font-weight:900;font-size:16px;color:var(--gold)">'+fmt(ganE)+'</div><div style="font-size:9px;color:var(--fog)">Gan. estimada ciclo</div></div>'
     +'</div>'
+    +(ganAnt>0
+      ?'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between">'
+        +'<span style="font-size:11px;color:var(--smoke)">Total acumulado todos ciclos</span>'
+        +'<span class="mono" style="font-weight:900;color:var(--gold)">'+fmt(l.val+ganAnt+ganE)+'</span>'
+        +'</div>'
+      :'')
     +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--smoke)">'
-    +'Al terminar: <b style="color:var(--jade)">'+fmt(l.val)+'</b> vuelve al capital + <b style="color:var(--gold)">'+fmt(ganE)+'</b> ganancia'
+    +'Al terminar: <b style="color:var(--jade)">'+fmt(l.val)+'</b> capital + <b style="color:var(--gold)">'+fmt(ganAnt+ganE)+'</b> ganancia total'
     +'</div></div>';
   const cuotasH=l.cuotas.map(c=>{
     const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
