@@ -1339,7 +1339,7 @@ function rInicio(){
   </div>`).join('')}`:''}
   ${als.length?`<div class="sh"><div class="st">🚨 Alertas urgentes</div><div class="sl" onclick="goTab('alertas')">Ver todas →</div></div>${als.slice(0,2).map(rAlCard).join('')}`:''}
   <div class="sh"><div class="st">📋 Préstamos recientes</div><div class="sl" onclick="goTab('prestamos')">Ver todos →</div></div>
-  ${rClientesAgrupados([...ls].reverse().slice(0,6))}\`;
+  ${rClientesAgrupados([...ls].reverse().slice(0,6))}`;
 }
 
 function rClientesAgrupados(lista){
