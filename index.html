@@ -25,7 +25,8 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
   #app{max-width:600px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
   .sheet{max-width:600px}
   .toast{max-width:600px}
-  #date-picker-box{max-width:600px}
+  .dp-day.past-sel{opacity:.6;font-style:italic;}
+#date-picker-box{max-width:600px}
   .r2{grid-template-columns:1fr 1fr}
   .fi,.fsel{font-size:14px;padding:11px 13px}
   .btn{font-size:14px;padding:11px 16px}
@@ -462,6 +463,10 @@ window._db = firebase.firestore();
         <button onclick="closeDatePicker()" style="margin-left:4px;font-size:12px;width:auto;padding:0 10px">✕</button>
       </div>
     </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button id="dp-mode-lv" class="btn btn-jade btn-sm" style="flex:1;font-size:11px" onclick="setDpMode('lv')">Lun–Vie</button>
+      <button id="dp-mode-ls" class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="setDpMode('ls')">Lun–Sáb</button>
+    </div>
     <div class="dp-grid" id="dp-grid"></div>
     <div class="dp-legend">
       <span><div style="width:12px;height:12px;border-radius:3px;background:var(--jade)"></div> Seleccionado</span>
@@ -558,7 +563,14 @@ window._db = firebase.firestore();
       <span style="font-size:16px">📅</span>
     </div>
     <input type="hidden" id="f-ini">
-    <div class="fhint">Sábados, domingos y festivos bloqueados automáticamente</div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+        <input type="radio" name="cal-mode" id="cal-lv" value="lv" checked onchange="renderDp()"> Lun–Vie
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+        <input type="radio" name="cal-mode" id="cal-ls" value="ls" onchange="renderDp()"> Lun–Sáb
+      </label>
+    </div>
   </div>
   <div class="r2">
     <div class="fg"><label class="fl">⚠️ Multa mora</label><input type="number" class="fi" id="f-mul" placeholder="20000"></div>
@@ -633,6 +645,13 @@ window._db = firebase.firestore();
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let _dpY,_dpM;
 
+let _dpMode='lv'; // 'lv'=Lun-Vie, 'ls'=Lun-Sab
+function setDpMode(m){
+  _dpMode=m;
+  document.getElementById('dp-mode-lv').className='btn btn-sm'+(m==='lv'?' btn-jade':' btn-ghost')+' btn-sm';
+  document.getElementById('dp-mode-ls').className='btn btn-sm'+(m==='ls'?' btn-jade':' btn-ghost')+' btn-sm';
+  renderDp();
+}
 function openDatePicker(){
   const today=new Date();
   _dpY=today.getFullYear();_dpM=today.getMonth();
@@ -651,11 +670,16 @@ function dpNav(dir){
 function renderDp(){
   const today=new Date();today.setHours(0,0,0,0);
   const selISO=(document.getElementById('f-ini').value)||'';
+  const calMode=(document.querySelector('input[name="cal-mode"]:checked')?.value)||'lv';
   document.getElementById('dp-month-label').textContent=MESES[_dpM]+' '+_dpY;
   const grid=document.getElementById('dp-grid');
   const dows=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   let html='';
-  for(let i=0;i<7;i++) html+='<div class="dp-dow'+([0,6].includes(i)?' blocked':'')+'">'+dows[i]+'</div>';
+  // Header: Dom siempre bloqueado, Sáb bloqueado solo en modo lv
+  for(let i=0;i<7;i++){
+    const isBlocked=(i===0)||(i===6&&calMode==='lv');
+    html+='<div class="dp-dow'+(isBlocked?' blocked':'')+'">'+dows[i]+'</div>';
+  }
   const first=new Date(_dpY,_dpM,1).getDay();
   for(let i=0;i<first;i++) html+='<div class="dp-day empty"></div>';
   const daysInMonth=new Date(_dpY,_dpM+1,0).getDate();
@@ -664,15 +688,17 @@ function renderDp(){
     const dt=new Date(_dpY,_dpM,d,12,0,0);
     const iso=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
     const dow=dt.getDay();
-    const isPast=dt<today;
-    const blocked=dow===0||dow===6||FEST.has(iso)||isPast;
-    let cls='dp-day'+(blocked?(isPast?' past':' blocked'):' available');
+    // Bloquear: dom siempre, sáb solo en lv, festivos siempre. Pasado: NO bloqueado
+    const calMode=_dpMode||'lv';
+    const blocked=dow===0||(dow===6&&calMode==='lv')||FEST.has(iso);
+    let cls='dp-day'+(blocked?' blocked':' available');
     if(iso===selISO) cls+=' selected';
     if(iso===todayISO&&!blocked) cls+=' today';
     if(blocked){
       html+='<div class="'+cls+'">'+d+'</div>';
     } else {
-      html+='<div class="'+cls+'" data-iso="'+iso+'" onclick="dpSelect(this.dataset.iso)">'+d+'</div>';
+      const isPastDay=dt<today;
+      html+='<div class="'+cls+(isPastDay?' past-sel':'')+' " data-iso="'+iso+'" onclick="dpSelect(this.dataset.iso)">'+d+'</div>';
     }
   }
   grid.innerHTML=html;
@@ -1466,6 +1492,7 @@ function rLCard(l){
 /* ─── DETAIL ─── */
 function buildResumenFin(l,ganR){
   const ganAnt=l._ganAnteriorTotal||0;
+  const multasCobradas=(l.histMultas||[]).reduce(function(s,m){return s+m.monto;},0);
   const ciclosAnt=l._ciclos||0;
   const interesFijo=l.ncu*l.cuo-l.val; // ganancia fija del ciclo actual
   // Construir filas de ciclos guardados
@@ -1492,7 +1519,7 @@ function buildResumenFin(l,ganR){
   }
   // Resumen financiero del ciclo actual
   const gananciaActualEstimada=interesFijo;
-  const totalFinal=l.val+ganAnt+gananciaActualEstimada;
+  const totalFinal=l.val+ganAnt+gananciaActualEstimada+multasCobradas;
   const resumenFin=ciclosHtml
     +'<div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">'
     +'<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">💹 Ciclo '+(ciclosAnt+1)+' — Análisis</div>'
@@ -1518,6 +1545,9 @@ function buildResumenFin(l,ganR){
         +'<span>Ganancias ciclos anteriores</span><span class="mono" style="color:var(--lime)">+'+fmt(ganAnt)+'</span></div>':'')
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);padding:2px 0">'
         +'<span>Ganancia ciclo '+(ciclosAnt+1)+'</span><span class="mono" style="color:var(--gold)">+'+fmt(interesFijo)+'</span></div>'
+      +(multasCobradas>0?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--smoke);padding:2px 0">'
+        +'<span>⚠️ Multas cobradas</span><span class="mono" style="color:var(--amber)">+'+fmt(multasCobradas)+'</span></div>':'')
+      +(l.histMultas&&l.histMultas.length?l.histMultas.map(function(m){return '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--fog);padding:1px 0 1px 12px"><span>Multa cuota #'+m.cuota+' · '+new Date(m.fecha).toLocaleDateString('es-CO')+'</span><span class="mono">+'+fmt(m.monto)+'</span></div>';}).join(''):'')
       +'<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:1px solid rgba(255,208,96,.3);margin-top:5px;padding-top:5px">'
         +'<span style="color:var(--gold)">TOTAL</span>'
         +'<span class="mono" style="color:var(--gold)">'+fmt(totalFinal)+'</span></div>'
@@ -1535,24 +1565,41 @@ function rDetail(l){
   const ganR=gananciaLoan(l);
   const ganE=gananciaEstimadaLoan(l);
   const resumenFin=buildResumenFin(l,ganR);
-    const cuotasH=l.cuotas.map(c=>{
-    const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
-    const ms=c.multa>0?` · Multa: ${fmt(c.multa)}`:'';
-    return`<div class="cuota">
-      <div class="cnum ${cls}">${c.num}</div>
-      <div class="cinf">
-        <div class="cfecha">${fd(c.fecha)} ${c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳'}</div>
-        <div class="csub">${c.estado==='pagada'?`Pagada · <b>${c.pagadoPor||'Sistema'}</b>${c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''}`:c.estado==='mora'?'En mora':'Pendiente'}${ms}</div>
-        ${c.comprobante?`<div style="margin-top:4px"><img src="${c.comprobante}" class="comp-thumb" onclick="viewImg('${c.comprobante}')"> <span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>`:''}
-        ${c.estado!=='pagada'?`<div class="cact">
-          <button class="btn btn-lime btn-sm" onclick="openPay(${l.id},${c.num})">💰 Pagar cuota</button>
-          ${c.estado!=='pagada'?`<button class="btn btn-amber btn-sm" onclick="openMora(${l.id},${c.num})">⚠️ Multa/Aplazar</button>`:''}
-          <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
-        </div>`:''}
-      </div>
-      <div class="cval" style="color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
-    </div>`;
-  }).join('');
+    // Multas por cuota para mostrar filas intercaladas
+    const multasMap={};
+    (l.histMultas||[]).forEach(function(m){if(!multasMap[m.cuota])multasMap[m.cuota]=[];multasMap[m.cuota].push(m);});
+    const cuotasH=l.cuotas.map(function(c){
+      const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
+      // Filas de multas cobradas antes de esta cuota
+      let multaRows='';
+      if(multasMap[c.num]){
+        multaRows=multasMap[c.num].map(function(m){
+          return '<div class="cuota" style="background:rgba(255,152,0,.07);border-left:3px solid var(--amber);margin-bottom:2px">'+
+            '<div class="cnum" style="background:var(--amber);color:#000;font-size:9px;line-height:1.2">M<br>'+c.num+'</div>'+
+            '<div class="cinf">'+
+              '<div class="cfecha">⚠️ Multa cuota #'+c.num+' · '+new Date(m.fecha).toLocaleDateString('es-CO')+'</div>'+
+              '<div class="csub">Cobrada · cuota reprogramada al siguiente día</div>'+
+            '</div>'+
+            '<div class="cval" style="color:var(--amber)">+'+fmt(m.monto)+'</div>'+
+          '</div>';
+        }).join('');
+      }
+      const cuotaRow='<div class="cuota">'+
+        '<div class="cnum '+cls+'">'+c.num+'</div>'+
+        '<div class="cinf">'+
+          '<div class="cfecha">'+fd(c.fecha)+' '+(c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳')+'</div>'+
+          '<div class="csub">'+(c.estado==='pagada'?'Pagada · <b>'+(c.pagadoPor||'Sistema')+'</b>'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'En mora':'Pendiente')+'</div>'+
+          (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(''+c.comprobante+'')"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
+          (c.estado!=='pagada'?'<div class="cact">'+
+            '<button class="btn btn-lime btn-sm" onclick="openPay('+l.id+','+c.num+')">💰 Pagar cuota</button>'+
+            (l.mul>0?'<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Multa</button>':'')+
+            '<button class="btn btn-sky btn-sm" onclick="sendWA('+l.id+')">📲 WA</button>'+
+          '</div>':'')+
+        '</div>'+
+        '<div class="cval" style="color:'+(c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)')+'">'+fmt(c.valor)+'</div>'+
+      '</div>';
+      return multaRows+cuotaRow;
+    }).join('');
   return`<div class="dhero">
     <div class="dav">${ini.toUpperCase()}</div>
     <div class="dname">${l.nom} ${l.ape}</div>
