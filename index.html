@@ -1589,7 +1589,7 @@ function rDetail(l){
         '<div class="cinf">'+
           '<div class="cfecha">'+fd(c.fecha)+' '+(c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳')+'</div>'+
           '<div class="csub">'+(c.estado==='pagada'?'Pagada · <b>'+(c.pagadoPor||'Sistema')+'</b>'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'En mora':'Pendiente')+'</div>'+
-          (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(''+c.comprobante+'')"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
+          (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(\"'+c.comprobante+'\")"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
           (c.estado!=='pagada'?'<div class="cact">'+
             '<button class="btn btn-lime btn-sm" onclick="openPay('+l.id+','+c.num+')">💰 Pagar cuota</button>'+
             (l.mul>0?'<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Multa</button>':'')+
