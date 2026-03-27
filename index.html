@@ -17,7 +17,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
 #app{height:100dvh;position:relative;overflow:hidden;max-width:480px;margin:0 auto}
 
 /* ─── TABLET / DESKTOP RESPONSIVE ─── */
@@ -761,6 +761,18 @@ function chkHash(s,h){return simHash(s)===h;}
 function seed(){
   // Producción — sin datos demo
   DB.carteras=[];
+  // Restaurar sesión si hay usuario guardado (sobrevive F5)
+  try{
+    const saved=sessionStorage.getItem('pm_user');
+    if(saved){
+      const u=JSON.parse(saved);
+      DB.users=[u];S.user=u;
+      updateUserUI();
+      document.getElementById('s-inicio').classList.remove('on');
+      showCarteras();
+      fsCargarCarteras();
+    }
+  }catch(e){}
 }
 
 function mkLoan(d){
@@ -813,6 +825,7 @@ function doGoogleLogin(){
             DB.users=DB.users.filter(x=>x.id!==u.id);
             DB.users.push(u);
             S.user=u;
+            try{sessionStorage.setItem('pm_user',JSON.stringify(u));}catch(e){}
             updateUserUI();
             document.getElementById('s-admin').classList.remove('on');
             showCarteras();
@@ -908,6 +921,7 @@ function updateUserUI(){
 
 function logout(){
   if(_unsubFS){_unsubFS();_unsubFS=null;}
+  try{sessionStorage.removeItem('pm_user');}catch(e){}
   S.user=null;S.cartera=null;
   ['s-carteras','s-admin','s-main','s-detail','s-lock','s-portal'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.getElementById('s-inicio').classList.add('on');
@@ -1155,11 +1169,14 @@ function capRecuperado(c){
 // Ganancias acumuladas basadas en % configurado de la cartera
 // ─── GANANCIA REAL: total cobrado - capital prestado ───
 function gananciaLoan(l){
+  // Cuotas pagadas: valor + multa cobrada al momento del pago
   const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor+(x.multa||0);},0);
   const capRecup=Math.min(cobrado,l.val);
   const ganCicloActual=Math.max(0,cobrado-capRecup);
+  // Multas cobradas en cuotas que aún están pendientes (corridas, no pagadas)
+  const multasPendientes=l._multasCobradas||0;
   const ganAnterior=l._ganAnteriorTotal||0;
-  return ganCicloActual+ganAnterior;
+  return ganCicloActual+multasPendientes+ganAnterior;
 }
 
 function gananciaTotal(c){
@@ -2330,7 +2347,8 @@ function doMora(lid, cn, pagaMulta){
     // Registrar multa en histGan de la cartera (suma a ganancias)
     const cap=getCap(S.cartera);
     if(cap)cap.histGan.push({fecha:new Date(),monto:l.mul,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
-    // Registrar multa en el préstamo acumulada
+    // Acumular multa en el préstamo para gananciaLoan (cuota sigue pendiente, no pagada)
+    l._multasCobradas=(l._multasCobradas||0)+l.mul;
     c.multa=(c.multa||0)+l.mul;
     // Correr esta cuota y TODAS las pendientes siguientes un slot
     const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
@@ -2945,7 +2963,7 @@ function gv(id){return document.getElementById(id)?.value||'';}
 function $(id){return document.getElementById(id);}
 function openM(id){$(id)?.classList.add('on');}
 function closeM(id){$(id)?.classList.remove('on');}
-document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');});});
+// Click outside modal desactivado: cerrar solo con botones Cancelar/✕
 let _tt;
 function toast(msg){
   clearTimeout(_tt);document.querySelectorAll('.toast').forEach(t=>t.remove());
