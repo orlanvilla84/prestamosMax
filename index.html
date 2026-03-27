@@ -689,7 +689,6 @@ function renderDp(){
     const iso=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
     const dow=dt.getDay();
     // Bloquear: dom siempre, sáb solo en lv, festivos siempre. Pasado: NO bloqueado
-    const calMode=_dpMode||'lv';
     const blocked=dow===0||(dow===6&&calMode==='lv')||FEST.has(iso);
     let cls='dp-day'+(blocked?' blocked':' available');
     if(iso===selISO) cls+=' selected';
@@ -1195,22 +1194,21 @@ function capRecuperado(c){
 // Ganancias acumuladas basadas en % configurado de la cartera
 // ─── GANANCIA REAL: total cobrado - capital prestado ───
 function gananciaLoan(l){
-  // Cuotas pagadas: valor + multa cobrada al momento del pago
-  const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor+(x.multa||0);},0);
+  // Solo cuotas pagadas SIN multa (la multa es ganancia aparte de cartera)
+  const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor;},0);
   const capRecup=Math.min(cobrado,l.val);
   const ganCicloActual=Math.max(0,cobrado-capRecup);
-  // Multas cobradas en cuotas que aún están pendientes (corridas, no pagadas)
-  const multasPendientes=l._multasCobradas||0;
   const ganAnterior=l._ganAnteriorTotal||0;
-  return ganCicloActual+multasPendientes+ganAnterior;
+  return ganCicloActual+ganAnterior;
 }
 
 function gananciaTotal(c){
-  // gananciaLoan() ya incluye _ganAnteriorTotal de ciclos anteriores -> NO sumar histGanPermanente
-  // de renovaciones (doble conteo). Solo se suma histGanEliminados: ganancias de prestamos borrados.
+  // Ganancias de préstamos activos/cerrados (sin multas)
   const ganLoans=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
   const ganEliminados=((c?.capital?.histGanEliminados)||[]).reduce(function(s,h){return s+h.monto;},0);
-  return ganLoans+ganEliminados;
+  // Multas cobradas (de histGan solo las que tienen nota 'Multa')
+  const multas=((c?.capital?.histGan)||[]).filter(function(h){return h.nota&&h.nota.startsWith('Multa');}).reduce(function(s,h){return s+h.monto;},0);
+  return ganLoans+ganEliminados+multas;
 }
 
 function gananciaEstimada(c){
