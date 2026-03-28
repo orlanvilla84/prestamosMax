@@ -390,6 +390,9 @@ window._db = firebase.firestore();
 <!-- LOGIN -->
 <!-- PANTALLA INICIO = PORTAL CLIENTE -->
 <div id="s-inicio" class="screen on">
+  <div style="position:absolute;top:12px;right:12px;z-index:10">
+    <button onclick="toggleTheme()" id="theme-btn-inicio" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:16px;color:var(--white)">🌙</button>
+  </div>
   <div class="inicio-hero">
     <div class="inicio-logo-wrap">💰</div>
     <div class="inicio-brand">PrestaMax</div>
@@ -687,9 +690,11 @@ window._db = firebase.firestore();
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let _dpY,_dpM;
 
-let _dpMode='lv'; // 'lv'=Lun-Vie, 'ls'=Lun-Sab
+let _dpMode='lv'; // alias - mantener por compatibilidad
+let _calMode='lv'; // FUENTE DE VERDAD para modo calendario
 function setDpMode(m){
   _dpMode=m;
+  _calMode=m; // sincronizar
   ['lv','ls','td'].forEach(function(k){
     const btn=document.getElementById('dp-mode-'+k);
     if(btn)btn.className='btn btn-sm'+(m===k?' btn-jade':' btn-ghost');
@@ -765,10 +770,9 @@ const FEST=new Set(['2024-01-01','2024-01-08','2024-03-25','2024-03-28','2024-03
 const isoD=d=>new Date(d).toISOString().slice(0,10);
 const isFest=d=>FEST.has(isoD(d));
 // calMode global: 'lv'=Lun-Vie (bloquea sáb), 'ls'=Lun-Sáb (solo bloquea dom)
-let _calMode='lv';
 function getCalMode(){
-  const r=document.querySelector('input[name="cal-mode"]:checked');
-  return r?r.value:_calMode;
+  // _calMode es la fuente de verdad, actualizada por setDpMode
+  return _calMode||'lv';
 }
 // isHabil según modo: lv bloquea dom+sáb+fest, ls bloquea dom+fest, td todos los días
 function isHabilMode(d,mode){
@@ -952,9 +956,12 @@ function _loginDemo(){
 
 function toggleTheme(){
   document.body.classList.toggle('light-mode');
-  const btn=document.getElementById('theme-btn');
-  if(btn)btn.textContent=document.body.classList.contains('light-mode')?'☀️':'🌙';
-  try{localStorage.setItem('pm-theme',document.body.classList.contains('light-mode')?'light':'dark');}catch(e){}
+  const isLight=document.body.classList.contains('light-mode');
+  const icon=isLight?'☀️':'🌙';
+  ['theme-btn','theme-btn-inicio'].forEach(function(id){
+    const b=document.getElementById(id);if(b)b.textContent=icon;
+  });
+  try{localStorage.setItem('pm-theme',isLight?'light':'dark');}catch(e){}
 }
 // Restaurar tema guardado
 (function(){try{if(localStorage.getItem('pm-theme')==='light'){document.body.classList.add('light-mode');const b=document.getElementById('theme-btn');if(b)b.textContent='☀️';}}catch(e){}})();
@@ -1519,19 +1526,30 @@ function rClientesAgrupados(lista){
             +'</div>';
         }).join('')
       : '';
+    // Medidor de progreso
+    const pp0=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+    const pt0=l.cuotas.length;
+    const pct0=Math.round(pp0/pt0*100);
+    const maxD=Math.min(pt0,20);
+    const dPag=Math.round(pp0/pt0*maxD);
+    let dotsMed='';
+    for(var di=0;di<dPag;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--jade);margin:1px"></span>';
+    for(var di=dPag;di<maxD;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--line);margin:1px"></span>';
+    const borderCol=mora?'rgba(255,61,90,.5)':hoy?'rgba(255,170,0,.4)':'var(--line)';
+    const bgCol=mora?'rgba(255,61,90,.04)':'var(--ink2)';
     const clickFn=todos.length===1?'showLoan('+l.id+')':'';
-    return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+'  style="padding:8px 10px;cursor:'+(todos.length===1?'pointer':'default')+'">'
-      +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>'
-      +'<div class="lhead" style="margin-bottom:4px">'
-      +'<div class="lav" style="width:32px;height:32px;font-size:12px">'+ini.toUpperCase()+'</div>'
+    return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+' style="padding:10px 12px;cursor:'+(todos.length===1?'pointer':'default')+';border-color:'+borderCol+';background:'+bgCol+'">'
+      +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'" ></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      +'<div class="lav" style="width:36px;height:36px;font-size:13px'+(mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
       +'<div style="flex:1;min-width:0">'
-      +'<div class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</div>'
-      +'<div class="lsub" style="font-size:10px">CC '+l.ced+'</div>'
+      +'<div style="display:flex;align-items:center;gap:4px"><span class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</span>'+(mora?'<span>🔴</span>':hoy?'<span>🟡</span>':'')+' </div>'
+      +'<div class="lsub" style="font-size:10px">CC '+l.ced+(todos.length>1?' · <b style="color:var(--jade)">'+todos.length+' créditos</b>':'')+' </div>'
       +'</div>'
-      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'
-      +multipleTag
-      +(mora?'<div class="chip chip-fire" style="font-size:9px;padding:1px 5px">⚠️ Mora</div>':hoy?'<div class="chip chip-amber" style="font-size:9px;padding:1px 5px">📅 Hoy</div>':'')
-      +'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:11px;color:var(--gold);font-weight:700">'+pct0+'%</div>'+(mora?'<div style="font-size:9px;color:var(--fire);font-weight:700">MORA</div>':hoy?'<div style="font-size:9px;color:var(--amber)">HOY</div>':'')+'</div>'
+      +'</div>'
+      +'<div style="margin-bottom:4px;line-height:1">'+dotsMed+'</div>'
+      +'<div style="font-size:9px;color:var(--smoke);display:flex;justify-content:space-between"><span>'+pp0+'/'+pt0+' cuotas · '+fmt(l.cuo)+'/c</span>'+(mora?'<span style="color:var(--fire)">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber)">📅 Pago hoy</span>':'<span style="color:var(--jade)">✅ Al día</span>')+'</div>'
       +inner
       +'</div>';
   }).join('');
