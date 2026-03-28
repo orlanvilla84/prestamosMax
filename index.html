@@ -16,12 +16,12 @@
   --glow-jade:0 0 24px rgba(0,229,176,.2);--shadow:0 12px 40px rgba(0,0,0,.5);
 }
 body.light-mode{
-  --ink:#f0f4f8;--ink2:#ffffff;--ink3:#e8eef6;--ink4:#dde5f0;
-  --line:#c5d0e0;--line2:#b0bfd0;--mist:#8090a8;--fog:#506070;
-  --smoke:#2a3a4a;--ash:#0d1824;--white:#080f18;
-  --jade:#007a5a;--jade2:#006048;--sky:#0055bb;
-  --fire:#bb1030;--amber:#b06000;--lime:#1a7a30;--violet:#5522bb;--gold:#886600;
-  --glow-jade:0 0 12px rgba(0,150,100,.1);--shadow:0 2px 10px rgba(0,0,0,.08);
+  --ink:#e6edf6;--ink2:#ffffff;--ink3:#d4e0ee;--ink4:#c2d0e4;
+  --line:#96aac4;--line2:#7e98b4;--mist:#4e6880;--fog:#283848;
+  --smoke:#101e2e;--ash:#040c16;--white:#020810;
+  --jade:#005840;--jade2:#003e2c;--sky:#003ea0;
+  --fire:#980620;--amber:#7e4200;--lime:#115818;--violet:#3e0ca0;--gold:#604800;
+  --glow-jade:0 0 12px rgba(0,120,70,.15);--shadow:0 2px 10px rgba(0,0,0,.12);
 }
 body.light-mode{background:var(--ink);color:var(--white)}
 body.light-mode .screen{background:var(--ink)}
@@ -54,7 +54,7 @@ body.light-mode .inicio-brand{background:linear-gradient(110deg,var(--jade),var(
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:17px;line-height:1.58;-webkit-font-smoothing:antialiased}
 #app{height:100dvh;position:relative;overflow:hidden;max-width:480px;margin:0 auto}
 
 /* ─── TABLET / DESKTOP RESPONSIVE ─── */
@@ -148,10 +148,10 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .bar{background:var(--ink2);border-bottom:1px solid var(--line);padding:11px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0}
 .bar-logo{font-weight:900;font-size:16px;letter-spacing:-1px;background:linear-gradient(120deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .bar-title{font-weight:800;font-size:14px;flex:1;letter-spacing:-.3px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-back{width:33px;height:33px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ash);cursor:pointer;flex-shrink:0}
+.bar-back{width:40px;height:40px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ash);cursor:pointer;flex-shrink:0}
 .bar-btn{height:33px;padding:0 12px;background:linear-gradient(135deg,var(--jade),var(--jade2));border:none;border-radius:20px;font-family:'Exo 2',sans-serif;font-size:11px;font-weight:800;color:#000;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0}
 .bar-btn:active{opacity:.85;transform:scale(.97)}
-.bar-ico{width:33px;height:33px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;position:relative}
+.bar-ico{width:40px;height:40px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;flex-shrink:0;position:relative}
 .ndot{position:absolute;top:-3px;right:-3px;background:var(--fire);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;padding:0 3px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink2)}
 .user-chip{background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:4px 10px 4px 6px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0}
 .user-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#000}
@@ -159,9 +159,9 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .scroll::-webkit-scrollbar{display:none}
 .pb{padding-bottom:14px}
 .nav{background:var(--ink2);border-top:1px solid var(--line);display:flex;flex-shrink:0}
-.nv{flex:1;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;opacity:.38;transition:all .18s;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ash)}
+.nv{flex:1;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;opacity:.38;transition:all .18s;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ash)}
 .nv.on{opacity:1;color:var(--jade)}
-.nvi{font-size:18px;line-height:1}
+.nvi{font-size:22px;line-height:1}
 .hero{background:linear-gradient(135deg,#081820,#0c1e2c);border:1px solid rgba(0,229,176,.3);border-radius:var(--r-lg);padding:16px;margin-bottom:11px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-50px;right:-50px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,176,.1),transparent 70%);pointer-events:none}
 .hero-lbl{font-size:10px;font-weight:800;color:var(--jade);letter-spacing:.8px;text-transform:uppercase}
@@ -311,7 +311,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .btn-ghost{background:var(--ink3);border:1.5px solid var(--line);color:var(--ash)}
 .btn-fire{background:var(--fire);color:#fff}.btn-amber{background:var(--amber);color:#000}
 .btn-lime{background:var(--lime);color:#000}.btn-violet{background:var(--violet);color:#fff}
-.btn-w{width:100%}.btn-sm{padding:5px 9px;font-size:11px;border-radius:7px}
+.btn-w{width:100%}.btn-sm{padding:9px 14px;font-size:13px;border-radius:8px}
 .brow{display:flex;gap:7px;margin-top:9px}
 .empty{text-align:center;padding:40px 20px;color:var(--fog)}
 .empty-ico{font-size:42px;opacity:.35;margin-bottom:9px}
@@ -344,7 +344,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .no-cap-warn{background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.35);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:8px}
 
 #s-admin{background:var(--ink);justify-content:center;align-items:center;padding:40px 28px;gap:22px;overflow-y:auto}
-.admin-screen-back{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--ash)}
+.admin-screen-back{position:absolute;top:16px;left:16px;width:46px;height:46px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;color:var(--ash)}
 
 /* ─── DATE PICKER ─── */
 #date-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:flex-end;justify-content:center}
@@ -415,6 +415,7 @@ window._db = firebase.firestore();
 <!-- CARTERAS -->
 <div id="s-carteras" class="screen">
   <div class="bar"><div class="bar-logo">PrestaMax</div><div style="flex:1"></div>
+    <button onclick="toggleTheme()" id="theme-btn" style="background:none;border:none;cursor:pointer;font-size:24px;padding:4px 8px;margin-right:2px">🌙</button>
     <div class="user-chip" onclick="openM('m-user-menu')"><div class="user-av" id="uav">A</div><span id="uname">Admin</span></div>
   </div>
   <div class="carteras-scroll pb">
@@ -445,7 +446,6 @@ window._db = firebase.firestore();
     <div class="bar-back" onclick="backToCarteras()">←</div>
     <div class="bar-title" id="cartera-bar-title">Cartera</div>
     <div class="bar-ico" id="alert-btn" onclick="goTab('alertas')" style="margin-left:auto">🔔<div class="ndot" id="ndot" style="display:none">0</div></div>
-    <button class="bar-btn" onclick="toggleTheme()" id="theme-btn" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px">🌙</button>
     <div class="bar-btn" onclick="openLoanModal()">＋ Nuevo</div>
   </div>
   <div class="scroll pb" id="tabcontent"></div>
@@ -491,6 +491,13 @@ window._db = firebase.firestore();
 
   </div>
 </div>
+
+<!-- RECIBO MODAL -->
+<div class="overlay" id="m-recibo"><div class="sheet" style="max-height:96dvh">
+  <div class="shandle"></div>
+  <div class="shtitle" id="recibo-title">Recibo de Pago</div>
+  <div id="recibo-body"></div>
+</div></div>
 </div><!-- #app -->
 
 <!-- DATE PICKER -->
@@ -549,8 +556,8 @@ window._db = firebase.firestore();
     <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="f-ape" placeholder="Apellidos"></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="fl">🪪 Cédula</label><input type="text" class="fi" id="f-ced" placeholder="12345678" oninput="checkCedDup()"></div>
-    <div class="fg"><label class="fl">📱 WhatsApp</label><input type="tel" class="fi" id="f-tel" placeholder="+57 300..."></div>
+    <div class="fg"><label class="fl">🪪 Cédula * (10 dígitos)</label><input type="number" inputmode="numeric" class="fi" id="f-ced" placeholder="Ej: 1012345678" oninput="checkCedDup()"></div>
+    <div class="fg"><label class="fl">📱 WhatsApp * (10 dígitos)</label><input type="number" inputmode="numeric" class="fi" id="f-tel" placeholder="Ej: 3001234567"></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="fl">📞 Celular adicional (opcional)</label><input type="tel" class="fi" id="f-cel2" placeholder="+57 310..."></div>
@@ -958,9 +965,7 @@ function toggleTheme(){
   document.body.classList.toggle('light-mode');
   const isLight=document.body.classList.contains('light-mode');
   const icon=isLight?'☀️':'🌙';
-  ['theme-btn','theme-btn-inicio'].forEach(function(id){
-    const b=document.getElementById(id);if(b)b.textContent=icon;
-  });
+  const b=document.getElementById('theme-btn');if(b)b.textContent=icon;
   try{localStorage.setItem('pm-theme',isLight?'light':'dark');}catch(e){}
 }
 // Restaurar tema guardado
@@ -2338,6 +2343,7 @@ function saveLoan(){
     else{if(el)el.style.borderColor='';}
   });
   if(hayError){toast('⚠️ Completa los campos marcados en rojo');return;}
+  if(ced.replace(/\D/g,'').length!==10){const el=document.getElementById('f-ced');if(el)el.style.borderColor='var(--fire)';toast('⚠️ La cédula debe tener exactamente 10 dígitos');return;}
   if(cuo*ncu<val){toast(`⛔ Las cuotas no cubren el préstamo (${fmt(cuo*ncu)} < ${fmt(val)}). Corrígelo antes de guardar.`);return;}
   // Se permite múltiples préstamos activos por cédula
   const dispAhora=capDisponible(S.cartera);
@@ -2408,19 +2414,16 @@ function confirmPay(lid,cn){
   const comp=gv('pay-comp-data')||null;
   c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;
   distribuirPago(l,c);
-  l.historico.push(`✅ Cuota #${cn} pagada por ${who} vía ${met}${comp?' 📸':''}  — ${new Date().toLocaleDateString('es-CO')}`);
+  l.historico.push('Cuota #'+cn+' pagada por '+who+' via '+met+(comp?' con foto':'')+' - '+new Date().toLocaleDateString('es-CO'));
   const todasPagadas=l.cuotas.every(function(q){return q.estado==='pagada';});
   if(todasPagadas){
-    l.activo=false;
-    l.fechaCierre=new Date().toISOString();
-    l.historico.push('🏁 Préstamo completado — '+new Date().toLocaleDateString('es-CO'));
-    closeM('m-pay');toast('🎉 ¡Préstamo completado! Pasó al historial');
-  } else {
-    closeM('m-pay');toast('✅ Pago registrado'+(comp?' con comprobante':''));
+    l.activo=false;l.fechaCierre=new Date().toISOString();
+    l.historico.push('Prestamo completado - '+new Date().toLocaleDateString('es-CO'));
   }
-  fsSave();
+  fsSave();closeM('m-pay');
   if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
   updDot();render();
+  setTimeout(()=>mostrarRecibo({tipo:todasPagadas?'pazysalvo':'cuota',loan:l,cuota:c,quien:who,metodo:met,cartera:S.cartera}),400);
 }
 
 /* ─── MORA ─── */
@@ -2554,6 +2557,7 @@ function doMora(lid, cn, pagaMulta){
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
   updDot();render();
+  if(pagaMulta)setTimeout(()=>mostrarRecibo({tipo:'multa',loan:l,cuota:c,multa:l.mul,quien:S.user?.name||'',metodo:'Efectivo',cartera:S.cartera}),400);
 }
 
 /* ─── RENOVAR ─── */
@@ -2883,80 +2887,61 @@ function openM_capital(){
 function renderCapitalModal(){
   const c=S.cartera;const cap=getCap(c);
   const disp=capDisponible(c);const gan=gananciaTotal(c);
-  const prestado=Math.max(0,cap.base-disp);
-  const tieneInv=cap.histInv.length>0;
+  const total=cap.base+gan;
+  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+(l.val-Math.min(cobrado,l.val));
+  },0);
+  const tieneInv=cap.histInv&&cap.histInv.length>0;
   const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
-
-  // ── SI NO HAY INVERSIÓN: solo mostrar formulario de creación ──
   if(!tieneInv){
     document.getElementById('capital-body-content').innerHTML=`
-      <div class="info-box" style="margin-bottom:12px">Esta cartera aún no tiene capital base configurado. Ingresa el monto que vas a invertir para comenzar a prestar.</div>
+      <div class="info-box" style="margin-bottom:12px">Esta cartera aún no tiene capital configurado. Ingresa el monto a invertir para comenzar.</div>
       <div class="fg"><label class="fl">💵 Monto de inversión inicial</label>
         <input type="number" class="fi" id="cap-add-val" placeholder="Ej: 5000000" oninput="prevCapAdd()">
       </div>
-      <div id="cap-add-prev" style="display:none;font-size:11px;color:var(--jade);padding:4px 6px;background:rgba(0,229,176,.08);border-radius:6px;margin-bottom:7px"></div>
+      <div id="cap-add-prev" style="display:none;font-size:12px;color:var(--jade);padding:5px 8px;background:rgba(0,229,176,.08);border-radius:6px;margin-bottom:7px"></div>
       <div class="fg"><label class="fl">📝 Nota (opcional)</label>
         <input type="text" class="fi" id="cap-add-nota" placeholder="Ej: Inversión inicial enero 2025">
       </div>
-      <div style="display:flex;gap:7px;margin-top:4px">
+      <div style="display:flex;gap:7px;margin-top:6px">
         <button class="btn btn-ghost" style="flex:1" onclick="closeM('m-capital')">✕ Cerrar</button>
         <button class="btn btn-jade" style="flex:2" onclick="confirmarCapital()">✅ Establecer capital</button>
       </div>
     `;
     return;
   }
-
-  // ── SI YA HAY INVERSIÓN: mostrar resumen + editar/eliminar ──
-  const h=cap.histInv[0];
   const canDel=!tieneActivos;
   const delBtn=canDel
-    ? `<button class="btn btn-fire btn-sm" style="padding:5px 10px" onclick="capInvDel(0)">🗑️ Eliminar</button>`
-    : `<button class="btn btn-fire btn-sm" style="padding:5px 10px;opacity:.4;cursor:not-allowed" title="Hay préstamos activos — no se puede eliminar">🗑️ Eliminar</button>`;
-
+    ?`<button class="btn btn-fire btn-sm" style="flex:1" onclick="capInvDel()">🗑️ Resetear todo</button>`
+    :`<button class="btn btn-fire btn-sm" style="flex:1;opacity:.4;cursor:not-allowed">🗑️ Resetear todo</button>`;
   document.getElementById('capital-body-content').innerHTML=`
+    <div style="background:linear-gradient(135deg,rgba(255,196,0,.12),rgba(0,229,176,.08));border:1.5px solid rgba(255,196,0,.5);border-radius:var(--r);padding:16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">💼 Capital Total (Inversión + Ganancias)</div>
+      <div style="font-weight:900;font-size:34px;color:var(--gold);letter-spacing:-1.5px">${fmt(total)}</div>
+      <div style="font-size:11px;color:var(--smoke);margin-top:4px">= Inversión ${fmt(cap.base)} + Ganancias ${fmt(gan)}</div>
+    </div>
     <div class="calcbox" style="margin-bottom:12px">
-      <div class="crow2"><span>Capital base</span><span class="mono" style="font-weight:800;color:var(--jade)">${fmt(cap.base)}</span></div>
-      <div class="crow2"><span>Disponible para prestar</span><span class="mono" style="color:var(--jade)">${fmt(disp)}</span></div>
-      <div class="crow2"><span>En préstamos activos</span><span class="mono" style="color:var(--fire)">${fmt(prestado)}</span></div>
-      <div class="crow2"><span>Ganancias acumuladas</span><span class="mono" style="color:var(--lime)">${fmt(gan)}</span></div>
+      <div class="crow2"><span>📥 Inversión base</span><span class="mono" style="color:var(--jade)">${fmt(cap.base)}</span></div>
+      <div class="crow2"><span>📈 Ganancias cobradas</span><span class="mono" style="color:var(--lime)">${fmt(gan)}</span></div>
+      <div class="crow2"><span>🔴 En préstamos activos</span><span class="mono" style="color:var(--fire)">${fmt(prestadoActivo)}</span></div>
+      <div class="crow2"><span>✅ Disponible para prestar</span><span class="mono" style="color:var(--jade)">${fmt(disp)}</span></div>
     </div>
-
-    <div id="cap-inv-0" style="margin-bottom:10px">
-      <div class="cap-inv-view" style="background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-size:12px;font-weight:700">${h.nota||'Inversión base'}</div>
-            <div style="font-size:10px;color:var(--smoke)">${new Date(h.fecha).toLocaleDateString('es-CO')}</div>
-          </div>
-          <div class="mono" style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(h.monto)}</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-jade btn-sm" style="flex:1" onclick="abrirModificarCapital()">✏️ Modificar capital</button>
-          ${delBtn}
-        </div>
-        ${!canDel?`<div style="font-size:10px;color:var(--fog);margin-top:6px;text-align:center">⚠️ No se puede eliminar mientras haya préstamos activos</div>`:''}
-      </div>
-      <div class="cap-inv-edit" style="display:none;background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:12px;margin-top:4px">
-        <div class="fg"><label class="fl">💵 Nuevo monto</label>
-          <input type="number" class="fi" id="cap-edit-val-0" value="${h.monto}">
-        </div>
-        <div class="fg"><label class="fl">📝 Nota</label>
-          <input type="text" class="fi" id="cap-edit-nota-0" value="${h.nota||''}">
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="capInvCancel(0)">✕ Cancelar</button>
-          <button class="btn btn-jade btn-sm" style="flex:1" onclick="capInvSave(0)">✅ Guardar</button>
-        </div>
-      </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn btn-jade btn-sm" style="flex:1" onclick="abrirModificarCapital()">✏️ Modificar total</button>
+      ${delBtn}
     </div>
-    <button class="btn btn-ghost btn-w" style="margin-top:4px" onclick="closeM('m-capital')">← Volver a la cartera</button>
+    ${!canDel?'<div style="font-size:11px;color:var(--fog);margin-bottom:8px;text-align:center">⚠️ No se puede resetear con préstamos activos</div>':''}
+    <div id="mod-cap-inline"></div>
+    <div id="cap-del-confirm-wrap"></div>
+    <button class="btn btn-ghost btn-w" style="margin-top:6px" onclick="closeM('m-capital')">← Volver a la cartera</button>
   `;
 }
 
 function prevCapAdd(){
   const val=parseFloat(document.getElementById('cap-add-val')?.value)||0;
   const prev=document.getElementById('cap-add-prev');
-  if(val>0&&prev){prev.style.display='block';prev.innerHTML=`Capital base: <b style="color:var(--jade)">${fmt(val)}</b>`;}
+  if(val>0&&prev){prev.style.display='block';prev.innerHTML=`Capital base inicial: <b style="color:var(--jade)">${fmt(val)}</b>`;}
   else if(prev)prev.style.display='none';
 }
 
@@ -2965,104 +2950,85 @@ function confirmarCapital(){
   if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
   const nota=document.getElementById('cap-add-nota')?.value.trim()||'Inversión base';
   const cap=getCap(S.cartera);
-  cap.base=val;
-  cap.histInv=[{fecha:new Date(),monto:val,nota}];
-  toast(`✅ Capital establecido: ${fmt(val)}`);
+  cap.base=val;cap.histInv=[{fecha:new Date(),monto:val,nota}];
+  toast('✅ Capital establecido: '+fmt(val));
   closeM('m-capital');render();
 }
 
-function capInvEdit(i){
-  document.querySelector(`#cap-inv-${i} .cap-inv-view`).style.display='none';
-  document.querySelector(`#cap-inv-${i} .cap-inv-edit`).style.display='block';
-}
-function capInvCancel(i){
-  document.querySelector(`#cap-inv-${i} .cap-inv-view`).style.display='block';
-  document.querySelector(`#cap-inv-${i} .cap-inv-edit`).style.display='none';
-}
-function capInvSave(i){
-  const val=parseFloat(document.getElementById(`cap-edit-val-${i}`)?.value)||0;
-  const nota=document.getElementById(`cap-edit-nota-${i}`)?.value.trim()||'Inversión base';
-  if(val<=0){toast('⚠️ Monto inválido');return;}
-  const cap=getCap(S.cartera);
-  const disp=capDisponible(S.cartera);
-  const prestado=Math.max(0,cap.base-disp);
-  if(val<prestado){toast(`❌ No puedes bajar el capital a ${fmt(val)} — hay ${fmt(prestado)} en préstamos activos`);return;}
-  cap.histInv[i].monto=val;cap.histInv[i].nota=nota;
-  cap.base=val;
-  toast(`✅ Capital actualizado: ${fmt(val)}`);
-  closeM('m-capital');render();
-}
-function capInvDel(i){
+function capInvDel(){
   const c=S.cartera;
-  const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
-  if(tieneActivos){toast('❌ No se puede eliminar mientras haya préstamos activos');return;}
-  const cap=getCap(c);
-  // Show inline confirm instead of confirm() which doesn't work in iframes
-  const confirmDiv=document.getElementById('cap-del-confirm');
-  if(confirmDiv){confirmDiv.style.display='block';return;}
-  // Inject confirm UI into modal
-  const area=document.getElementById('capital-body-content');
-  const warn=document.createElement('div');
-  warn.id='cap-del-confirm';
-  warn.style.cssText='background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.4);border-radius:8px;padding:12px;margin-top:10px';
-  warn.innerHTML=`
-    <div style="font-size:13px;font-weight:700;color:var(--fire);margin-bottom:6px">⚠️ ¿Confirmar eliminación?</div>
-    <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">La cartera quedará sin capital base de <b>${fmt(cap.base)}</b>.</div>
-    <div style="display:flex;gap:7px">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cap-del-confirm').remove()">Cancelar</button>
-      <button class="btn btn-fire btn-sm" style="flex:1" onclick="confirmarEliminarInv()">🗑️ Sí, eliminar</button>
-    </div>`;
-  area.appendChild(warn);
+  if((c?.loans||[]).filter(l=>l.activo).length>0){toast('❌ No se puede resetear con préstamos activos');return;}
+  const cap=getCap(c);const total=cap.base+gananciaTotal(c);
+  const wrap=document.getElementById('cap-del-confirm-wrap');if(!wrap)return;
+  wrap.innerHTML=`<div style="background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.4);border-radius:10px;padding:14px;margin-top:8px">
+    <div style="font-size:14px;font-weight:800;color:var(--fire);margin-bottom:6px">⚠️ ¿Resetear todo el capital?</div>
+    <div style="font-size:12px;color:var(--smoke);margin-bottom:12px">Se eliminará el capital total de <b>${fmt(total)}</b>. No se puede deshacer.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cap-del-confirm-wrap').innerHTML=''">Cancelar</button>
+      <button class="btn btn-fire btn-sm" style="flex:1" onclick="confirmarEliminarInv()">🗑️ Sí, resetear</button>
+    </div></div>`;
 }
 
 function confirmarEliminarInv(){
   const c=S.cartera;const cap=getCap(c);
-  cap.base=0;cap.histInv=[];
-  toast('🗑️ Inversión eliminada.');
-  closeM('m-capital');render();
-}
-
-function abrirModificarCapital(){
-  const cap=getCap(S.cartera);
-  const area=document.getElementById('capital-body-content');
-  // Remove existing modifier if open
-  const existing=document.getElementById('mod-cap-form');
-  if(existing){existing.remove();return;}
-  const form=document.createElement('div');
-  form.id='mod-cap-form';
-  form.style.cssText='background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:12px;margin-top:10px';
-  form.innerHTML=`
-    <div style="font-size:12px;font-weight:800;color:var(--jade);margin-bottom:8px">✏️ Modificar capital base</div>
-    <div style="font-size:11px;color:var(--smoke);margin-bottom:10px">Capital actual: <b style="color:var(--jade)">${fmt(cap.base)}</b><br>Ingresa el nuevo monto total que deseas establecer.</div>
-    <div class="fg"><label class="fl">💵 Nuevo monto de capital</label>
-      <input type="number" class="fi" id="mod-cap-val" placeholder="Ej: 6000000" value="${cap.base}">
-    </div>
-    <div class="fg"><label class="fl">📝 Nota (opcional)</label>
-      <input type="text" class="fi" id="mod-cap-nota" placeholder="Ej: Agregué 1 millón">
-    </div>
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('mod-cap-form').remove()">✕ Cancelar</button>
-      <button class="btn btn-jade btn-sm" style="flex:1" onclick="confirmarModificarCapital()">✅ Guardar</button>
-    </div>`;
-  area.appendChild(form);
-}
-
-function confirmarModificarCapital(){
-  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
-  const nota=document.getElementById('mod-cap-nota')?.value.trim()||'Modificación de capital';
-  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
-  const cap=getCap(S.cartera);
-  const disp=capDisponible(S.cartera);
-  const prestado=Math.max(0,cap.base-disp);
-  if(val<prestado){toast('❌ No puedes bajar el capital a '+fmt(val)+' — hay '+fmt(prestado)+' en préstamos activos');return;}
-  const diff=val-cap.base;
-  cap.base=val;
-  cap.histInv[0]={fecha:new Date(),monto:val,nota};
-  if(diff!==0)cap.histInv.push({fecha:new Date(),monto:diff,nota:(diff>0?'➕ ':'➖ ')+nota});
-  toast('✅ Capital actualizado: '+fmt(val)+(diff>0?' (+'+fmt(diff)+')':diff<0?' ('+fmt(diff)+')':''));
+  cap.base=0;cap.histInv=[];cap.histGan=[];
+  toast('🗑️ Capital reseteado a cero.');
   fsSave();closeM('m-capital');render();
 }
 
+function abrirModificarCapital(){
+  const c=S.cartera;const cap=getCap(c);
+  const gan=gananciaTotal(c);const total=cap.base+gan;
+  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
+    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+(l.val-Math.min(cobrado,l.val));
+  },0);
+  const area=document.getElementById('mod-cap-inline');if(!area)return;
+  if(area.innerHTML.trim()){area.innerHTML='';return;}
+  area.innerHTML=`<div style="background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:800;color:var(--jade);margin-bottom:8px">✏️ Modificar capital total</div>
+    <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
+      Total actual: <b style="color:var(--gold)">${fmt(total)}</b><br>
+      Mínimo permitido: <b style="color:var(--fire)">${fmt(prestadoActivo)}</b> (en préstamos activos)
+    </div>
+    <div class="fg"><label class="fl">💵 Nuevo monto TOTAL deseado</label>
+      <input type="number" class="fi" id="mod-cap-val" placeholder="Ej: 8000000" value="${total}" oninput="prevModCap(${gan},${prestadoActivo})">
+    </div>
+    <div id="mod-cap-prev" style="font-size:12px;color:var(--smoke);margin-bottom:8px;padding:6px 8px;background:var(--ink3);border-radius:6px"></div>
+    <div class="fg"><label class="fl">📝 Nota (opcional)</label>
+      <input type="text" class="fi" id="mod-cap-nota" placeholder="Ej: Retiro de ganancias / Nuevo aporte">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('mod-cap-inline').innerHTML=''">✕ Cancelar</button>
+      <button class="btn btn-jade btn-sm" style="flex:1" onclick="confirmarModificarCapital(${gan},${prestadoActivo})">✅ Guardar</button>
+    </div>
+  </div>`;
+  prevModCap(gan,prestadoActivo);
+}
+
+function prevModCap(gan,minPerm){
+  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
+  const prev=document.getElementById('mod-cap-prev');if(!prev)return;
+  if(val<=0){prev.innerHTML='';return;}
+  const nuevoBase=Math.max(0,val-gan);
+  const diff=val-(document.getElementById('mod-cap-val')?.dataset?.oldTotal||val);
+  prev.innerHTML='Nueva inversión base: <b style="color:var(--jade)">'+fmt(nuevoBase)+'</b> · Ganancias (fijas): <b style="color:var(--lime)">'+fmt(gan)+'</b> = Total: <b style="color:var(--gold)">'+fmt(val)+'</b>';
+}
+
+function confirmarModificarCapital(gan,minPerm){
+  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
+  const nota=document.getElementById('mod-cap-nota')?.value.trim()||'Modificación de capital';
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  if(val<minPerm){toast('❌ El total no puede ser menor a '+fmt(minPerm)+' (hay ese monto en préstamos activos)');return;}
+  const cap=getCap(S.cartera);
+  const nuevoBase=Math.max(0,val-gan);
+  const diff=nuevoBase-cap.base;
+  cap.base=nuevoBase;
+  if(!cap.histInv)cap.histInv=[];
+  cap.histInv.push({fecha:new Date(),monto:nuevoBase,nota});
+  toast('✅ Capital total: '+fmt(val)+(diff>0?' (+'+fmt(diff)+' a base)':diff<0?' ('+fmt(diff)+' de base)':''));
+  fsSave();closeM('m-capital');render();
+}
 
 function openReinvertir(){
   const c=S.cartera;const cap=getCap(c);
@@ -3150,6 +3116,203 @@ function toast(msg){
   const t=document.createElement('div');t.className='toast';t.textContent=msg;
   document.body.appendChild(t);_tt=setTimeout(()=>t.remove(),3200);
 }
+
+/* ─── RECIBOS / COMPROBANTES ─── */
+function mostrarRecibo(opts){
+  const {tipo, loan:l, cuota:c, multa, quien, metodo, cartera} = opts;
+  const carteraNombre = cartera?.nombre || 'PrestaMax';
+  const fechaHoy = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+  const fechaHoyFull = new Date().toLocaleString('es-CO');
+  const titulo = tipo==='pazysalvo' ? 'Paz y Salvo' : tipo==='multa' ? 'Recibo de Multa' : 'Recibo de Cuota';
+  document.getElementById('recibo-title').textContent = titulo;
+
+  const totalPagado = l.cuotas.filter(q=>q.estado==='pagada').reduce((s,q)=>s+q.valor+(q.multa||0),0);
+  const totalLoan = l.cuotas.reduce((s,q)=>s+q.valor,0);
+  const pagadas = l.cuotas.filter(q=>q.estado==='pagada').length;
+
+  // Build canvas receipt
+  const W=600, H = tipo==='pazysalvo' ? 820 : tipo==='multa' ? 640 : 620;
+  const canvas = document.createElement('canvas');
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0d1520';
+  ctx.fillRect(0,0,W,H);
+
+  // Header gradient band
+  const hGrad = ctx.createLinearGradient(0,0,W,0);
+  if(tipo==='pazysalvo'){hGrad.addColorStop(0,'#003d28');hGrad.addColorStop(1,'#003366');}
+  else if(tipo==='multa'){hGrad.addColorStop(0,'#3d1000');hGrad.addColorStop(1,'#330000');}
+  else{hGrad.addColorStop(0,'#003328');hGrad.addColorStop(1,'#001a40');}
+  ctx.fillStyle=hGrad;
+  ctx.fillRect(0,0,W,120);
+
+  // Accent line top
+  ctx.fillStyle = tipo==='pazysalvo'?'#39d870':tipo==='multa'?'#ff3d5a':'#00e5b0';
+  ctx.fillRect(0,0,W,5);
+
+  // Logo/emoji icon circle
+  ctx.fillStyle='rgba(255,255,255,0.1)';
+  ctx.beginPath();ctx.arc(60,60,36,0,Math.PI*2);ctx.fill();
+  ctx.font='32px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(tipo==='pazysalvo'?'🏆':tipo==='multa'?'⚠️':'✅',60,60);
+
+  // Cartera name
+  ctx.font='bold 13px sans-serif';ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillText(carteraNombre.toUpperCase(), 108, 48);
+
+  // Title
+  ctx.font='bold 24px sans-serif';
+  ctx.fillStyle = tipo==='pazysalvo'?'#39d870':tipo==='multa'?'#ff6080':'#00e5b0';
+  ctx.fillText(titulo.toUpperCase(), 108, 80);
+
+  // Date
+  ctx.font='12px sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText(fechaHoyFull, 108, 102);
+
+  // Divider
+  ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(30,128);ctx.lineTo(W-30,128);ctx.stroke();
+
+  // Helper to draw a row
+  let rowY = 150;
+  function drawRow(label, value, valColor){
+    ctx.font='12px sans-serif';ctx.fillStyle='rgba(168,187,200,0.8)';
+    ctx.textAlign='left';ctx.fillText(label,40,rowY);
+    ctx.font='bold 14px sans-serif';ctx.fillStyle=valColor||'#eef4f8';
+    ctx.textAlign='right';ctx.fillText(value,W-40,rowY);
+    ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(40,rowY+8);ctx.lineTo(W-40,rowY+8);ctx.stroke();
+    rowY+=34;
+  }
+
+  function drawSection(title){
+    ctx.font='bold 11px sans-serif';ctx.fillStyle='rgba(100,160,200,0.7)';
+    ctx.textAlign='left';ctx.fillText(title.toUpperCase(),40,rowY);
+    rowY+=20;
+  }
+
+  // Client info
+  drawSection('Datos del Cliente');
+  drawRow('Nombre completo', l.nom+' '+l.ape);
+  drawRow('Cédula', 'CC '+l.ced);
+  if(l.tel)drawRow('Teléfono', l.tel);
+
+  rowY+=6;
+  drawSection('Datos del Crédito');
+  drawRow('Valor del préstamo', fmt(l.val),'#00e5b0');
+  drawRow('Modalidad', l.mod.charAt(0).toUpperCase()+l.mod.slice(1));
+  drawRow('Cuotas', l.ncu+' de '+fmt(l.cuo)+' c/u');
+
+  rowY+=6;
+  if(tipo==='cuota'&&c){
+    drawSection('Pago Registrado');
+    drawRow('Cuota N°', '#'+c.num,'#00e5b0');
+    drawRow('Valor cuota', fmt(c.valor),'#00e5b0');
+    if(c.multa>0)drawRow('Multa incluida', fmt(c.multa),'#ff3d5a');
+    drawRow('Total cobrado esta cuota', fmt(c.valor+(c.multa||0)),'#39d870');
+    drawRow('Método de pago', metodo);
+    drawRow('Registrado por', quien);
+    drawRow('Cuotas pagadas', pagadas+' / '+l.ncu);
+    drawRow('Capital pagado acum.', fmt(totalPagado));
+  } else if(tipo==='multa'){
+    drawSection('Multa Registrada');
+    drawRow('Cuota afectada N°', '#'+c?.num,'#ffaa00');
+    drawRow('Valor multa', fmt(multa),'#ffaa00');
+    drawRow('Cuota corrida al siguiente día hábil','');
+    drawRow('Registrado por', quien);
+    drawRow('Fecha', fechaHoy);
+  } else if(tipo==='pazysalvo'){
+    drawSection('PAZ Y SALVO TOTAL');
+    drawRow('Fecha de cierre', fechaHoy,'#39d870');
+    drawRow('Total cuotas pagadas', l.ncu+' de '+l.ncu,'#39d870');
+    drawRow('Capital total pagado', fmt(totalLoan),'#39d870');
+    drawRow('Estado del crédito', 'CANCELADO TOTALMENTE','#39d870');
+    drawRow('Registrado por', quien);
+    rowY+=10;
+    // Paz y salvo stamp
+    ctx.save();
+    ctx.globalAlpha=0.12;
+    ctx.font='bold 72px sans-serif';ctx.fillStyle='#39d870';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.translate(W/2,rowY+40);ctx.rotate(-0.25);
+    ctx.fillText('PAZ Y SALVO',0,0);
+    ctx.restore();
+    rowY+=80;
+  }
+
+  // Footer
+  ctx.fillStyle='rgba(255,255,255,0.04)';
+  ctx.fillRect(0,H-50,W,50);
+  ctx.font='11px sans-serif';ctx.fillStyle='rgba(168,187,200,0.5)';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('PrestaMax v3 · Comprobante generado automaticamente · '+fechaHoy,W/2,H-25);
+
+  const imgData = canvas.toDataURL('image/png');
+
+  // Build phone number for WA
+  let tel=(l.tel||'').replace(/\D/g,'');
+  if(tel.startsWith('0'))tel=tel.substring(1);
+  if(!tel.startsWith('57')&&tel.length===10)tel='57'+tel;
+
+  const waMsg = tipo==='pazysalvo'
+    ? 'Estimado/a '+l.nom+' '+l.ape+', le informamos que su credito ha sido CANCELADO TOTALMENTE. Adjunto paz y salvo. Gracias por su cumplimiento. PrestaMax.'
+    : tipo==='multa'
+    ? 'Estimado/a '+l.nom+' '+l.ape+', se registro el pago de multa por cuota #'+c?.num+'. Adjunto recibo. PrestaMax.'
+    : 'Estimado/a '+l.nom+' '+l.ape+', se registro el pago de cuota #'+c?.num+' por '+fmt(c?.valor)+'. Adjunto recibo. PrestaMax.';
+
+  document.getElementById('recibo-body').innerHTML=`
+    <div style="text-align:center;margin-bottom:14px">
+      <img src="${imgData}" style="width:100%;max-width:560px;border-radius:12px;border:1px solid var(--line)" alt="Recibo">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <a href="${imgData}" download="recibo-${tipo}-${l.ced}-${Date.now()}.png"
+         style="flex:1;padding:11px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:'Exo 2',sans-serif;font-size:14px;font-weight:700;color:var(--ash);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px">
+        💾 Guardar imagen
+      </a>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn btn-jade" style="flex:1" onclick="enviarReciboWA('${tel}','${encodeURIComponent(waMsg)}','${imgData}')">
+        📲 Enviar por WhatsApp
+      </button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn btn-sky" style="flex:1" onclick="enviarReciboEmail('${encodeURIComponent(l.email||'')}','${tipo}','${encodeURIComponent(waMsg)}','${imgData}')">
+        📧 Enviar por correo
+      </button>
+    </div>
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-recibo')">✕ Cerrar</button>
+  `;
+  openM('m-recibo');
+}
+
+function enviarReciboWA(tel, msgEncoded, imgData){
+  // Download image first, then open WA
+  const a=document.createElement('a');
+  a.href=imgData;a.download='recibo-prestamax.png';a.click();
+  setTimeout(()=>{
+    const msg=decodeURIComponent(msgEncoded)+'\n\n(Imagen guardada en tu dispositivo)';
+    window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(msg),'_blank');
+  },800);
+  toast('Imagen guardada. Abriendo WhatsApp...');
+}
+
+function enviarReciboEmail(emailEncoded, tipo, msgEncoded, imgData){
+  const email=decodeURIComponent(emailEncoded);
+  const msg=decodeURIComponent(msgEncoded);
+  const subject=encodeURIComponent(tipo==='pazysalvo'?'Paz y Salvo - PrestaMax':tipo==='multa'?'Recibo de Multa - PrestaMax':'Recibo de Pago - PrestaMax');
+  const body=encodeURIComponent(msg+'\n\nAdjunto imagen del recibo (guardada en su dispositivo).');
+  // Download image first
+  const a=document.createElement('a');
+  a.href=imgData;a.download='recibo-prestamax.png';a.click();
+  setTimeout(()=>{
+    window.open('mailto:'+email+'?subject='+subject+'&body='+body,'_blank');
+  },600);
+  toast('Imagen guardada. Abriendo correo...');
+}
+
 seed();
 </script>
 </body>
