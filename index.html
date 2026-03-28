@@ -577,6 +577,9 @@ window._db = firebase.firestore();
       <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
         <input type="radio" name="cal-mode" id="cal-ls" value="ls" onchange="renderDp()"> Lun–Sáb
       </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+        <input type="radio" name="cal-mode" id="cal-td" value="td" onchange="renderDp()"> Todos
+      </label>
     </div>
   </div>
   <div class="r2">
@@ -682,9 +685,9 @@ function renderDp(){
   const grid=document.getElementById('dp-grid');
   const dows=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   let html='';
-  // Header: Dom siempre bloqueado, Sáb bloqueado solo en modo lv
+  // Header según modo
   for(let i=0;i<7;i++){
-    const isBlocked=(i===0)||(i===6&&calMode==='lv');
+    const isBlocked=calMode==='td'?false:(i===0)||(i===6&&calMode==='lv');
     html+='<div class="dp-dow'+(isBlocked?' blocked':'')+'">'+dows[i]+'</div>';
   }
   const first=new Date(_dpY,_dpM,1).getDay();
@@ -695,8 +698,8 @@ function renderDp(){
     const dt=new Date(_dpY,_dpM,d,12,0,0);
     const iso=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
     const dow=dt.getDay();
-    // Bloquear: dom siempre, sáb solo en lv, festivos siempre. Pasado: NO bloqueado
-    const blocked=dow===0||(dow===6&&calMode==='lv')||FEST.has(iso);
+    // Bloquear según modo
+    const blocked=calMode==='td'?false:dow===0||(dow===6&&calMode==='lv')||FEST.has(iso);
     let cls='dp-day'+(blocked?' blocked':' available');
     if(iso===selISO) cls+=' selected';
     if(iso===todayISO&&!blocked) cls+=' today';
@@ -730,9 +733,10 @@ function getCalMode(){
   const r=document.querySelector('input[name="cal-mode"]:checked');
   return r?r.value:_calMode;
 }
-// isHabil según modo: lv bloquea dom+sáb+fest, ls bloquea solo dom+fest
+// isHabil según modo: lv bloquea dom+sáb+fest, ls bloquea dom+fest, td todos los días
 function isHabilMode(d,mode){
   const dow=new Date(d).getDay();
+  if(mode==='td') return true; // Todos los días: nunca bloquea
   if(mode==='ls') return dow!==0&&!isFest(d); // Lun-Sáb: bloquea dom y festivos
   return dow!==0&&dow!==6&&!isFest(d); // Lun-Vie: bloquea dom, sáb y festivos
 }
@@ -1443,7 +1447,7 @@ function rInicio(){
     <div class="alamt mono">${fmt(l.val)}</div></div></div>
     <div class="alact"><button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Revisar y decidir</button><button class="btn btn-ghost btn-sm" onclick="showLoan(${l.id})">👁 Ver</button></div>
   </div>`).join('')}`:''}
-  ${als.length?`<div class="sh"><div class="st">🚨 Alertas urgentes</div><div class="sl" onclick="goTab('alertas')">Ver todas →</div></div>${als.slice(0,2).map(rAlCard).join('')}`:''}
+
   <div class="sh"><div class="st">📋 Préstamos recientes</div><div class="sl" onclick="goTab('prestamos')">Ver todos →</div></div>
   ${rClientesAgrupados([...ls].reverse().slice(0,6))}`;
 }
@@ -1511,29 +1515,44 @@ function searchL(q,flt){
 }
 function rLCard(l){
   const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
-  const pct=Math.round(pag/l.cuotas.length*100);
-  const mora=l.cuotas.some(c=>c.estado==='mora'),hoy=l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
+  const total=l.cuotas.length;
+  const pct=Math.round(pag/total*100);
+  const mora=l.cuotas.some(c=>c.estado==='mora');
+  const hoy=l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
+  const tieneMulta=(l.histMultas||[]).length>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[l.mod]||'bd';
-  return`<div class="lc" onclick="showLoan(${l.id})" style="padding:8px 10px">
-    <div class="lstripe ${mora?'s-fire':hoy?'s-amber':'s-jade'}"></div>
-    <div class="lhead" style="margin-bottom:4px">
-      <div class="lav" style="width:32px;height:32px;font-size:12px">${ini.toUpperCase()}</div>
+  // Medidor de cuotas tipo píxeles creativos
+  const maxDots=Math.min(total,20);
+  const dotsPag=Math.round(pag/total*maxDots);
+  const dotsLeft=maxDots-dotsPag;
+  const dots=Array(dotsPag).fill('<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--jade);margin:1px;opacity:.9"></span>').join('')
+    +Array(dotsLeft).fill('<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--line);margin:1px"></span>').join('');
+  // Color borde tarjeta según estado
+  const borderColor=mora?'rgba(255,61,90,.6)':hoy?'rgba(255,170,0,.5)':'var(--line)';
+  const bgColor=mora?'rgba(255,61,90,.04)':'var(--ink2)';
+  return\`<div class="lc" onclick="showLoan(\${l.id})" style="padding:10px 12px;border-color:\${borderColor};background:\${bgColor}">
+    <div class="lstripe \${mora?'s-fire':hoy?'s-amber':'s-jade'}"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div class="lav" style="width:36px;height:36px;font-size:13px;flex-shrink:0\${mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':''}">\${ini.toUpperCase()}</div>
       <div style="flex:1;min-width:0">
-        <div class="lname" style="font-size:13px">${l.nom} ${l.ape}</div>
-        <div class="lsub" style="font-size:10px">CC ${l.ced}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="lname" style="font-size:13px">\${l.nom} \${l.ape}</div>
+          \${mora?'<span style="font-size:10px">🔴</span>':hoy?'<span style="font-size:10px">🟡</span>':''}
+        </div>
+        <div class="lsub" style="font-size:10px">CC \${l.ced} · <b style="color:var(--jade)">\${fmt(l.val)}</b></div>
       </div>
-      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <span class="lbadge ${bc}" style="font-size:9px">${l.mod}</span>
-        <div class="mono" style="font-weight:700;font-size:11px">${fmt(l.val)}</div>
-        ${mora?'<div class="chip chip-fire" style="font-size:9px;padding:1px 5px">⚠️ Mora</div>':hoy?'<div class="chip chip-amber" style="font-size:9px;padding:1px 5px">📅 Hoy</div>':''}
+      <div style="text-align:right">
+        <span class="lbadge \${bc}" style="font-size:9px">\${l.mod}</span>
+        <div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:2px">\${pct}%</div>
       </div>
     </div>
-    <div class="pb-track" style="height:3px"><div class="pb-fill" style="width:${pct}%"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke);margin-top:2px">
-      <span>${pag}/${l.cuotas.length} cuotas · ${fmt(l.cuo)}/c</span><span>${pct}%</span>
+    <div style="margin-bottom:4px;line-height:1">\${dots}</div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke)">
+      <span>\${pag}/\${total} cuotas · \${fmt(l.cuo)}/c</span>
+      \${mora?'<span style="color:var(--fire);font-weight:700">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber);font-weight:700">📅 PAGO HOY</span>':tieneMulta?'<span style="color:var(--amber)">💸 multa cobrada</span>':'<span style="color:var(--jade)">✅ al día</span>'}
     </div>
-  </div>`;
+  </div>\`;
 }
 
 /* ─── DETAIL ─── */
@@ -1782,8 +1801,10 @@ function searchCl(q){const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]=
 function getAlerts(){
   const out=[];
   loans().forEach(l=>l.cuotas.forEach(c=>{
-    if(c.estado==='mora')out.push({l,c,tipo:'mora'});
-    else if(c.estado==='pendiente'&&isToday(c.fecha))out.push({l,c,tipo:'hoy'});
+    // Si la cuota tiene multa cobrada (fue corrida), no es alerta de mora
+    const tieneMulraCobrada=(l.histMultas||[]).some(m=>m.cuota===c.num);
+    if(c.estado==='mora'&&!tieneMulraCobrada)out.push({l,c,tipo:'mora'});
+    else if(c.estado==='pendiente'&&isToday(c.fecha)&&!tieneMulraCobrada)out.push({l,c,tipo:'hoy'});
   }));
   loans().filter(l=>l.renewRequest).forEach(l=>out.push({l,c:null,tipo:'renew'}));
   return out;
