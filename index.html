@@ -1277,105 +1277,118 @@ function render(){
 function getCap(c){return c?.capital||{base:0,histInv:[],histGan:[]};}
 
 // Total prestado actualmente (préstamos activos, capital afuera)
+// ─── CAPITAL: total capital prestado activo (el que está en la calle)
 function capPrestado(c){
   return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>s+l.val,0);
 }
 
-// Cuánto ha regresado de capital (pagos recibidos, hasta el tope del val prestado)
-// Por cada préstamo: min(totalPagado, val) = capital recuperado
-function capRecuperado(c){
-  return (c?.loans||[]).reduce((s,l)=>{
+// ─── CAPITAL RECUPERADO de préstamos ACTIVOS (lo que ya volvió a caja, sin superar el capital)
+function capRecuperadoActivos(c){
+  return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
     const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
     return s+Math.min(pagado,l.val);
   },0);
 }
 
-// Ganancias acumuladas basadas en % configurado de la cartera
-// ─── GANANCIA REAL: total cobrado - capital prestado ───
+// ─── CAPITAL RECUPERADO de préstamos CERRADOS (ya terminados, para saber cuánto volvió)
+function capRecuperadoCerrados(c){
+  return (c?.loans||[]).filter(l=>!l.activo).reduce((s,l)=>{
+    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+Math.min(pagado,l.val);
+  },0);
+}
+
+// ─── GANANCIA por cuotas de un préstamo: cuotas pagadas que exceden el capital
 function gananciaLoan(l){
-  // Solo cuotas pagadas SIN multa (la multa es ganancia aparte de cartera)
-  const cobrado=l.cuotas.filter(function(x){return x.estado==='pagada';}).reduce(function(s,x){return s+x.valor;},0);
+  const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((s,x)=>s+x.valor,0);
   const capRecup=Math.min(cobrado,l.val);
-  const ganCicloActual=Math.max(0,cobrado-capRecup);
+  const ganCiclo=Math.max(0,cobrado-capRecup);
   const ganAnterior=l._ganAnteriorTotal||0;
-  return ganCicloActual+ganAnterior;
+  return ganCiclo+ganAnterior;
 }
 
+// ─── MULTAS cobradas (ganancia extra)
+function multasTotales(c){
+  return ((c?.capital?.histGan)||[])
+    .filter(h=>h.nota&&h.nota.startsWith('Multa'))
+    .reduce((s,h)=>s+h.monto,0);
+}
+
+// ─── GANANCIA TOTAL = ganancias de cuotas + multas
 function gananciaTotal(c){
-  // Ganancias de préstamos activos/cerrados (sin multas)
-  const ganLoans=(c?.loans||[]).reduce(function(s,l){return s+gananciaLoan(l);},0);
-  const ganEliminados=((c?.capital?.histGanEliminados)||[]).reduce(function(s,h){return s+h.monto;},0);
-  // Multas cobradas (de histGan solo las que tienen nota 'Multa')
-  const multas=((c?.capital?.histGan)||[]).filter(function(h){return h.nota&&h.nota.startsWith('Multa');}).reduce(function(s,h){return s+h.monto;},0);
-  return ganLoans+ganEliminados+multas;
+  const ganLoans=(c?.loans||[]).reduce((s,l)=>s+gananciaLoan(l),0);
+  const ganEliminados=((c?.capital?.histGanEliminados)||[]).reduce((s,h)=>s+h.monto,0);
+  const multas=multasTotales(c);
+  // Restar ganancias retiradas (entradas negativas en histGan con retirado:true)
+  const retirados=((c?.capital?.histGan)||[])
+    .filter(h=>h.retirado&&h.monto<0)
+    .reduce((s,h)=>s+Math.abs(h.monto),0);
+  return Math.max(0, ganLoans+ganEliminados+multas-retirados);
 }
 
+// ─── GANANCIA ESTIMADA si todos los activos terminan de pagar
 function gananciaEstimada(c){
-  // Ganancia estimada si todos los activos terminan de pagar
   return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>s+gananciaEstimadaLoan(l),0);
 }
-
-// Capital recuperado: cuotas pagadas que corresponden al capital (no ganancia)
-function capitalRecuperado(c){
-  return (c?.loans||[]).reduce((s,l)=>{
-    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
-    return s+Math.min(cobrado,l.val);
-  },0);
-}
-
-// Ganancia estimada de un préstamo (alias para compatibilidad)
-function gananciaEstimadaLoan(l,_c){
+function gananciaEstimadaLoan(l){
   const totalCuotas=l.cuotas.reduce((s,x)=>s+x.valor,0);
-  const ganCicloActual=Math.max(0,totalCuotas-l.val);
-  const ganAnterior=l._ganAnteriorTotal||0; // ganancias de ciclos anteriores ya aseguradas
-  return ganCicloActual+ganAnterior;
+  return Math.max(0,totalCuotas-l.val)+(l._ganAnteriorTotal||0);
 }
 
-// Capital total por cobrar (cuotas pendientes + mora)
-function totalPorCobrar(c){
+// ─── CAPITAL PENDIENTE en la calle (activos): capital prestado - lo ya recuperado
+function capEnCalle(c){
   return (c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
-    return s+l.cuotas.filter(q=>q.estado!=='pagada').reduce((ss,q)=>ss+q.valor,0);
+    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    const recup=Math.min(pagado,l.val);
+    return s+(l.val-recup);
   },0);
 }
 
-// Capital disponible = base - lo que está prestado activo + capital recuperado de activos
-// Las ganancias son APARTE y no se mezclan con el capital base
+// ─── DISPONIBLE = inversión base - capital aún en la calle
+// (Las ganancias son dinero extra disponible para prestar también)
 function capDisponible(c){
   const cap=getCap(c);
   if(!cap.base)return 0;
-  // Capital afuera en préstamos activos (solo capital, no ganancia)
-  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
-    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
-    const capRecup=Math.min(cobrado,l.val);
-    return s+(l.val-capRecup);
-  },0);
-  // Ganancia cobrada también está disponible para prestar (es dinero real en caja)
-  const ganCobrada=gananciaTotal(c);
-  return Math.max(0, cap.base + ganCobrada - prestadoActivo);
+  const enCalle=capEnCalle(c);
+  const gan=gananciaTotal(c);
+  // Disponible = (base + ganancias cobradas) - lo que aún está en la calle
+  return Math.max(0, cap.base + gan - enCalle);
 }
-// Solo la inversión base (sin ganancias)
+
 function capBase(c){return getCap(c).base||0;}
 
-// Porcentaje del capital en uso
+// ─── PORCENTAJE de capital en uso (sobre el total disponible = base + ganancias)
 function capPct(c){
   const cap=getCap(c);
   if(!cap.base)return 0;
-  const disp=capDisponible(c);
-  return Math.round((1-(disp/cap.base))*100);
+  const enCalle=capEnCalle(c);
+  const total=cap.base+gananciaTotal(c);
+  if(!total)return 0;
+  return Math.min(100,Math.round((enCalle/total)*100));
 }
 
-// Cuando se paga una cuota: distribuir entre capital y ganancia
+// ─── DISTRIBUIR PAGO: registrar ganancia cuando la cuota supera el capital
 function distribuirPago(loan, cuota){
   const c=S.cartera;if(!c)return;
   const cap=getCap(c);
+  // Capital ya recuperado antes de esta cuota (de cuotas previas pagadas)
   const yaRecup=loan.cuotas.filter(x=>x.estado==='pagada'&&x.num!==cuota.num)
     .reduce((s,x)=>s+x.valor,0);
   const faltaRecup=Math.max(0,loan.val-yaRecup);
-  const esCap=Math.min(cuota.valor,faltaRecup); // cuánto va a capital
-  const esGan=cuota.valor-esCap+(cuota.multa||0); // resto va a ganancia
-  if(esGan>0){
-    cap.histGan.push({fecha:new Date(),monto:esGan,lid:loan.id,cliente:loan.nom+' '+loan.ape,nota:`Cuota #${cuota.num}`});
+  const esCap=Math.min(cuota.valor,faltaRecup);
+  const esGan=cuota.valor-esCap; // ganancia pura de cuotas (multas van aparte)
+  if(esGan>0&&cap.histGan){
+    cap.histGan.push({fecha:new Date(),monto:esGan,lid:loan.id,
+      cliente:loan.nom+' '+loan.ape,nota:'Cuota #'+cuota.num});
   }
+}
+
+// ─── capitalRecuperado (alias para compatibilidad)
+function capitalRecuperado(c){
+  return (c?.loans||[]).reduce((s,l)=>{
+    const pagado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
+    return s+Math.min(pagado,l.val);
+  },0);
 }
 
 /* ─── INICIO ─── */
@@ -1395,21 +1408,29 @@ function rCobrosHoy(act){
 function rInicio(){
   const ls=loans(),act=ls.filter(l=>l.activo);
   const c=S.cartera;
-  const capBase=getCap(c).base;
+  const capB=getCap(c).base;
+  const recibParcial=capRecuperadoActivos(c);
+  const pendiente=capEnCalle(c);
   const disp=capDisponible(c);
-  const pct=capPct(c);
   const gan=gananciaTotal(c);
-  const mora=act.filter(l=>l.cuotas.some(c=>c.estado==='mora')).length;
-  const hoy=act.filter(l=>l.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente')).length;
-  const rewR=ls.filter(l=>l.renewRequest);
-  const als=getAlerts();
-  const noCapWarn=capBase===0?`<div class="no-cap-warn" style="cursor:pointer" onclick="openM_capital()">⚠️ Esta cartera no tiene capital configurado. <b>Toca aquí para agregar una inversión base.</b></div>`:'';
-  return`${noCapWarn}<div class="cap-hero">
-    <div class="cap-row"><span class="cap-lbl" style="color:var(--jade)">💰 Capital de Trabajo</span>
-      <span style="font-size:11px;color:var(--smoke)">Base: <b style="color:var(--white)">${fmt(capBase)}</b></span></div>
-    <div style="margin:6px 0 2px">
-      <div style="font-weight:900;font-size:28px;letter-spacing:-1.5px;color:var(--jade)">${fmt(disp)}</div>
-      <div style="font-size:11px;color:var(--smoke)">disponible para prestar</div>
+  const multas=multasTotales(c);
+  const ganCuotas=gan-multas;
+  const mora=act.filter(l=>l.cuotas.some(q=>q.estado==='mora')).length;
+  const hoy=act.filter(l=>l.cuotas.some(q=>isToday(q.fecha)&&q.estado==='pendiente')).length;
+  const pct=capPct(c);
+  const noCapWarn=capB===0?`<div class="no-cap-warn" style="cursor:pointer" onclick="openM_capital()">⚠️ Esta cartera no tiene capital configurado. <b>Toca aquí para agregar una inversión base.</b></div>`:'';
+
+  return`${noCapWarn}
+
+  <!-- ── DISPONIBLE HERO ── -->
+  <div class="cap-hero">
+    <div class="cap-row">
+      <span class="cap-lbl" style="color:var(--jade)">💰 CAPITAL DE TRABAJO</span>
+      <span style="font-size:12px;color:var(--smoke)">Inversión: <b style="color:var(--white)">${fmt(capB)}</b></span>
+    </div>
+    <div style="margin:6px 0 4px">
+      <div style="font-weight:900;font-size:34px;letter-spacing:-1.5px;color:var(--jade)">${fmt(disp)}</div>
+      <div style="font-size:12px;color:var(--smoke)">disponible para prestar</div>
     </div>
     <div class="cap-bar-wrap">
       <div class="cap-bar-track">
@@ -1417,89 +1438,100 @@ function rInicio(){
         <div class="cap-bar-prestado" style="width:${pct}%"></div>
       </div>
       <div class="cap-legend">
-        <span><span class="cap-dot" style="background:var(--fire)"></span>En préstamos: ${fmt(capBase-disp)}</span>
+        <span><span class="cap-dot" style="background:var(--fire)"></span>En la calle: ${fmt(pendiente)}</span>
         <span><span class="cap-dot" style="background:var(--jade)"></span>Disponible: ${fmt(disp)}</span>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-      <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:7px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Inversión</div>
-        <div style="font-weight:900;font-size:13px;color:var(--jade)">${fmt(capBase)}</div>
-      </div>
-      <div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.2);border-radius:8px;padding:7px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Ganancia</div>
-        <div style="font-weight:900;font-size:13px;color:var(--lime)">${fmt(gan)}</div>
-      </div>
-      <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:7px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Total</div>
-        <div style="font-weight:900;font-size:13px;color:var(--gold)">${fmt(capBase+gan)}</div>
-      </div>
-    </div>
-    <div class="cap-actions">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openM_capital()">✏️ Modificar capital</button>
-    </div>
   </div>
-  <div class="ganancia-box">
-    <div style="font-size:10px;font-weight:800;color:var(--jade);margin-bottom:8px;letter-spacing:.5px">📊 RESUMEN FINANCIERO</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Capital invertido</div>
-        <div style="font-weight:900;font-size:15px;color:var(--jade)">${fmt(capBase)}</div>
-      </div>
-      <div style="background:rgba(100,200,255,.08);border:1px solid rgba(100,200,255,.2);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">En préstamos</div>
-        <div style="font-weight:900;font-size:15px;color:var(--sky)">${fmt(capBase-disp+gan)}</div>
-      </div>
-      <div style="background:rgba(50,255,120,.08);border:1px solid rgba(50,255,120,.2);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Gan. cobrada</div>
-        <div style="font-weight:900;font-size:15px;color:var(--lime)">${fmt(gan)}</div>
-      </div>
-      <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:var(--fog)">Gan. estimada</div>
-        <div style="font-weight:900;font-size:15px;color:var(--gold)">${fmt(gananciaEstimada(c))}</div>
-      </div>
-    </div>
-    <div style="background:rgba(0,229,176,.05);border:1px solid rgba(0,229,176,.15);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div style="font-size:9px;color:var(--fog)">Disponible para reinvertir</div>
-        <div style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(disp)}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;color:var(--fog)">Capital reinvertido</div>
-        <div style="font-weight:900;font-size:14px;color:var(--violet)">${fmt(capBase>0?act.reduce((s,l)=>s+l.val,0):0)}</div>
-      </div>
-    </div>
-    <div class="ganancia-row" style="margin-top:8px;color:var(--smoke)"><span>Activos: ${act.length}</span><span>Mora: ${mora}</span><span>Cobros hoy: ${hoy}</span></div>
-  </div>
-  ${rCobrosHoy(act)}
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
-    <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:6px;text-align:center">
-      <div style="font-size:16px;font-weight:900;color:var(--jade)">${act.length}</div>
-      <div style="font-size:9px;color:var(--fog)">Activos</div>
-    </div>
-    <div style="background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);border-radius:8px;padding:6px;text-align:center">
-      <div style="font-size:16px;font-weight:900;color:var(--fire)">${mora}</div>
-      <div style="font-size:9px;color:var(--fog)">Mora</div>
-    </div>
-    <div style="background:rgba(255,196,0,.08);border:1px solid rgba(255,196,0,.2);border-radius:8px;padding:6px;text-align:center">
-      <div style="font-size:16px;font-weight:900;color:var(--gold)">${hoy}</div>
-      <div style="font-size:9px;color:var(--fog)">Hoy</div>
-    </div>
-    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:6px;text-align:center">
-      <div style="font-size:16px;font-weight:900;color:${rewR.length?'var(--violet)':'var(--sky)'}">${rewR.length}</div>
-      <div style="font-size:9px;color:var(--fog)">Renov.</div>
-    </div>
-  </div>
-  ${rewR.length?`<div class="sh"><div class="st">🔄 Solicitudes de Renovación</div></div>
-  ${rewR.map(l=>`<div class="alcard al-renew"><div class="alhead"><div class="alav">${l.nom[0]+l.ape[0]}</div>
-    <div style="flex:1"><div class="alname">${l.nom} ${l.ape}</div><div class="aldet">CC ${l.ced} · Solicita renovación del crédito ${cap(l.mod)}</div>
-    <div class="alamt mono">${fmt(l.val)}</div></div></div>
-    <div class="alact"><button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Revisar y decidir</button><button class="btn btn-ghost btn-sm" onclick="showLoan(${l.id})">👁 Ver</button></div>
-  </div>`).join('')}`:''}
 
-  <div class="sh"><div class="st">📋 Préstamos recientes</div><div class="sl" onclick="goTab('prestamos')">Ver todos →</div></div>
-  ${rClientesAgrupados([...ls].reverse().slice(0,6))}`;
+  <!-- ── BLOQUE CAPITAL: inversión + recibido + pendiente ── -->
+  <div style="background:var(--ink2);border:1.5px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
+    <div style="background:linear-gradient(90deg,rgba(0,229,176,.14),rgba(0,153,255,.07));padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px">📊 Capital</span>
+      <button class="btn btn-ghost btn-sm" style="padding:5px 12px;font-size:12px" onclick="openM_capital()">✏️ Modificar</button>
+    </div>
+    <div style="padding:0 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:14px;font-weight:700;color:var(--ash)">📥 Inversión inicial</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--jade)">${fmt(capB)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);background:rgba(255,210,0,.05)">
+        <span style="font-size:14px;font-weight:700;color:var(--ash)">📬 Recibido (capital)</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--amber)">${fmt(recibParcial)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0">
+        <span style="font-size:14px;font-weight:700;color:var(--ash)">⏳ Pendiente en la calle</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--fire)">${fmt(pendiente)}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE GANANCIAS: con botones enviar a capital / retirar ── -->
+  <div style="background:var(--ink2);border:1.5px solid rgba(57,216,112,.35);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
+    <div style="background:linear-gradient(90deg,rgba(57,216,112,.14),rgba(255,196,0,.07));padding:10px 14px;font-size:12px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:.6px">💹 Ganancias cobradas</div>
+    <div style="padding:0 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:14px;font-weight:700;color:var(--ash)">💹 De cuotas</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--lime)">${fmt(ganCuotas)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:14px;font-weight:700;color:var(--ash)">⚠️ Multas</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--amber)">${fmt(multas)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);background:rgba(57,216,112,.06)">
+        <span style="font-size:15px;font-weight:900;color:var(--lime)">🏆 Total ganancias</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:900;font-size:18px;color:var(--lime)">${fmt(gan)}</span>
+      </div>
+      <!-- Botones de acción de ganancias -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0">
+        <button class="btn btn-jade btn-sm" onclick="openGananciaAccion('capital')" ${gan<=0?'disabled style="opacity:.45"':''}>
+          ➕ Enviar a capital
+        </button>
+        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''}>
+          💸 Retirar ganancias
+        </button>
+      </div>
+    </div>
+  </div>
+
+  ${rCobrosHoy(act)}
+
+  <!-- ── CONTADORES ── -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+    <div style="background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.2);border-radius:8px;padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--jade)">${act.length}</div>
+      <div style="font-size:10px;color:var(--fog)">Activos</div>
+    </div>
+    <div style="background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);border-radius:8px;padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--fire)">${mora}</div>
+      <div style="font-size:10px;color:var(--fog)">Mora</div>
+    </div>
+    <div style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-radius:8px;padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--amber)">${hoy}</div>
+      <div style="font-size:10px;color:var(--fog)">Cobros hoy</div>
+    </div>
+    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--violet)">${ls.filter(l=>l.renewRequest).length}</div>
+      <div style="font-size:10px;color:var(--fog)">Renov.</div>
+    </div>
+  </div>
+
+  <!-- ── GANANCIA ESTIMADA ── -->
+  <div style="background:rgba(0,229,176,.05);border:1px solid rgba(0,229,176,.15);border-radius:var(--r-sm);padding:10px;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-size:10px;color:var(--fog)">Ganancia estimada (si todos pagan)</div>
+      <div style="font-weight:900;font-size:18px;color:var(--jade)">${fmt(gananciaEstimada(c))}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:10px;color:var(--fog)">Ya cobrada</div>
+      <div style="font-weight:900;font-size:15px;color:var(--lime)">${fmt(gan)}</div>
+    </div>
+  </div>
+
+  ${rPrestamosRecientes(act)}`;
 }
+
+
 
 function rClientesAgrupados(lista){
   // Agrupar por cédula
@@ -2454,28 +2486,42 @@ function nextFecha(c, l){
 function openMora(lid,cn){
   const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
   S.lid=lid;
+  _multaActual=l.mul; // default: multa del préstamo
   const nfAdj=nextFecha(c,l);
   $('mora-body').innerHTML=`
     <div class="calcbox" style="margin-bottom:12px">
       <div class="crow2"><span>Cliente</span><span style="font-weight:700">${l.nom} ${l.ape}</span></div>
       <div class="crow2"><span>Cédula</span><span>CC ${l.ced}</span></div>
       <div class="crow2"><span>Cuota #${cn}</span><span class="mono" style="color:var(--fire)">${fmt(c.valor)}</span></div>
-      <div class="crow2"><span>Multa acordada</span><span class="mono" style="color:var(--amber);font-weight:800">${fmt(l.mul)}</span></div>
+    </div>
+
+    <!-- Multa individual editable -->
+    <div style="background:rgba(255,170,0,.08);border:1.5px solid rgba(255,170,0,.35);border-radius:var(--r-sm);padding:12px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:800;color:var(--amber);margin-bottom:8px">⚠️ Multa para esta cuota (editable)</div>
+      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Multa por defecto del crédito: <b style="color:var(--amber)">${fmt(l.mul)}</b><br>Puedes cambiarla o dejar 0 para perdonar.</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="multa-individual" class="fi" style="flex:1;font-size:15px;font-weight:800"
+          value="${l.mul}" min="0" oninput="actualizarMultaIndividual(${lid},${cn})">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('multa-individual').value=0;actualizarMultaIndividual(${lid},${cn})">$0</button>
+        <button class="btn btn-amber btn-sm" onclick="document.getElementById('multa-individual').value=${l.mul};actualizarMultaIndividual(${lid},${cn})">Reset</button>
+      </div>
+      <div id="multa-preview" style="font-size:12px;color:var(--smoke);margin-top:8px">
+        Total a cobrar: <b style="color:var(--white)">${fmt(c.valor+l.mul)}</b> (cuota ${fmt(c.valor)} + multa ${fmt(l.mul)})
+      </div>
     </div>
 
     <div style="font-weight:800;font-size:14px;margin-bottom:10px;color:var(--white)">¿El cliente paga la multa?</div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div id="mora-si" style="background:rgba(57,216,112,.08);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(true,${lid},${cn})">
         <div style="font-size:28px;margin-bottom:4px">✅</div>
         <div style="font-weight:800;font-size:14px;color:var(--lime)">SÍ paga</div>
-        <div style="font-size:11px;color:var(--smoke);margin-top:3px">Cobra multa<br><b style="color:var(--white)">${fmt(l.mul)}</b></div>
-        <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota queda pagada</div>
+        <div id="mora-si-sub" style="font-size:11px;color:var(--smoke);margin-top:3px">Cobra multa<br><b style="color:var(--white)">${fmt(l.mul)}</b></div>
+        <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota → Pendiente</div>
       </div>
       <div id="mora-no" style="background:rgba(255,61,90,.06);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(false,${lid},${cn})">
         <div style="font-size:28px;margin-bottom:4px">❌</div>
         <div style="font-weight:800;font-size:14px;color:var(--fire)">NO paga</div>
-        <div style="font-size:11px;color:var(--smoke);margin-top:3px">Multa perdonada<br><b style="color:var(--white)">${fmt(0)}</b></div>
+        <div style="font-size:11px;color:var(--smoke);margin-top:3px">Sin multa<br><b style="color:var(--white)">$0</b></div>
         <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota → ${fd(nfAdj)}</div>
       </div>
     </div>
@@ -2490,75 +2536,79 @@ function openMora(lid,cn){
   openM('m-mora');
 }
 
+
 function selMulta(paga, lid, cn){
   const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  const multa=_multaActual||l.mul;
   const nfAdj=nextFecha(c,l);
-  // Highlight selected card
   document.getElementById('mora-si').style.borderColor = paga ? 'var(--lime)' : 'var(--line)';
   document.getElementById('mora-si').style.background  = paga ? 'rgba(57,216,112,.15)' : 'rgba(57,216,112,.08)';
   document.getElementById('mora-no').style.borderColor = !paga ? 'var(--fire)' : 'var(--line)';
   document.getElementById('mora-no').style.background  = !paga ? 'rgba(255,61,90,.15)' : 'rgba(255,61,90,.06)';
-
   const area=document.getElementById('mora-confirm-area');
   if(paga){
     area.style.display='block';
     area.innerHTML=`
       <div style="background:rgba(57,216,112,.08);border:1px solid rgba(57,216,112,.25);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
-        <div style="font-size:12px;color:var(--ash);margin-bottom:6px">💰 El cliente paga <b style="color:var(--lime)">${fmt(c.valor + l.mul)}</b> en total:</div>
+        <div style="font-size:13px;color:var(--ash);margin-bottom:6px">💰 El cliente paga <b style="color:var(--lime)">${fmt(c.valor + multa)}</b> en total:</div>
         <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span>Cuota #${cn}</span><span class="mono">${fmt(c.valor)}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span>Multa</span><span class="mono" style="color:var(--amber)">${fmt(l.mul)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span>Multa</span><span class="mono" style="color:var(--amber)">${fmt(multa)}</span></div>
+        <div style="font-size:11px;color:var(--jade);margin-top:6px">✅ La cuota quedará como PENDIENTE (reprogramada)</div>
       </div>
-      <button class="btn btn-lime btn-w" onclick="doMora(${lid},${cn},true)">✅ Confirmar — cobrar multa ${fmt(l.mul)}</button>`;
+      <button class="btn btn-lime btn-w" onclick="doMora(${lid},${cn},true)">✅ Confirmar — cobrar multa ${fmt(multa)}</button>`;
   } else {
     area.style.display='block';
     area.innerHTML=`
       <div style="background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.2);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
-        <div style="font-size:12px;color:var(--ash);margin-bottom-4px">🤝 Multa perdonada — <b style="color:var(--fire)">$0</b></div>
-        <div style="font-size:11px;color:var(--smoke);margin-top:4px">La cuota #${cn} se reprograma al próximo día hábil:<br><b style="color:var(--white)">${fd(nfAdj)}</b></div>
+        <div style="font-size:12px;color:var(--ash)">🤝 Sin multa — cuota reprogramada como PENDIENTE al próximo día hábil:<br><b style="color:var(--white)">${fd(nfAdj)}</b></div>
       </div>
-      <button class="btn btn-fire btn-w" onclick="doMora(${lid},${cn},false)">🤝 Confirmar — multa perdonada y correr cuota</button>`;
+      <button class="btn btn-fire btn-w" onclick="doMora(${lid},${cn},false)">🤝 Confirmar — multa perdonada, cuota como pendiente</button>`;
   }
 }
+
 
 function doMora(lid, cn, pagaMulta){
   const l=getL(lid),c=l?.cuotas.find(function(x){return x.num===cn;});if(!l||!c)return;
   const nfAdj=nextFecha(c,l);
   if(pagaMulta){
-    // Cobrar multa: registrar y correr ESTA cuota + todas las siguientes un slot
+    const multaVal=_multaActual||l.mul; // usar multa individual si se definió
     if(!l.histMultas)l.histMultas=[];
-    l.histMultas.push({fecha:new Date().toISOString(),cuota:cn,monto:l.mul,cobradoPor:S.user?.name||''});
-    // Registrar multa en histGan de la cartera (suma a ganancias)
+    l.histMultas.push({fecha:new Date().toISOString(),cuota:cn,monto:multaVal,cobradoPor:S.user?.name||''});
     const cap=getCap(S.cartera);
-    if(cap)cap.histGan.push({fecha:new Date(),monto:l.mul,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
-    // Acumular multa en el préstamo para gananciaLoan (cuota sigue pendiente, no pagada)
-    l._multasCobradas=(l._multasCobradas||0)+l.mul;
-    c.multa=(c.multa||0)+l.mul;
-    // Correr esta cuota y TODAS las pendientes siguientes un slot
+    if(cap){
+      if(!cap.histGan)cap.histGan=[];
+      cap.histGan.push({fecha:new Date(),monto:multaVal,lid:l.id,cliente:l.nom+' '+l.ape,nota:'Multa cuota #'+cn});
+    }
+    l._multasCobradas=(l._multasCobradas||0)+multaVal;
+    c.multa=(c.multa||0)+multaVal;
+    // Correr TODAS las cuotas pendientes desde cn un slot
     const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
     for(let i=0;i<pendSig.length;i++){
-      const qc=pendSig[i];
       const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
-      qc.fecha=nextFecha({fecha:base},l);
+      pendSig[i].fecha=nextFecha({fecha:base},l);
+      pendSig[i].estado='pendiente'; // ← CLAVE: vuelve a pendiente, no mora
     }
-    l.historico.push('💸 Multa cuota #'+cn+': '+fmt(l.mul)+' cobrada · cuota y siguientes corridas un día — '+new Date().toLocaleDateString('es-CO'));
-    toast('✅ Multa '+fmt(l.mul)+' cobrada. Cuota #'+cn+' y siguientes reprogramadas');
+    l.historico.push('Multa cuota #'+cn+': '+fmt(multaVal)+' cobrada · cuotas corridas un dia — '+new Date().toLocaleDateString('es-CO'));
+    toast('✅ Multa '+fmt(multaVal)+' cobrada. Cuota #'+cn+' reprogramada como PENDIENTE');
   } else {
-    // Sin multa: solo correr esta cuota y las siguientes
+    // Sin multa: solo correr y poner pendiente
     const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
     for(let i=0;i<pendSig.length;i++){
-      const qc=pendSig[i];
       const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
-      qc.fecha=nextFecha({fecha:base},l);
+      pendSig[i].fecha=nextFecha({fecha:base},l);
+      pendSig[i].estado='pendiente'; // ← CLAVE: vuelve a pendiente
     }
-    l.historico.push('🤝 Multa cuota #'+cn+' perdonada · cuota y siguientes reprogramadas — '+new Date().toLocaleDateString('es-CO'));
-    toast('🤝 Multa perdonada. Cuotas reprogramadas');
+    l.historico.push('Multa cuota #'+cn+' perdonada · cuotas reprogramadas pendiente — '+new Date().toLocaleDateString('es-CO'));
+    toast('🤝 Multa perdonada. Cuota #'+cn+' reprogramada como PENDIENTE');
   }
+  _multaActual=0;
   closeM('m-mora');
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
   updDot();render();
-  if(pagaMulta)setTimeout(()=>mostrarRecibo({tipo:'multa',loan:l,cuota:c,multa:l.mul,quien:S.user?.name||'',metodo:'Efectivo',cartera:S.cartera}),400);
+  if(pagaMulta)setTimeout(()=>mostrarRecibo({tipo:'multa',loan:l,cuota:c,multa:(_multaActual||l.mul),quien:S.user?.name||'',metodo:'Efectivo',cartera:S.cartera}),400);
 }
+
 
 /* ─── RENOVAR ─── */
 function openRenew(lid){
@@ -2886,17 +2936,15 @@ function openM_capital(){
 
 function renderCapitalModal(){
   const c=S.cartera;const cap=getCap(c);
-  const disp=capDisponible(c);const gan=gananciaTotal(c);
-  const total=cap.base+gan;
-  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
-    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
-    return s+(l.val-Math.min(cobrado,l.val));
-  },0);
+  const disp=capDisponible(c);
+  const recibParcial=capRecuperadoActivos(c);
+  const pendiente=capEnCalle(c);
   const tieneInv=cap.histInv&&cap.histInv.length>0;
   const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
+
   if(!tieneInv){
     document.getElementById('capital-body-content').innerHTML=`
-      <div class="info-box" style="margin-bottom:12px">Esta cartera aún no tiene capital configurado. Ingresa el monto a invertir para comenzar.</div>
+      <div class="info-box" style="margin-bottom:12px">Esta cartera aún no tiene capital configurado. Ingresa el monto inicial a invertir.</div>
       <div class="fg"><label class="fl">💵 Monto de inversión inicial</label>
         <input type="number" class="fi" id="cap-add-val" placeholder="Ej: 5000000" oninput="prevCapAdd()">
       </div>
@@ -2911,32 +2959,46 @@ function renderCapitalModal(){
     `;
     return;
   }
-  const canDel=!tieneActivos;
-  const delBtn=canDel
-    ?`<button class="btn btn-fire btn-sm" style="flex:1" onclick="capInvDel()">🗑️ Resetear todo</button>`
-    :`<button class="btn btn-fire btn-sm" style="flex:1;opacity:.4;cursor:not-allowed">🗑️ Resetear todo</button>`;
+
   document.getElementById('capital-body-content').innerHTML=`
-    <div style="background:linear-gradient(135deg,rgba(255,196,0,.12),rgba(0,229,176,.08));border:1.5px solid rgba(255,196,0,.5);border-radius:var(--r);padding:16px;margin-bottom:12px;text-align:center">
-      <div style="font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">💼 Capital Total (Inversión + Ganancias)</div>
-      <div style="font-weight:900;font-size:34px;color:var(--gold);letter-spacing:-1.5px">${fmt(total)}</div>
-      <div style="font-size:11px;color:var(--smoke);margin-top:4px">= Inversión ${fmt(cap.base)} + Ganancias ${fmt(gan)}</div>
+    <!-- Inversión actual -->
+    <div style="background:linear-gradient(135deg,rgba(0,229,176,.1),rgba(0,153,255,.06));border:1.5px solid rgba(0,229,176,.4);border-radius:var(--r);padding:16px;margin-bottom:14px;text-align:center">
+      <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">📥 Inversión base actual</div>
+      <div style="font-weight:900;font-size:36px;color:var(--jade);letter-spacing:-1.5px">${fmt(cap.base)}</div>
     </div>
-    <div class="calcbox" style="margin-bottom:12px">
-      <div class="crow2"><span>📥 Inversión base</span><span class="mono" style="color:var(--jade)">${fmt(cap.base)}</span></div>
-      <div class="crow2"><span>📈 Ganancias cobradas</span><span class="mono" style="color:var(--lime)">${fmt(gan)}</span></div>
-      <div class="crow2"><span>🔴 En préstamos activos</span><span class="mono" style="color:var(--fire)">${fmt(prestadoActivo)}</span></div>
-      <div class="crow2"><span>✅ Disponible para prestar</span><span class="mono" style="color:var(--jade)">${fmt(disp)}</span></div>
+
+    <!-- Resumen rápido -->
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:14px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">📬 Recibido (capital)</span>
+        <span class="mono" style="font-weight:800;color:var(--amber)">${fmt(recibParcial)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">⏳ En la calle</span>
+        <span class="mono" style="font-weight:800;color:var(--fire)">${fmt(pendiente)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:9px 12px;background:rgba(0,229,176,.05)">
+        <span style="font-size:13px;font-weight:700;color:var(--jade)">✅ Disponible para prestar</span>
+        <span class="mono" style="font-weight:900;color:var(--jade)">${fmt(disp)}</span>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button class="btn btn-jade btn-sm" style="flex:1" onclick="abrirModificarCapital()">✏️ Modificar total</button>
-      ${delBtn}
+
+    <!-- Acciones sobre la inversión -->
+    <div style="font-size:12px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Modificar inversión</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <button class="btn btn-jade btn-sm" onclick="openModCapAccion('sumar')">➕ Agregar capital</button>
+      <button class="btn btn-fire btn-sm" onclick="openModCapAccion('restar')" ${tieneActivos?'':''}> ➖ Retirar capital</button>
     </div>
-    ${!canDel?'<div style="font-size:11px;color:var(--fog);margin-bottom:8px;text-align:center">⚠️ No se puede resetear con préstamos activos</div>':''}
-    <div id="mod-cap-inline"></div>
+    <div id="mod-cap-accion-area"></div>
+
+    <!-- Resetear (solo sin activos) -->
     <div id="cap-del-confirm-wrap"></div>
-    <button class="btn btn-ghost btn-w" style="margin-top:6px" onclick="closeM('m-capital')">← Volver a la cartera</button>
+    ${!tieneActivos?`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px;opacity:.7" onclick="capInvDel()">🗑️ Resetear todo</button>`:''}
+    <button class="btn btn-ghost btn-w" style="margin-top:8px" onclick="closeM('m-capital')">← Volver a la cartera</button>
   `;
 }
+
+
 
 function prevCapAdd(){
   const val=parseFloat(document.getElementById('cap-add-val')?.value)||0;
@@ -2976,89 +3038,196 @@ function confirmarEliminarInv(){
   fsSave();closeM('m-capital');render();
 }
 
-function abrirModificarCapital(){
+function openModCapAccion(tipo){
+  // tipo: 'sumar' | 'restar'
   const c=S.cartera;const cap=getCap(c);
-  const gan=gananciaTotal(c);const total=cap.base+gan;
-  const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
-    const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
-    return s+(l.val-Math.min(cobrado,l.val));
-  },0);
-  const area=document.getElementById('mod-cap-inline');if(!area)return;
-  if(area.innerHTML.trim()){area.innerHTML='';return;}
-  area.innerHTML=`<div style="background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
-    <div style="font-size:13px;font-weight:800;color:var(--jade);margin-bottom:8px">✏️ Modificar capital total</div>
-    <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
-      Total actual: <b style="color:var(--gold)">${fmt(total)}</b><br>
-      Mínimo permitido: <b style="color:var(--fire)">${fmt(prestadoActivo)}</b> (en préstamos activos)
-    </div>
-    <div class="fg"><label class="fl">💵 Nuevo monto TOTAL deseado</label>
-      <input type="number" class="fi" id="mod-cap-val" placeholder="Ej: 8000000" value="${total}" oninput="prevModCap(${gan},${prestadoActivo})">
-    </div>
-    <div id="mod-cap-prev" style="font-size:12px;color:var(--smoke);margin-bottom:8px;padding:6px 8px;background:var(--ink3);border-radius:6px"></div>
-    <div class="fg"><label class="fl">📝 Nota (opcional)</label>
-      <input type="text" class="fi" id="mod-cap-nota" placeholder="Ej: Retiro de ganancias / Nuevo aporte">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('mod-cap-inline').innerHTML=''">✕ Cancelar</button>
-      <button class="btn btn-jade btn-sm" style="flex:1" onclick="confirmarModificarCapital(${gan},${prestadoActivo})">✅ Guardar</button>
-    </div>
-  </div>`;
-  prevModCap(gan,prestadoActivo);
+  const area=document.getElementById('mod-cap-accion-area');if(!area)return;
+  const pendiente=capEnCalle(c);
+  const maxRestar=cap.base-pendiente; // no puede restar más que lo disponible de la inversión
+
+  if(area.dataset.tipo===tipo){area.innerHTML='';area.dataset.tipo='';return;}
+  area.dataset.tipo=tipo;
+
+  if(tipo==='sumar'){
+    area.innerHTML=`
+      <div style="background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:800;color:var(--jade);margin-bottom:8px">➕ Agregar capital a la inversión</div>
+        <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">Inversión actual: <b style="color:var(--jade)">${fmt(cap.base)}</b></div>
+        <div class="fg"><label class="fl">💵 Monto a agregar</label>
+          <input type="number" class="fi" id="cap-accion-val" placeholder="Ej: 1000000" min="1" oninput="prevCapAccion('sumar')">
+        </div>
+        <div id="cap-accion-prev" style="font-size:12px;color:var(--smoke);padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:10px;display:none"></div>
+        <div class="fg"><label class="fl">📝 Nota</label>
+          <input type="text" class="fi" id="cap-accion-nota" placeholder="Ej: Nuevo aporte enero">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="cerrarCapAccion()">✕ Cancelar</button>
+          <button class="btn btn-jade btn-sm" style="flex:1" onclick="confirmarCapAccion('sumar')">✅ Confirmar</button>
+        </div>
+      </div>`;
+  } else {
+    area.innerHTML=`
+      <div style="background:rgba(255,61,90,.06);border:1.5px solid var(--fire);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:800;color:var(--fire);margin-bottom:8px">➖ Retirar de la inversión</div>
+        <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
+          Inversión actual: <b style="color:var(--jade)">${fmt(cap.base)}</b><br>
+          Máximo a retirar: <b style="color:var(--fire)">${fmt(maxRestar)}</b> (el resto está en préstamos activos)
+        </div>
+        <div class="fg"><label class="fl">💵 Monto a retirar</label>
+          <input type="number" class="fi" id="cap-accion-val" placeholder="Ej: 500000" min="1" max="${maxRestar}" oninput="prevCapAccion('restar')">
+        </div>
+        <div id="cap-accion-prev" style="font-size:12px;color:var(--smoke);padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:10px;display:none"></div>
+        <div class="fg"><label class="fl">📝 Nota</label>
+          <input type="text" class="fi" id="cap-accion-nota" placeholder="Ej: Retiro personal">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="cerrarCapAccion()">✕ Cancelar</button>
+          <button class="btn btn-fire btn-sm" style="flex:1" onclick="confirmarCapAccion('restar')">✅ Confirmar retiro</button>
+        </div>
+      </div>`;
+  }
 }
 
-function prevModCap(gan,minPerm){
-  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
-  const prev=document.getElementById('mod-cap-prev');if(!prev)return;
-  if(val<=0){prev.innerHTML='';return;}
-  const nuevoBase=Math.max(0,val-gan);
-  const diff=val-(document.getElementById('mod-cap-val')?.dataset?.oldTotal||val);
-  prev.innerHTML='Nueva inversión base: <b style="color:var(--jade)">'+fmt(nuevoBase)+'</b> · Ganancias (fijas): <b style="color:var(--lime)">'+fmt(gan)+'</b> = Total: <b style="color:var(--gold)">'+fmt(val)+'</b>';
+function cerrarCapAccion(){
+  const area=document.getElementById('mod-cap-accion-area');
+  if(area){area.innerHTML='';area.dataset.tipo='';}
 }
 
-function confirmarModificarCapital(gan,minPerm){
-  const val=parseFloat(document.getElementById('mod-cap-val')?.value)||0;
-  const nota=document.getElementById('mod-cap-nota')?.value.trim()||'Modificación de capital';
-  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
-  if(val<minPerm){toast('❌ El total no puede ser menor a '+fmt(minPerm)+' (hay ese monto en préstamos activos)');return;}
+function prevCapAccion(tipo){
+  const val=parseFloat(document.getElementById('cap-accion-val')?.value)||0;
+  const prev=document.getElementById('cap-accion-prev');if(!prev)return;
   const cap=getCap(S.cartera);
-  const nuevoBase=Math.max(0,val-gan);
-  const diff=nuevoBase-cap.base;
-  cap.base=nuevoBase;
+  if(val<=0){prev.style.display='none';return;}
+  prev.style.display='block';
+  if(tipo==='sumar'){
+    prev.innerHTML='Nueva inversión: <b style="color:var(--jade)">'+fmt(cap.base+val)+'</b> (+'+fmt(val)+')';
+  } else {
+    prev.innerHTML='Nueva inversión: <b style="color:var(--jade)">'+fmt(Math.max(0,cap.base-val))+'</b> (-'+fmt(val)+')';
+  }
+}
+
+function confirmarCapAccion(tipo){
+  const val=parseFloat(document.getElementById('cap-accion-val')?.value)||0;
+  const nota=document.getElementById('cap-accion-nota')?.value.trim()||(tipo==='sumar'?'Aporte de capital':'Retiro de capital');
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const c=S.cartera;const cap=getCap(c);
+  const pendiente=capEnCalle(c);
+  const maxRestar=cap.base-pendiente;
+  if(tipo==='restar'&&val>maxRestar){
+    toast('❌ No puedes retirar más de '+fmt(maxRestar)+' (el resto está en préstamos activos)');return;
+  }
+  const antes=cap.base;
+  if(tipo==='sumar'){
+    cap.base+=val;
+  } else {
+    cap.base=Math.max(0,cap.base-val);
+  }
   if(!cap.histInv)cap.histInv=[];
-  cap.histInv.push({fecha:new Date(),monto:nuevoBase,nota});
-  toast('✅ Capital total: '+fmt(val)+(diff>0?' (+'+fmt(diff)+' a base)':diff<0?' ('+fmt(diff)+' de base)':''));
+  cap.histInv.push({fecha:new Date(),monto:cap.base,diff:(tipo==='sumar'?val:-val),nota});
+  toast((tipo==='sumar'?'✅ Capital aumentado: +':' ✅ Capital retirado: -')+fmt(val)+'. Nueva inversión: '+fmt(cap.base));
   fsSave();closeM('m-capital');render();
 }
 
-function openReinvertir(){
+// ─── GANANCIA ACCIONES: enviar a capital / retirar ───
+function openGananciaAccion(tipo){
+  // tipo: 'capital' | 'retirar'
   const c=S.cartera;const cap=getCap(c);
   const gan=gananciaTotal(c);
+  if(gan<=0){toast('⚠️ No hay ganancias disponibles aún');return;}
+
+  // Abrir modal de reinvertir con modo específico
   document.getElementById('reinvertir-body').innerHTML=`
-    <div class="ganancia-box" style="margin-bottom:10px">
-      <div class="ganancia-row"><span style="font-weight:700">Ganancias disponibles</span><span class="mono" style="color:var(--lime);font-size:16px;font-weight:800">${fmt(gan)}</span></div>
+    <div style="background:linear-gradient(135deg,rgba(57,216,112,.1),rgba(255,196,0,.06));border:1.5px solid rgba(57,216,112,.4);border-radius:var(--r);padding:14px;margin-bottom:14px;text-align:center">
+      <div style="font-size:11px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">💹 Ganancias disponibles</div>
+      <div style="font-weight:900;font-size:34px;color:var(--lime);letter-spacing:-1.5px">${fmt(gan)}</div>
     </div>
-    <div class="info-box">Al reinvertir, las ganancias se suman a la base de capital. En el historial de ganancias quedarán como <b>reinvertidas</b> para siempre.</div>
-    <div class="fg"><label class="fl">💵 Monto a reinvertir</label>
-      <input type="number" class="fi" id="reinv-val" placeholder="${gan}" value="${gan}" max="${gan}" oninput="prevReinv(${gan})">
+
+    ${tipo==='capital'?`
+    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.3);border-radius:var(--r-sm);padding:12px;margin-bottom:12px;font-size:13px;color:var(--ash)">
+      ➕ <b>Enviar a capital:</b> Las ganancias se suman a tu inversión base y podrás prestarlas como capital adicional.
     </div>
-    <div id="reinv-prev" class="info-box" style="margin-bottom:8px">
-      Base actual: <b>${fmt(cap.base)}</b> → Nueva base: <b style="color:var(--jade)">${fmt(cap.base+gan)}</b>
+    `:`
+    <div style="background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.3);border-radius:var(--r-sm);padding:12px;margin-bottom:12px;font-size:13px;color:var(--ash)">
+      💸 <b>Retirar ganancias:</b> El monto retirado sale del sistema. No afecta el capital base ni los préstamos activos.
     </div>
-    <div class="brow">
-      <button class="btn btn-ghost btn-w" onclick="closeM('m-reinvertir')">Cancelar</button>
-      <button class="btn btn-lime btn-w" onclick="confirmarReinversion(${gan})">💹 Reinvertir</button>
+    `}
+
+    <div class="fg"><label class="fl">💵 Monto a ${tipo==='capital'?'enviar a capital':'retirar'}</label>
+      <input type="number" class="fi" id="gan-accion-val" value="${gan}" max="${gan}" min="1" oninput="prevGanAccion(${gan},'${tipo}')">
     </div>
-    ${cap.histGan.length?`<div class="hr"></div>
-    <div style="font-weight:700;font-size:12px;margin-bottom:6px">📜 Historial de ganancias</div>
+    <div id="gan-accion-prev" style="font-size:12px;color:var(--smoke);padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:10px"></div>
+    <div class="fg"><label class="fl">📝 Nota</label>
+      <input type="text" class="fi" id="gan-accion-nota" placeholder="${tipo==='capital'?'Ej: Reinversión de ganancias':'Ej: Retiro personal de utilidades'}">
+    </div>
+
+    <!-- Historial de ganancias -->
+    ${cap.histGan&&cap.histGan.length?`<div class="hr"></div>
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--smoke)">📜 Detalle de ganancias</div>
     <div class="ganancia-hist">
-    ${[...cap.histGan].reverse().map(h=>`<div class="gitem">
-      <span style="flex:1">${new Date(h.fecha).toLocaleDateString('es-CO')} · ${h.cliente} · ${h.nota}${h.reinvertido?' <span style="color:var(--jade);font-size:10px">↩ reinvertida</span>':''}</span>
-      <span class="mono" style="color:var(--lime);margin-left:8px">${fmt(h.monto)}</span>
+    ${[...cap.histGan].reverse().slice(0,15).map(h=>`<div class="gitem">
+      <span style="flex:1;font-size:11px">${new Date(h.fecha).toLocaleDateString('es-CO')} · ${h.cliente||''} · ${h.nota}${h.retirado?' <span style="color:var(--fire);font-size:10px">↩ retirado</span>':h.reinvertido?' <span style="color:var(--jade);font-size:10px">↩ a capital</span>':''}</span>
+      <span class="mono" style="color:var(--lime);margin-left:8px;font-size:11px">${fmt(h.monto)}</span>
     </div>`).join('')}
     </div>`:''}
+
+    <div class="brow" style="margin-top:12px">
+      <button class="btn btn-ghost btn-w" onclick="closeM('m-reinvertir')">Cancelar</button>
+      <button class="btn ${tipo==='capital'?'btn-jade':'btn-amber'} btn-w" onclick="confirmarGanAccion('${tipo}',${gan})">
+        ${tipo==='capital'?'➕ Enviar a capital':'💸 Confirmar retiro'}
+      </button>
+    </div>
   `;
+  prevGanAccion(gan,tipo);
   openM('m-reinvertir');
 }
+
+function prevGanAccion(maxGan,tipo){
+  const val=Math.min(parseFloat(document.getElementById('gan-accion-val')?.value)||0,maxGan);
+  const prev=document.getElementById('gan-accion-prev');if(!prev)return;
+  const cap=getCap(S.cartera);
+  if(tipo==='capital'){
+    prev.innerHTML='Inversión base: <b style="color:var(--jade)">'+fmt(cap.base)+'</b> → <b style="color:var(--jade)">'+fmt(cap.base+val)+'</b>';
+  } else {
+    prev.innerHTML='Retiras: <b style="color:var(--amber)">'+fmt(val)+'</b> · Ganancias restantes: <b style="color:var(--lime)">'+fmt(maxGan-val)+'</b>';
+  }
+}
+
+function confirmarGanAccion(tipo,maxGan){
+  const val=Math.min(parseFloat(document.getElementById('gan-accion-val')?.value)||0,maxGan);
+  const nota=document.getElementById('gan-accion-nota')?.value.trim()||(tipo==='capital'?'Ganancias enviadas a capital':'Retiro de ganancias');
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const c=S.cartera;const cap=getCap(c);
+  if(!cap.histGan)cap.histGan=[];
+
+  if(tipo==='capital'){
+    // Sumar ganancias al capital base
+    cap.base+=val;
+    if(!cap.histInv)cap.histInv=[];
+    cap.histInv.push({fecha:new Date(),monto:cap.base,diff:val,nota});
+    // Marcar entradas del histGan como reinvertidas (de las más recientes)
+    let rem=val;
+    for(let i=cap.histGan.length-1;i>=0&&rem>0;i--){
+      if(!cap.histGan[i].reinvertido&&!cap.histGan[i].retirado){
+        cap.histGan[i].reinvertido=true;rem-=cap.histGan[i].monto;
+      }
+    }
+    toast('✅ '+fmt(val)+' de ganancias enviados al capital. Nueva inversión: '+fmt(cap.base));
+  } else {
+    // Retirar ganancias del sistema
+    // Guardamos el retiro como entrada negativa en histGan
+    cap.histGan.push({fecha:new Date(),monto:-val,lid:'retiro',cliente:'Retiro',nota,retirado:true});
+    toast('💸 '+fmt(val)+' retirados de ganancias.');
+  }
+  fsSave();closeM('m-reinvertir');render();
+}
+
+
+
+function openReinvertir(){
+  // Delegamos al nuevo sistema de acciones de ganancia
+  openGananciaAccion('capital');
+}
+
 
 function prevReinv(maxGan){
   const val=parseFloat(document.getElementById('reinv-val')?.value)||0;
@@ -3311,6 +3480,52 @@ function enviarReciboEmail(emailEncoded, tipo, msgEncoded, imgData){
     window.open('mailto:'+email+'?subject='+subject+'&body='+body,'_blank');
   },600);
   toast('Imagen guardada. Abriendo correo...');
+}
+
+
+let _multaActual=0;
+
+function actualizarMultaIndividual(lid,cn){
+  const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
+  const val=parseFloat(document.getElementById('multa-individual')?.value)||0;
+  _multaActual=val;
+  // Update preview
+  const prev=document.getElementById('multa-preview');
+  if(prev)prev.innerHTML='Total a cobrar: <b style="color:var(--white)">'+fmt(c.valor+val)+'</b> (cuota '+fmt(c.valor)+' + multa '+fmt(val)+')';
+  // Update si/no cards
+  const siSub=document.getElementById('mora-si-sub');
+  if(siSub)siSub.innerHTML='Cobra multa<br><b style="color:var(--white)">'+fmt(val)+'</b>';
+  // Reset confirm area
+  const area=document.getElementById('mora-confirm-area');
+  if(area){area.style.display='none';area.innerHTML='';}
+}
+
+
+function rPrestamosRecientes(act){
+  if(!act.length)return'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos activos</div><div class="empty-s">Crea el primer préstamo con + Nuevo</div></div>';
+  const recientes=act.slice(0,5);
+  return'<div style="margin-bottom:10px"><div class="sh"><span class="st">📋 Préstamos recientes</span><span class="sl" onclick="goTab(\'prestamos\')">Ver todos →</span></div>'+
+    recientes.map(l=>{
+      const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
+      const enMora=l.cuotas.some(q=>q.estado==='mora');
+      const pct=Math.round(pag/l.ncu*100);
+      const sc=score(l);
+      return'<div class="lc" onclick="showLoan('+l.id+')">'+
+        '<div class="lstripe '+(enMora?'s-fire':pag>0?'s-jade':'s-amber')+'"></div>'+
+        '<div class="lhead">'+
+          '<div class="lav" style="color:'+sc.col+'">'+l.nom.charAt(0)+l.ape.charAt(0)+'</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div class="lname">'+l.nom+' '+l.ape+'</div>'+
+            '<div class="lsub">CC '+l.ced+'</div>'+
+          '</div>'+
+          '<div class="lbadge '+(enMora?'bm':pag>0?'bd':'bq')+'">'+(enMora?'MORA':pct+'%')+'</div>'+
+        '</div>'+
+        '<div class="prog">'+
+          '<div class="pb-track"><div class="pb-fill" style="width:'+pct+'%"></div></div>'+
+          '<div class="pb-txt"><span>'+pag+'/'+l.ncu+' cuotas · '+fmt(l.cuo)+'/c</span><span>'+(enMora?'⚠️ EN MORA':'✅ Al día')+'</span></div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+'</div>';
 }
 
 seed();
