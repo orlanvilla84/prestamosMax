@@ -16,11 +16,42 @@
   --glow-jade:0 0 24px rgba(0,229,176,.2);--shadow:0 12px 40px rgba(0,0,0,.5);
 }
 body.light-mode{
-  --ink:#f0f4f8;--ink2:#e2eaf2;--ink3:#d4e0ec;--ink4:#c6d4e4;
-  --line:#b0c4d8;--line2:#a0b8d0;--mist:#8aacc4;--fog:#6a8ca8;
-  --smoke:#4a6a88;--ash:#2a4a68;--white:#0a1a28;
-  --glow-jade:0 0 24px rgba(0,200,160,.15);--shadow:0 4px 20px rgba(0,0,0,.15);
+  --ink:#f0f4f8;--ink2:#ffffff;--ink3:#e8eef6;--ink4:#dde5f0;
+  --line:#c5d0e0;--line2:#b0bfd0;--mist:#8090a8;--fog:#506070;
+  --smoke:#2a3a4a;--ash:#0d1824;--white:#080f18;
+  --jade:#007a5a;--jade2:#006048;--sky:#0055bb;
+  --fire:#bb1030;--amber:#b06000;--lime:#1a7a30;--violet:#5522bb;--gold:#886600;
+  --glow-jade:0 0 12px rgba(0,150,100,.1);--shadow:0 2px 10px rgba(0,0,0,.08);
 }
+body.light-mode{background:var(--ink);color:var(--white)}
+body.light-mode .screen{background:var(--ink)}
+body.light-mode .bar{background:#fff;border-bottom:1px solid var(--line)}
+body.light-mode .bar-title{color:var(--white)}
+body.light-mode .lc{background:#fff;border-color:var(--line)}
+body.light-mode .lname{color:var(--white)}
+body.light-mode .lsub{color:var(--smoke)}
+body.light-mode .sheet{background:#fff;color:var(--white)}
+body.light-mode .overlay{background:rgba(0,0,0,.5)}
+body.light-mode .fi{background:#fff;border-color:var(--line);color:var(--white)}
+body.light-mode .fsel{background:#fff;border-color:var(--line);color:var(--white)}
+body.light-mode .fl{color:var(--smoke)}
+body.light-mode .btn-ghost{background:#f0f4f8;border-color:var(--line);color:var(--ash)}
+body.light-mode .calcbox{background:#f4f7fc;border-color:var(--line)}
+body.light-mode .cap-hero{background:linear-gradient(135deg,#e0f2ea,#dbeeff);color:var(--white)}
+body.light-mode .ganancia-box{background:#f0fff6;border-color:#a8e8c0}
+body.light-mode .cuota{background:#fff;border-color:var(--line)}
+body.light-mode .cuota .cfecha{color:var(--white)}
+body.light-mode .cuota .csub{color:var(--smoke)}
+body.light-mode .dhero{background:linear-gradient(160deg,#dbeeff,#e0f2ea)}
+body.light-mode .dname{color:var(--white)}
+body.light-mode .dinfo{color:var(--smoke)}
+body.light-mode .hitem{color:var(--smoke);border-color:var(--line)}
+body.light-mode .nav{background:#fff;border-top:1px solid var(--line)}
+body.light-mode .nv{color:var(--fog)}
+body.light-mode .nv.on{color:var(--jade)}
+body.light-mode #s-inicio{background:#f0f4f8}
+body.light-mode .inicio-brand{background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -473,6 +504,7 @@ window._db = firebase.firestore();
     <div style="display:flex;gap:6px;margin-bottom:10px">
       <button id="dp-mode-lv" class="btn btn-jade btn-sm" style="flex:1;font-size:11px" onclick="setDpMode('lv')">Lun–Vie</button>
       <button id="dp-mode-ls" class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="setDpMode('ls')">Lun–Sáb</button>
+      <button id="dp-mode-td" class="btn btn-ghost btn-sm" style="flex:1;font-size:11px" onclick="setDpMode('td')">Todos</button>
     </div>
     <div class="dp-grid" id="dp-grid"></div>
     <div class="dp-legend">
@@ -572,13 +604,13 @@ window._db = firebase.firestore();
     <input type="hidden" id="f-ini">
     <div style="display:flex;gap:8px;margin-top:6px">
       <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-        <input type="radio" name="cal-mode" id="cal-lv" value="lv" checked onchange="renderDp()"> Lun–Vie
+        <input type="radio" name="cal-mode" id="cal-lv" value="lv" checked onchange="setDpMode('lv')"> Lun–Vie
       </label>
       <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-        <input type="radio" name="cal-mode" id="cal-ls" value="ls" onchange="renderDp()"> Lun–Sáb
+        <input type="radio" name="cal-mode" id="cal-ls" value="ls" onchange="setDpMode('ls')"> Lun–Sáb
       </label>
       <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-        <input type="radio" name="cal-mode" id="cal-td" value="td" onchange="renderDp()"> Todos
+        <input type="radio" name="cal-mode" id="cal-td" value="td" onchange="setDpMode('td')"> Todos
       </label>
     </div>
   </div>
@@ -658,8 +690,13 @@ let _dpY,_dpM;
 let _dpMode='lv'; // 'lv'=Lun-Vie, 'ls'=Lun-Sab
 function setDpMode(m){
   _dpMode=m;
-  document.getElementById('dp-mode-lv').className='btn btn-sm'+(m==='lv'?' btn-jade':' btn-ghost')+' btn-sm';
-  document.getElementById('dp-mode-ls').className='btn btn-sm'+(m==='ls'?' btn-jade':' btn-ghost')+' btn-sm';
+  ['lv','ls','td'].forEach(function(k){
+    const btn=document.getElementById('dp-mode-'+k);
+    if(btn)btn.className='btn btn-sm'+(m===k?' btn-jade':' btn-ghost');
+  });
+  // Sincronizar con radio del formulario
+  const radio=document.getElementById('cal-'+m);
+  if(radio)radio.checked=true;
   renderDp();
 }
 function openDatePicker(){
@@ -680,7 +717,7 @@ function dpNav(dir){
 function renderDp(){
   const today=new Date();today.setHours(0,0,0,0);
   const selISO=(document.getElementById('f-ini').value)||'';
-  const calMode=(document.querySelector('input[name="cal-mode"]:checked')?.value)||'lv';
+  const calMode=_dpMode||'lv';
   document.getElementById('dp-month-label').textContent=MESES[_dpM]+' '+_dpY;
   const grid=document.getElementById('dp-grid');
   const dows=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -736,9 +773,9 @@ function getCalMode(){
 // isHabil según modo: lv bloquea dom+sáb+fest, ls bloquea dom+fest, td todos los días
 function isHabilMode(d,mode){
   const dow=new Date(d).getDay();
-  if(mode==='td') return true; // Todos los días: nunca bloquea
-  if(mode==='ls') return dow!==0&&!isFest(d); // Lun-Sáb: bloquea dom y festivos
-  return dow!==0&&dow!==6&&!isFest(d); // Lun-Vie: bloquea dom, sáb y festivos
+  if(mode==='td') return true;                    // Todos: sin restricción
+  if(mode==='ls') return dow!==0&&!isFest(d);     // Lun-Sáb: solo bloquea dom y festivos (sáb OK)
+  return dow!==0&&dow!==6&&!isFest(d);            // Lun-Vie: bloquea dom, sáb y festivos
 }
 const isHabil=d=>isHabilMode(d,_calMode);
 function nextHabilMode(b,mode,sk=1){
