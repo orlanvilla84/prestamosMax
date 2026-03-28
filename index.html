@@ -1522,39 +1522,44 @@ function rLCard(l){
   const tieneMulta=(l.histMultas||[]).length>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[l.mod]||'bd';
-  // Medidor de cuotas tipo píxeles creativos
+  // Medidor de cuotas tipo pixeles creativos
   const maxDots=Math.min(total,20);
   const dotsPag=Math.round(pag/total*maxDots);
   const dotsLeft=maxDots-dotsPag;
-  const dots=Array(dotsPag).fill('<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--jade);margin:1px;opacity:.9"></span>').join('')
-    +Array(dotsLeft).fill('<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--line);margin:1px"></span>').join('');
-  // Color borde tarjeta según estado
+  let dots='';
+  for(let i=0;i<dotsPag;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--jade);margin:1px;opacity:.9"></span>';
+  for(let i=0;i<dotsLeft;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--line);margin:1px"></span>';
   const borderColor=mora?'rgba(255,61,90,.6)':hoy?'rgba(255,170,0,.5)':'var(--line)';
   const bgColor=mora?'rgba(255,61,90,.04)':'var(--ink2)';
-  return\`<div class="lc" onclick="showLoan(\${l.id})" style="padding:10px 12px;border-color:\${borderColor};background:\${bgColor}">
-    <div class="lstripe \${mora?'s-fire':hoy?'s-amber':'s-jade'}"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <div class="lav" style="width:36px;height:36px;font-size:13px;flex-shrink:0\${mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':''}">\${ini.toUpperCase()}</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:5px">
-          <div class="lname" style="font-size:13px">\${l.nom} \${l.ape}</div>
-          \${mora?'<span style="font-size:10px">🔴</span>':hoy?'<span style="font-size:10px">🟡</span>':''}
-        </div>
-        <div class="lsub" style="font-size:10px">CC \${l.ced} · <b style="color:var(--jade)">\${fmt(l.val)}</b></div>
-      </div>
-      <div style="text-align:right">
-        <span class="lbadge \${bc}" style="font-size:9px">\${l.mod}</span>
-        <div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:2px">\${pct}%</div>
-      </div>
-    </div>
-    <div style="margin-bottom:4px;line-height:1">\${dots}</div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke)">
-      <span>\${pag}/\${total} cuotas · \${fmt(l.cuo)}/c</span>
-      \${mora?'<span style="color:var(--fire);font-weight:700">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber);font-weight:700">📅 PAGO HOY</span>':tieneMulta?'<span style="color:var(--amber)">💸 multa cobrada</span>':'<span style="color:var(--jade)">✅ al día</span>'}
-    </div>
-  </div>\`;
+  const statusHtml=mora
+    ?'<span style="color:var(--fire);font-weight:700">⚠️ EN MORA</span>'
+    :hoy?'<span style="color:var(--amber);font-weight:700">📅 PAGO HOY</span>'
+    :tieneMulta?'<span style="color:var(--amber)">💸 multa cobrada</span>'
+    :'<span style="color:var(--jade)">✅ al día</span>';
+  const avatarStyle=mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':'';
+  return '<div class="lc" onclick="showLoan('+l.id+')" style="padding:10px 12px;border-color:'+borderColor+';background:'+bgColor+'">'+
+    '<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+      '<div class="lav" style="width:36px;height:36px;font-size:13px;flex-shrink:0'+avatarStyle+'">'+ini.toUpperCase()+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:5px">'+
+          '<div class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</div>'+
+          (mora?'<span style="font-size:10px">🔴</span>':hoy?'<span style="font-size:10px">🟡</span>':'')+
+        '</div>'+
+        '<div class="lsub" style="font-size:10px">CC '+l.ced+' · <b style="color:var(--jade)">'+fmt(l.val)+'</b></div>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<span class="lbadge '+bc+'" style="font-size:9px">'+l.mod+'</span>'+
+        '<div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:2px">'+pct+'%</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="margin-bottom:4px;line-height:1">'+dots+'</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke)">'+
+      '<span>'+pag+'/'+total+' cuotas · '+fmt(l.cuo)+'/c</span>'+
+      statusHtml+
+    '</div>'+
+  '</div>';
 }
-
 /* ─── DETAIL ─── */
 function buildResumenFin(l,ganR){
   const ganAnt=l._ganAnteriorTotal||0;
