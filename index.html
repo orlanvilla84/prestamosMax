@@ -15,6 +15,12 @@
   --r:14px;--r-sm:9px;--r-lg:20px;
   --glow-jade:0 0 24px rgba(0,229,176,.2);--shadow:0 12px 40px rgba(0,0,0,.5);
 }
+body.light-mode{
+  --ink:#f0f4f8;--ink2:#e2eaf2;--ink3:#d4e0ec;--ink4:#c6d4e4;
+  --line:#b0c4d8;--line2:#a0b8d0;--mist:#8aacc4;--fog:#6a8ca8;
+  --smoke:#4a6a88;--ash:#2a4a68;--white:#0a1a28;
+  --glow-jade:0 0 24px rgba(0,200,160,.15);--shadow:0 4px 20px rgba(0,0,0,.15);
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -405,6 +411,7 @@ window._db = firebase.firestore();
     <div class="bar-back" onclick="backToCarteras()">←</div>
     <div class="bar-title" id="cartera-bar-title">Cartera</div>
     <div class="bar-ico" id="alert-btn" onclick="goTab('alertas')" style="margin-left:auto">🔔<div class="ndot" id="ndot" style="display:none">0</div></div>
+    <button class="bar-btn" onclick="toggleTheme()" id="theme-btn" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px">🌙</button>
     <div class="bar-btn" onclick="openLoanModal()">＋ Nuevo</div>
   </div>
   <div class="scroll pb" id="tabcontent"></div>
@@ -717,12 +724,42 @@ function dpSelect(iso){
 const FEST=new Set(['2024-01-01','2024-01-08','2024-03-25','2024-03-28','2024-03-29','2024-05-01','2024-05-13','2024-06-03','2024-06-10','2024-07-01','2024-07-20','2024-08-07','2024-08-19','2024-10-14','2024-11-04','2024-11-11','2024-12-08','2024-12-25','2025-01-01','2025-01-06','2025-03-24','2025-04-17','2025-04-18','2025-05-01','2025-06-02','2025-06-23','2025-06-30','2025-07-20','2025-08-07','2025-08-18','2025-10-13','2025-11-03','2025-11-17','2025-12-08','2025-12-25','2026-01-01','2026-01-12','2026-03-23','2026-04-02','2026-04-03','2026-05-01','2026-05-18','2026-06-08','2026-06-15','2026-06-29','2026-07-20','2026-08-07','2026-08-17','2026-10-12','2026-11-02','2026-11-16','2026-12-08','2026-12-25']);
 const isoD=d=>new Date(d).toISOString().slice(0,10);
 const isFest=d=>FEST.has(isoD(d));
-const isHabil=d=>new Date(d).getDay()!==0&&!isFest(d);
-function nextHabil(b,sk=1){const r=new Date(b);r.setDate(r.getDate()+sk);while(!isHabil(r))r.setDate(r.getDate()+1);return r;}
-function adjLM(d){const r=new Date(d),w=r.getDay();if(w!==1&&w!==2)r.setDate(r.getDate()+(8-w)%7||7);while(!isHabil(r))r.setDate(r.getDate()+1);return r;}
+// calMode global: 'lv'=Lun-Vie (bloquea sáb), 'ls'=Lun-Sáb (solo bloquea dom)
+let _calMode='lv';
+function getCalMode(){
+  const r=document.querySelector('input[name="cal-mode"]:checked');
+  return r?r.value:_calMode;
+}
+// isHabil según modo: lv bloquea dom+sáb+fest, ls bloquea solo dom+fest
+function isHabilMode(d,mode){
+  const dow=new Date(d).getDay();
+  if(mode==='ls') return dow!==0&&!isFest(d); // Lun-Sáb: bloquea dom y festivos
+  return dow!==0&&dow!==6&&!isFest(d); // Lun-Vie: bloquea dom, sáb y festivos
+}
+const isHabil=d=>isHabilMode(d,_calMode);
+function nextHabilMode(b,mode,sk=1){
+  const r=new Date(b);r.setDate(r.getDate()+sk);
+  while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+  return r;
+}
+function nextHabil(b,sk=1){return nextHabilMode(b,getCalMode(),sk);}
+function adjLM(d){
+  // Para semanal/quincenal: buscar próx lun o mar (o sáb si modo ls)
+  const mode=getCalMode();
+  const r=new Date(d);
+  while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+  return r;
+}
 function calcFechas(ini,mod,ncu){
+  const mode=getCalMode();
   const out=[];let c=new Date(ini);
-  function step(x,m){const r=new Date(x);if(m==='diario')return nextHabil(r,1);if(m==='semanal'){r.setDate(r.getDate()+7);return adjLM(r);}if(m==='quincenal'){r.setDate(r.getDate()+15);return adjLM(r);}r.setMonth(r.getMonth()+1);return r;}
+  function step(x,m){
+    const r=new Date(x);
+    if(m==='diario'){r.setDate(r.getDate()+1);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    if(m==='semanal'){r.setDate(r.getDate()+7);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    if(m==='quincenal'){r.setDate(r.getDate()+15);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    r.setMonth(r.getMonth()+1);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;
+  }
   c=step(c,mod);out.push(new Date(c));
   for(let i=1;i<ncu;i++){c=step(c,mod);out.push(new Date(c));}
   return out;
@@ -871,6 +908,15 @@ function _loginDemo(){
   toast('✅ Modo prueba — configura Google OAuth');
 }
 
+
+function toggleTheme(){
+  document.body.classList.toggle('light-mode');
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=document.body.classList.contains('light-mode')?'☀️':'🌙';
+  try{localStorage.setItem('pm-theme',document.body.classList.contains('light-mode')?'light':'dark');}catch(e){}
+}
+// Restaurar tema guardado
+(function(){try{if(localStorage.getItem('pm-theme')==='light'){document.body.classList.add('light-mode');const b=document.getElementById('theme-btn');if(b)b.textContent='☀️';}}catch(e){}})();
 
 function goAdmin(){
   document.getElementById('s-inicio').classList.remove('on');
@@ -1239,20 +1285,23 @@ function totalPorCobrar(c){
   },0);
 }
 
-// Capital disponible para prestar = base - prestado actualmente + recuperado de préstamos activos
+// Capital disponible = base - lo que está prestado activo + capital recuperado de activos
+// Las ganancias son APARTE y no se mezclan con el capital base
 function capDisponible(c){
   const cap=getCap(c);
   if(!cap.base)return 0;
-  // Capital afuera = suma de (val - capital ya recuperado) de préstamos activos
+  // Capital afuera en préstamos activos (solo capital, no ganancia)
   const prestadoActivo=(c?.loans||[]).filter(l=>l.activo).reduce((s,l)=>{
     const cobrado=l.cuotas.filter(x=>x.estado==='pagada').reduce((ss,x)=>ss+x.valor,0);
     const capRecup=Math.min(cobrado,l.val);
     return s+(l.val-capRecup);
   },0);
-  // Capital base + ganancia ya cobrada reinvertible - lo que está prestado afuera
+  // Ganancia cobrada también está disponible para prestar (es dinero real en caja)
   const ganCobrada=gananciaTotal(c);
   return Math.max(0, cap.base + ganCobrada - prestadoActivo);
 }
+// Solo la inversión base (sin ganancias)
+function capBase(c){return getCap(c).base||0;}
 
 // Porcentaje del capital en uso
 function capPct(c){
@@ -2160,14 +2209,15 @@ function recalc(){
 
 // calcFechasDesde: builds schedule where primeraCuota IS the first date (not derived)
 function calcFechasDesde(primera,mod,ncu){
+  const mode=getCalMode();
   const out=[new Date(primera)];
   let c=new Date(primera);
   function step(x){
     const r=new Date(x);
-    if(mod==='diario')return nextHabil(r,1);
-    if(mod==='semanal'){r.setDate(r.getDate()+7);return adjLM(r);}
-    if(mod==='quincenal'){r.setDate(r.getDate()+15);return adjLM(r);}
-    r.setMonth(r.getMonth()+1);return r;
+    if(mod==='diario'){r.setDate(r.getDate()+1);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    if(mod==='semanal'){r.setDate(r.getDate()+7);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    if(mod==='quincenal'){r.setDate(r.getDate()+15);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;}
+    r.setMonth(r.getMonth()+1);while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);return r;
   }
   for(let i=1;i<ncu;i++){c=step(c);out.push(new Date(c));}
   return out;
@@ -2295,22 +2345,26 @@ function confirmPay(lid,cn){
 /* ─── MORA ─── */
 let _mop=0;
 function nextFecha(c, l){
-  // Moves cuota to the next scheduled slot according to modalidad
+  const mode=getCalMode();
   const base=new Date(c.fecha);
   if(l.mod==='diario'){
-    return nextHabil(base,1); // siguiente día hábil
+    const r=new Date(base);r.setDate(r.getDate()+1);
+    while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+    return r;
   }
   if(l.mod==='semanal'){
-    const nf=new Date(base);nf.setDate(nf.getDate()+7);
-    return adjLM(nf); // siguiente lun/mar
+    const r=new Date(base);r.setDate(r.getDate()+7);
+    while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+    return r;
   }
   if(l.mod==='quincenal'){
-    const nf=new Date(base);nf.setDate(nf.getDate()+15);
-    return adjLM(nf); // siguiente lun/mar quincenal
+    const r=new Date(base);r.setDate(r.getDate()+15);
+    while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+    return r;
   }
-  // mensual
-  const nf=new Date(base);nf.setMonth(nf.getMonth()+1);
-  return nf;
+  const r=new Date(base);r.setMonth(r.getMonth()+1);
+  while(!isHabilMode(r,mode))r.setDate(r.getDate()+1);
+  return r;
 }
 
 function openMora(lid,cn){
