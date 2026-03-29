@@ -1075,8 +1075,10 @@ function renderCarteras(){
   if(!mine.length){el.innerHTML='<div class="empty"><div class="empty-ico">📁</div><div class="empty-t">Sin carteras</div><div class="empty-s">Crea tu primera cartera abajo</div></div>';return;}
   el.innerHTML=mine.map(c=>{
     const icos={'cc-jade':'💚','cc-violet':'💜','cc-amber':'🧡','cc-lime':'🌿'};
-    const n=c.loans.length,cap=c.loans.reduce((s,l)=>s+l.val,0);
-    const mora=c.loans.filter(l=>l.cuotas.some(x=>x.estado==='mora')).length;
+    const activos=c.loans.filter(l=>l.activo);
+    const n=activos.length;
+    const enPrestamo=capEnCalle(c); // capital real aún en la calle
+    const mora=activos.filter(l=>l.cuotas.some(x=>x.estado==='mora')).length;
     const hasPass=!!c.passHash;
     return`<div class="cartera-card ${c.color}">
       ${hasPass?'<div class="cartera-lock">🔒</div>':''}
@@ -1089,8 +1091,8 @@ function renderCarteras(){
       <div class="cartera-name">${c.name}</div>
       <div class="cartera-desc">${c.desc||''}</div>
       <div class="cartera-stats">
-        <div class="cstat"><b>${n}</b> créditos</div>
-        <div class="cstat"><b>${fmt(cap)}</b></div>
+        <div class="cstat"><b>${n}</b> activos</div>
+        <div class="cstat" style="color:var(--sky)">📤 <b>${fmt(enPrestamo)}</b></div>
         ${mora>0?`<div class="cstat" style="color:var(--fire)"><b>${mora}</b> mora</div>`:''}
         ${hasPass?'<div class="cstat">🔒 Protegida</div>':''}
       </div>
