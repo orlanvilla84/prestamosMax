@@ -556,7 +556,7 @@ window._db = firebase.firestore();
     <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="f-ape" placeholder="Apellidos"></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="fl">🪪 Cédula *</label><input type="text" inputmode="numeric" class="fi" id="f-ced" placeholder="Ej: 1012345678" oninput="checkCedDup()"></div>
+    <div class="fg"><label class="fl">🪪 Cédula *</label><input type="text" class="fi" id="f-ced" placeholder="Cédula, NIT o pasaporte" oninput="checkCedDup()"></div>
     <div class="fg"><label class="fl">📱 WhatsApp * (10 dígitos)</label><input type="tel" inputmode="numeric" class="fi" id="f-tel" placeholder="Ej: 3001234567" maxlength="10"></div>
   </div>
   <div class="r2">
@@ -624,10 +624,7 @@ window._db = firebase.firestore();
       </label>
     </div>
   </div>
-  <div class="r2">
-    <div class="fg"><label class="fl">⚠️ Multa mora</label><input type="number" class="fi" id="f-mul" placeholder="20000"></div>
-    <div class="fg"><label class="fl">⏰ Hora límite</label><input type="time" class="fi" id="f-hor" value="15:00"></div>
-  </div>
+  <div class="fg"><label class="fl">⏰ Hora límite de pago</label><input type="time" class="fi" id="f-hor" value="15:00"></div>
   <div class="fg"><label class="fl">📢 Notificaciones al crear/cobrar</label>
     <div style="display:flex;flex-direction:column;gap:6px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
@@ -686,7 +683,7 @@ window._db = firebase.firestore();
 </div></div>
 
 <div class="overlay" id="m-reinvertir"><div class="sheet">
-  <div class="shandle"></div><div class="shtitle">💹 Reinvertir Ganancias</div>
+  <div class="shandle"></div><div class="shtitle" id="reinvertir-title-h">💹 Ganancias</div>
   <div id="reinvertir-body"></div>
 </div></div>
 <div class="overlay" id="m-renew-req"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔄 Solicitud de Renovación</div><div id="renew-req-body"></div></div></div>
@@ -1758,9 +1755,13 @@ function rDetail(l){
           '<div class="cfecha">'+fd(c.fecha)+' '+(c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳')+'</div>'+
           '<div class="csub">'+(c.estado==='pagada'?'Pagada · <b>'+(c.pagadoPor||'Sistema')+'</b>'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'En mora':'Pendiente')+'</div>'+
           (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(\"'+c.comprobante+'\")"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
+          (c.estado==='pagada'?'<div class="cact">'+
+            '<button class="btn btn-sky btn-sm" style="font-size:11px" onclick="verReciboCuota('+l.id+','+c.num+')">🧾 Ver recibo</button>'+
+            '<button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--fire)" onclick="deshacerPago('+l.id+','+c.num+')">⟳ Deshacer</button>'+
+          '</div>':'')+
           (c.estado!=='pagada'?'<div class="cact">'+
             '<button class="btn btn-lime btn-sm" onclick="openPay('+l.id+','+c.num+')">💰 Pagar cuota</button>'+
-            (l.mul>0?'<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Multa</button>':'')+
+            '<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Mora/Multa</button>'+
             '<button class="btn btn-sky btn-sm" onclick="sendWA('+l.id+')">📲 WA</button>'+
           '</div>':'')+
         '</div>'+
@@ -1775,7 +1776,7 @@ function rDetail(l){
     <div class="dinfo">🪪 CC ${l.ced}</div>
     <div class="dinfo">📱 WA: ${l.tel}${l.cel2?" · 📞 "+l.cel2:""}${l.email?" · 📧 "+l.email:""}</div>
     ${l.cta?`<div class="dinfo">🏦 ${l.cta}</div>`:""}
-    <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not} · ⚠️ ${fmt(l.mul)}</div>
+    <div class="dinfo">📅 ${cap(l.mod)} · ⏰ ${l.hor} · 📢 ${l.not}</div>
     ${l.creadoPor?`<div class="dinfo" style="color:var(--smoke)">📝 Creado por: <b style="color:var(--jade)">${l.creadoPor}</b>${l.fechaCreacion?' · '+new Date(l.fechaCreacion).toLocaleDateString('es-CO'):''}</div>`:''}
     ${l.renewRequest?'<div style="margin-top:7px"><span class="badge-violet">🔄 Solicitud de renovación pendiente</span></div>':''}
     <div class="dstats">
@@ -1831,6 +1832,10 @@ function rHistorial(){
         '<div style="text-align:center"><div style="color:var(--fog)">Prestado</div><div style="font-weight:800;color:var(--sky)">'+fmt(l.val)+'</div></div>'+
         '<div style="text-align:center"><div style="color:var(--fog)">Cobrado</div><div style="font-weight:800;color:var(--lime)">'+fmt(cobrado)+'</div></div>'+
         '<div style="text-align:center"><div style="color:var(--fog)">Ganancia</div><div style="font-weight:800;color:var(--gold)">'+fmt(ganancia)+'</div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;padding:8px 0;border-top:1px solid var(--line);margin-top:2px" onclick="event.stopPropagation()">'+
+        '<button class="btn btn-jade btn-sm" style="flex:1;font-size:12px" onclick="verPazYSalvo('+l.id+')">🏆 Paz y Salvo</button>'+
+        '<button class="btn btn-sky btn-sm" style="flex:1;font-size:12px" onclick="showLoan('+l.id+')">📋 Ver detalle</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -2358,7 +2363,7 @@ function saveLoan(){
   const email=gv('f-email').trim();
   const cel2=gv('f-cel2').trim();
   const val=+gv('f-val')||0,cuo=+gv('f-cuo')||0;
-  const mod=gv('f-mod'),ncu=+gv('f-ncu')||0,mul=+gv('f-mul')||0;
+  const mod=gv('f-mod'),ncu=+gv('f-ncu')||0,mul=0; // multa se define por cuota en el momento
   const hor=gv('f-hor')||'15:00';
   const notChs=[];
   if(document.getElementById('not-wa')?.checked)notChs.push('whatsapp');
@@ -2380,7 +2385,7 @@ function saveLoan(){
     else{if(el)el.style.borderColor='';}
   });
   if(hayError){toast('⚠️ Completa los campos marcados en rojo');return;}
-  if(ced.replace(/\D/g,'').length!==10){const el=document.getElementById('f-ced');if(el)el.style.borderColor='var(--fire)';toast('⚠️ La cédula debe tener exactamente 10 dígitos');return;}
+  if(tel.replace(/\D/g,'').length!==10){const elT=document.getElementById('f-tel');if(elT)elT.style.borderColor='var(--fire)';toast('⚠️ El celular debe tener exactamente 10 dígitos');return;}
   if(cuo*ncu<val){toast(`⛔ Las cuotas no cubren el préstamo (${fmt(cuo*ncu)} < ${fmt(val)}). Corrígelo antes de guardar.`);return;}
   // Se permite múltiples préstamos activos por cédula
   const dispAhora=capDisponible(S.cartera);
@@ -2398,7 +2403,7 @@ function saveLoan(){
   setTimeout(()=>sendWACreacion(loan),400);
   if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('nuevo',loan),900);
   render();updDot();
-  ['f-nom','f-ape','f-ced','f-tel','f-cel2','f-email','f-val','f-cuo','f-ncu','f-mul','f-ini'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  ['f-nom','f-ape','f-cel2','f-email','f-val','f-cuo','f-ncu','f-ini'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
   // Reset cuentas
   const cw=document.getElementById('cuentas-wrap');if(cw){cw.innerHTML='<div class="cuenta-row" style="display:flex;gap:6px;align-items:center"><select class="fsel" id="f-banco-0" style="flex:1;min-width:0"><option value="Nequi">📱 Nequi</option><option value="Bancolombia">🏦 Bancolombia</option><option value="Davivienda">🏦 Davivienda</option><option value="BBVA">🏦 BBVA</option><option value="Banco de Bogotá">🏦 Banco de Bogotá</option><option value="Daviplata">📱 Daviplata</option><option value="Efectivo">💵 Efectivo</option><option value="Otro">🏦 Otro</option></select><input type="text" class="fi" id="f-num-0" placeholder="Número de cuenta" style="flex:1.5"></div>';}
   const lbl=document.getElementById('f-ini-label');if(lbl){lbl.textContent='Seleccionar fecha...';lbl.style.color='var(--smoke)';};
@@ -2449,7 +2454,7 @@ function confirmPay(lid,cn){
   const who=document.getElementById('pw-who')?.value||S.user?.name;
   const met=document.getElementById('pw-met')?.value||'Efectivo';
   const comp=gv('pay-comp-data')||null;
-  c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;
+  c.estado='pagada';c.fechaPago=new Date().toISOString();c.pagadoPor=who;c.pagadoPorEmail=S.user?.email||'';c.comprobante=comp;c._metodo=met;
   distribuirPago(l,c);
   l.historico.push('Cuota #'+cn+' pagada por '+who+' via '+met+(comp?' con foto':'')+' - '+new Date().toLocaleDateString('es-CO'));
   const todasPagadas=l.cuotas.every(function(q){return q.estado==='pagada';});
@@ -2460,7 +2465,8 @@ function confirmPay(lid,cn){
   fsSave();closeM('m-pay');
   if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
   updDot();render();
-  setTimeout(()=>mostrarRecibo({tipo:todasPagadas?'pazysalvo':'cuota',loan:l,cuota:c,quien:who,metodo:met,cartera:S.cartera}),400);
+  // Generar y guardar recibo en la cuota (sin popup automático)
+  setTimeout(()=>mostrarReciboSilencioso({tipo:todasPagadas?'pazysalvo':'cuota',loan:l,cuota:c,quien:who,metodo:met,cartera:S.cartera}),300);
 }
 
 /* ─── MORA ─── */
@@ -2491,7 +2497,7 @@ function nextFecha(c, l){
 function openMora(lid,cn){
   const l=getL(lid),c=l?.cuotas.find(x=>x.num===cn);if(!l||!c)return;
   S.lid=lid;
-  _multaActual=l.mul; // default: multa del préstamo
+  _multaActual=0; // multa siempre libre, sin default
   const nfAdj=nextFecha(c,l);
   $('mora-body').innerHTML=`
     <div class="calcbox" style="margin-bottom:12px">
@@ -2503,15 +2509,15 @@ function openMora(lid,cn){
     <!-- Multa individual editable -->
     <div style="background:rgba(255,170,0,.08);border:1.5px solid rgba(255,170,0,.35);border-radius:var(--r-sm);padding:12px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:800;color:var(--amber);margin-bottom:8px">⚠️ Multa para esta cuota (editable)</div>
-      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Multa por defecto del crédito: <b style="color:var(--amber)">${fmt(l.mul)}</b><br>Puedes cambiarla o dejar 0 para perdonar.</div>
+      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Ingresa el valor de la multa para esta cuota o deja 0 para perdonar.</div>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="number" id="multa-individual" class="fi" style="flex:1;font-size:15px;font-weight:800"
-          value="${l.mul}" min="0" oninput="actualizarMultaIndividual(${lid},${cn})">
+          value="0" min="0" placeholder="Ej: 40000" oninput="actualizarMultaIndividual(${lid},${cn})">
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('multa-individual').value=0;actualizarMultaIndividual(${lid},${cn})">$0</button>
-        <button class="btn btn-amber btn-sm" onclick="document.getElementById('multa-individual').value=${l.mul};actualizarMultaIndividual(${lid},${cn})">Reset</button>
+
       </div>
       <div id="multa-preview" style="font-size:12px;color:var(--smoke);margin-top:8px">
-        Total a cobrar: <b style="color:var(--white)">${fmt(c.valor+l.mul)}</b> (cuota ${fmt(c.valor)} + multa ${fmt(l.mul)})
+        Total a cobrar: <b style="color:var(--white)">${fmt(c.valor)}</b> (cuota ${fmt(c.valor)} + multa $0)
       </div>
     </div>
 
@@ -2520,7 +2526,7 @@ function openMora(lid,cn){
       <div id="mora-si" style="background:rgba(57,216,112,.08);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(true,${lid},${cn})">
         <div style="font-size:28px;margin-bottom:4px">✅</div>
         <div style="font-weight:800;font-size:14px;color:var(--lime)">SÍ paga</div>
-        <div id="mora-si-sub" style="font-size:11px;color:var(--smoke);margin-top:3px">Cobra multa<br><b style="color:var(--white)">${fmt(l.mul)}</b></div>
+        <div id="mora-si-sub" style="font-size:11px;color:var(--smoke);margin-top:3px">Cobra multa<br><b style="color:var(--white)">$0</b></div>
         <div style="font-size:10px;color:var(--fog);margin-top:4px">Cuota → Pendiente</div>
       </div>
       <div id="mora-no" style="background:rgba(255,61,90,.06);border:2px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .18s" onclick="selMulta(false,${lid},${cn})">
@@ -2611,7 +2617,7 @@ function doMora(lid, cn, pagaMulta){
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
   updDot();render();
-  if(pagaMulta)setTimeout(()=>mostrarRecibo({tipo:'multa',loan:l,cuota:c,multa:(_multaActual||l.mul),quien:S.user?.name||'',metodo:'Efectivo',cartera:S.cartera}),400);
+  if(pagaMulta){const _mv=_multaActual;setTimeout(()=>mostrarRecibo({tipo:'multa',loan:l,cuota:c,multa:_mv,quien:S.user?.name||'',metodo:'Efectivo',cartera:S.cartera}),400);}
 }
 
 
@@ -2712,7 +2718,7 @@ function openEditCliente(lid){
     <div class="fg"><label class="fl">Teléfono 2 (opcional)</label><input type="text" class="fi" id="ec-cel2" value="${l.cel2||''}"></div>
     <div class="fg"><label class="fl">Email (opcional)</label><input type="text" class="fi" id="ec-email" value="${l.email||''}"></div>
     <div class="fg"><label class="fl">Hora de pago</label><input type="time" class="fi" id="ec-hor" value="${l.hor||'15:00'}"></div>
-    <div class="fg"><label class="fl">Multa por mora</label><input type="number" class="fi" id="ec-mul" value="${l.mul||0}"></div>
+
     <div class="brow">
       <button class="btn btn-ghost btn-w" onclick="closeM('m-edit-cliente')">Cancelar</button>
       <button class="btn btn-jade btn-w" onclick="saveEditCliente(${lid})">✅ Guardar cambios</button>
@@ -2730,7 +2736,6 @@ function saveEditCliente(lid){
   l.cel2=document.getElementById('ec-cel2')?.value.trim()||'';
   l.email=document.getElementById('ec-email')?.value.trim()||'';
   l.hor=document.getElementById('ec-hor')?.value||'15:00';
-  l.mul=parseFloat(document.getElementById('ec-mul')?.value)||0;
   l.historico.push('✏️ Datos editados — '+new Date().toLocaleDateString('es-CO'));
   closeM('m-edit-cliente');
   toast('✅ Cliente actualizado');
@@ -2891,7 +2896,7 @@ function sendWACreacion(l){
   if(!S.cartera?.cfg?.autoWA)return;
   if(!l.not||l.not==='ninguno'||!l.not.includes('whatsapp'))return;
   const f1=l.cuotas[0]?.fecha,fU=l.cuotas[l.cuotas.length-1]?.fecha;
-  const msg=`💰 *PrestaMax — Confirmación de Crédito*\n\nEstimado/a *${l.nom} ${l.ape}*\nCC: *${l.ced}*\n\nSe ha generado su crédito *${cap(l.mod)}*:\n\n• Valor: *${fmt(l.val)}*\n• Cuotas: *${l.ncu} × ${fmt(l.cuo)}*\n• Total a pagar: *${fmt(l.ncu*l.cuo)}*\n• Multa por mora: *${fmt(l.mul)}* por cuota\n• Hora límite: *${l.hor}*\n• 1ª cuota: *${fd(f1)}*\n• Última: *${fd(fU)}*\n\n⚠️ Recuerde pagar puntualmente al señor ${l.nom} ${l.ape} con cédula ${l.ced} para evitar multas o calificación negativa que limite futuros préstamos.\n\n_PrestaMax 🇨🇴_`;
+  const msg=`💰 *PrestaMax — Confirmación de Crédito*\n\nEstimado/a *${l.nom} ${l.ape}*\nCC: *${l.ced}*\n\nSe ha generado su crédito *${cap(l.mod)}*:\n\n• Valor: *${fmt(l.val)}*\n• Cuotas: *${l.ncu} × ${fmt(l.cuo)}*\n• Total a pagar: *${fmt(l.ncu*l.cuo)}*\n• Hora límite: *${l.hor}*\n• 1ª cuota: *${fd(f1)}*\n• Última: *${fd(fU)}*\n\n⚠️ Recuerde pagar puntualmente al señor ${l.nom} ${l.ape} con cédula ${l.ced} para evitar multas o calificación negativa que limite futuros préstamos.\n\n_PrestaMax 🇨🇴_`;
   openWA(l.tel,msg);
 }
 function sendWARenovacion(l,pend,trans){
@@ -2915,7 +2920,7 @@ function notifGrupo(tipo,l,extra={}){
   const dest=S.cartera?.cfg?.grupoWA;if(!dest){toast('💡 Configura el grupo WA en ⚙️ Config');return;}
   let msg='';
   if(tipo==='nuevo')    msg=`📥 NUEVO CRÉDITO\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 ${fmt(l.val)} · ${l.ncu}×${fmt(l.cuo)} · ${cap(l.mod)}\n1ª cuota: ${fd(l.cuotas[0]?.fecha)}\nPor: ${S.user?.name}`;
-  if(tipo==='multa')    msg=`⚠️ CLIENTE CONFIRMA PAGAR MULTA\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💸 Multa cuota #${extra.cn}: ${fmt(l.mul)}\nPor favor gestionar cobro.`;
+  if(tipo==='multa')    msg=`⚠️ CLIENTE CONFIRMA PAGAR MULTA\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💸 Multa cuota #${extra.cn}: ${fmt(extra.mulVal||0)}\nPor favor gestionar cobro.`;
   if(tipo==='pago')     msg=`✅ AVISO DE PAGO PRÓXIMO\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 Cuota ${extra.cn}: ${fmt(extra.val)}\nVerificar pago.`;
   if(tipo==='renovacion')msg=`🔄 RENOVACIÓN\n👤 ${l.nom} ${l.ape} CC ${l.ced} · 📱 ${l.tel}\n💰 ${fmt(l.val)} · Transferencia: ${fmt(extra.trans)}\nPor: ${S.user?.name}`;
   if(dest.startsWith('https://chat.whatsapp.com/')){
@@ -3056,7 +3061,7 @@ function openModCapAccion(tipo){
   if(tipo==='sumar'){
     area.innerHTML=`
       <div style="background:rgba(0,229,176,.06);border:1.5px solid var(--jade);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:800;color:var(--jade);margin-bottom:8px">➕ Agregar capital a la inversión</div>
+        <div style="font-size:13px;font-weight:800;color:var(--jade);margin-bottom:8px">➕ Agregar a la inversión base</div>
         <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">Inversión actual: <b style="color:var(--jade)">${fmt(cap.base)}</b></div>
         <div class="fg"><label class="fl">💵 Monto a agregar</label>
           <input type="number" class="fi" id="cap-accion-val" placeholder="Ej: 1000000" min="1" oninput="prevCapAccion('sumar')">
@@ -3073,7 +3078,7 @@ function openModCapAccion(tipo){
   } else {
     area.innerHTML=`
       <div style="background:rgba(255,61,90,.06);border:1.5px solid var(--fire);border-radius:var(--r-sm);padding:14px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:800;color:var(--fire);margin-bottom:8px">➖ Retirar de la inversión</div>
+        <div style="font-size:13px;font-weight:800;color:var(--fire);margin-bottom:8px">➖ Retirar de la inversión base</div>
         <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
           Inversión actual: <b style="color:var(--jade)">${fmt(cap.base)}</b><br>
           Máximo a retirar: <b style="color:var(--fire)">${fmt(maxRestar)}</b> (el resto está en préstamos activos)
@@ -3139,12 +3144,15 @@ function openGananciaAccion(tipo){
   const c=S.cartera;const cap=getCap(c);
   const gan=gananciaTotal(c);
   if(gan<=0){toast('⚠️ No hay ganancias disponibles aún');return;}
+  const th=document.getElementById('reinvertir-title-h');
+  if(th)th.textContent=tipo==='capital'?'➕ Enviar ganancias a capital':'💸 Retirar ganancias';
 
   // Abrir modal de reinvertir con modo específico
   document.getElementById('reinvertir-body').innerHTML=`
     <div style="background:linear-gradient(135deg,rgba(57,216,112,.1),rgba(255,196,0,.06));border:1.5px solid rgba(57,216,112,.4);border-radius:var(--r);padding:14px;margin-bottom:14px;text-align:center">
-      <div style="font-size:11px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">💹 Ganancias disponibles</div>
+      <div style="font-size:11px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">💹 Ganancias cobradas disponibles</div>
       <div style="font-weight:900;font-size:34px;color:var(--lime);letter-spacing:-1.5px">${fmt(gan)}</div>
+      <div style="font-size:11px;color:var(--smoke);margin-top:4px">Solo puedes operar sobre las ganancias, no sobre el capital</div>
     </div>
 
     ${tipo==='capital'?`
@@ -3305,7 +3313,7 @@ function mostrarRecibo(opts){
   const pagadas = l.cuotas.filter(q=>q.estado==='pagada').length;
 
   // Build canvas receipt
-  const W=600, H = tipo==='pazysalvo' ? 820 : tipo==='multa' ? 640 : 620;
+  const W=700, H = tipo==='pazysalvo' ? 900 : tipo==='multa' ? 720 : 700;
   const canvas = document.createElement('canvas');
   canvas.width=W; canvas.height=H;
   const ctx = canvas.getContext('2d');
@@ -3335,36 +3343,36 @@ function mostrarRecibo(opts){
   // Cartera name
   ctx.font='bold 13px sans-serif';ctx.fillStyle='rgba(255,255,255,0.6)';
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
-  ctx.fillText(carteraNombre.toUpperCase(), 108, 48);
+  ctx.fillText(carteraNombre.toUpperCase(), 118, 48);
 
   // Title
   ctx.font='bold 24px sans-serif';
   ctx.fillStyle = tipo==='pazysalvo'?'#39d870':tipo==='multa'?'#ff6080':'#00e5b0';
-  ctx.fillText(titulo.toUpperCase(), 108, 80);
+  ctx.fillText(titulo.toUpperCase(), 118, 80);
 
   // Date
   ctx.font='12px sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.fillText(fechaHoyFull, 108, 102);
+  ctx.fillText(fechaHoyFull, 118, 102);
 
   // Divider
   ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(30,128);ctx.lineTo(W-30,128);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(50,132);ctx.lineTo(W-50,132);ctx.stroke();
 
   // Helper to draw a row
-  let rowY = 150;
+  let rowY = 162;
   function drawRow(label, value, valColor){
     ctx.font='12px sans-serif';ctx.fillStyle='rgba(168,187,200,0.8)';
-    ctx.textAlign='left';ctx.fillText(label,40,rowY);
+    ctx.textAlign='left';ctx.fillText(label,60,rowY);
     ctx.font='bold 14px sans-serif';ctx.fillStyle=valColor||'#eef4f8';
-    ctx.textAlign='right';ctx.fillText(value,W-40,rowY);
+    ctx.textAlign='right';ctx.fillText(value,W-60,rowY);
     ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(40,rowY+8);ctx.lineTo(W-40,rowY+8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(60,rowY+8);ctx.lineTo(W-60,rowY+8);ctx.stroke();
     rowY+=34;
   }
 
   function drawSection(title){
     ctx.font='bold 11px sans-serif';ctx.fillStyle='rgba(100,160,200,0.7)';
-    ctx.textAlign='left';ctx.fillText(title.toUpperCase(),40,rowY);
+    ctx.textAlign='left';ctx.fillText(title.toUpperCase(),60,rowY);
     rowY+=20;
   }
 
@@ -3418,13 +3426,18 @@ function mostrarRecibo(opts){
   }
 
   // Footer
-  ctx.fillStyle='rgba(255,255,255,0.04)';
-  ctx.fillRect(0,H-50,W,50);
-  ctx.font='11px sans-serif';ctx.fillStyle='rgba(168,187,200,0.5)';
+  ctx.fillStyle='rgba(255,255,255,0.06)';
+  ctx.fillRect(0,H-60,W,60);
+  // Border line above footer
+  ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,H-60);ctx.lineTo(W,H-60);ctx.stroke();
+  ctx.font='12px sans-serif';ctx.fillStyle='rgba(168,187,200,0.6)';
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('PrestaMax v3 · Comprobante generado automaticamente · '+fechaHoy,W/2,H-25);
+  ctx.fillText('PrestaMax v3 · Comprobante generado automaticamente · '+fechaHoy,W/2,H-30);
 
   const imgData = canvas.toDataURL('image/png');
+  // Store recibo in cuota so it persists and can be re-sent
+  if(c&&tipo!=='multa'){c._reciboData=imgData;c._reciboTipo=tipo;fsSave();}
 
   // Build phone number for WA
   let tel=(l.tel||'').replace(/\D/g,'');
@@ -3459,7 +3472,7 @@ function mostrarRecibo(opts){
     </div>
     <button class="btn btn-ghost btn-w" onclick="closeM('m-recibo')">✕ Cerrar</button>
   `;
-  openM('m-recibo');
+  if(!window._silentMode)openM('m-recibo');
 }
 
 function enviarReciboWA(tel, msgEncoded, imgData){
@@ -3564,6 +3577,116 @@ function rPrestamosRecientes(act){
         +inner
         +'</div>';
     }).join('')+'</div>';
+}
+
+
+function deshacerPago(lid, cn){
+  const l=getL(lid);if(!l)return;
+  const c=l.cuotas.find(x=>x.num===cn);if(!c||c.estado!=='pagada')return;
+
+  // Confirm
+  if(!confirm('¿Deshacer el pago de la cuota #'+cn+'?\nLa cuota volverá a estar PENDIENTE y las finanzas se ajustarán automáticamente.'))return;
+
+  // Revert distribuirPago: remove the histGan entry added when this cuota was paid
+  const cap=getCap(S.cartera);
+  if(cap&&cap.histGan){
+    // Remove the last entry for this lid+cuota combo
+    const nota='Cuota #'+cn;
+    const idx=cap.histGan.map((h,i)=>({h,i})).reverse().find(x=>x.h.lid===l.id&&x.h.nota===nota);
+    if(idx!==undefined)cap.histGan.splice(idx.i,1);
+  }
+
+  // Revert the cuota
+  const wasActivo=l.activo;
+  c.estado='pendiente';
+  c.fechaPago=null;
+  c.pagadoPor=null;
+  c.pagadoPorEmail=null;
+  // Keep comprobante for reference but mark as undone
+  c._comprobante_prev=c.comprobante;
+  c.comprobante=null;
+
+  // If loan was closed, reactivate it
+  if(!l.activo){
+    l.activo=true;
+    l.fechaCierre=null;
+    l.historico.push('⟳ Cuota #'+cn+' revertida — préstamo reactivado — '+new Date().toLocaleDateString('es-CO'));
+  } else {
+    l.historico.push('⟳ Cuota #'+cn+' revertida a pendiente — '+new Date().toLocaleDateString('es-CO'));
+  }
+
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+  toast('⟳ Cuota #'+cn+' revertida a pendiente');
+}
+
+function verReciboCuota(lid, cn){
+  const l=getL(lid);if(!l)return;
+  const c=l.cuotas.find(x=>x.num===cn);if(!c)return;
+  if(c._reciboData){
+    // Show stored recibo directly
+    document.getElementById('recibo-title').textContent='🧾 Recibo Cuota #'+cn;
+    let tel=(l.tel||'').replace(/\D/g,'');
+    if(tel.startsWith('0'))tel=tel.substring(1);
+    if(!tel.startsWith('57')&&tel.length===10)tel='57'+tel;
+    const waMsg='Recibo cuota #'+cn+' - '+l.nom+' '+l.ape+' - '+fmt(c.valor)+'. PrestaMax.';
+    document.getElementById('recibo-body').innerHTML=`
+      <div style="text-align:center;margin-bottom:14px">
+        <img src="${c._reciboData}" style="width:100%;max-width:660px;border-radius:12px;border:1px solid var(--line)" alt="Recibo">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <a href="${c._reciboData}" download="recibo-cuota-${cn}-${l.ced}.png"
+           style="flex:1;padding:11px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:'Exo 2',sans-serif;font-size:14px;font-weight:700;color:var(--ash);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px">
+          💾 Guardar imagen
+        </a>
+      </div>
+      <button class="btn btn-jade" style="width:100%;margin-bottom:8px" onclick="enviarReciboWA('${tel}','${encodeURIComponent(waMsg)}','${c._reciboData}')">📲 Enviar por WhatsApp</button>
+      <button class="btn btn-sky" style="width:100%;margin-bottom:8px" onclick="enviarReciboEmail('${encodeURIComponent(l.email||'')}','cuota','${encodeURIComponent(waMsg)}','${c._reciboData}')">📧 Enviar por correo</button>
+      <button class="btn btn-ghost btn-w" onclick="closeM('m-recibo')">✕ Cerrar</button>
+    `;
+    if(!window._silentMode)openM('m-recibo');
+  } else {
+    mostrarRecibo({tipo:'cuota',loan:l,cuota:c,quien:c.pagadoPor||'',metodo:c._metodo||'Efectivo',cartera:S.cartera});
+  }
+}
+
+function verPazYSalvo(lid){
+  const l=getL(lid);if(!l)return;
+  const ult=l.cuotas[l.cuotas.length-1];
+  if(ult?._reciboData&&ult?._reciboTipo==='pazysalvo'){
+    let tel=(l.tel||'').replace(/\D/g,'');
+    if(tel.startsWith('0'))tel=tel.substring(1);
+    if(!tel.startsWith('57')&&tel.length===10)tel='57'+tel;
+    const waMsg='PAZ Y SALVO - '+l.nom+' '+l.ape+' CC '+l.ced+'. Credito cancelado totalmente. PrestaMax.';
+    document.getElementById('recibo-title').textContent='🏆 Paz y Salvo';
+    document.getElementById('recibo-body').innerHTML=`
+      <div style="text-align:center;margin-bottom:14px">
+        <img src="${ult._reciboData}" style="width:100%;max-width:660px;border-radius:12px;border:1px solid var(--line)" alt="Paz y Salvo">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <a href="${ult._reciboData}" download="paz-y-salvo-${l.ced}.png"
+           style="flex:1;padding:11px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:'Exo 2',sans-serif;font-size:14px;font-weight:700;color:var(--ash);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px">
+          💾 Guardar imagen
+        </a>
+      </div>
+      <button class="btn btn-jade" style="width:100%;margin-bottom:8px" onclick="enviarReciboWA('${tel}','${encodeURIComponent(waMsg)}','${ult._reciboData}')">📲 Enviar por WhatsApp</button>
+      <button class="btn btn-sky" style="width:100%;margin-bottom:8px" onclick="enviarReciboEmail('${encodeURIComponent(l.email||'')}','pazysalvo','${encodeURIComponent(waMsg)}','${ult._reciboData}')">📧 Enviar por correo</button>
+      <button class="btn btn-ghost btn-w" onclick="closeM('m-recibo')">✕ Cerrar</button>
+    `;
+    if(!window._silentMode)openM('m-recibo');
+  } else {
+    mostrarRecibo({tipo:'pazysalvo',loan:l,cuota:ult,quien:ult?.pagadoPor||'',metodo:'',cartera:S.cartera});
+  }
+}
+
+
+function mostrarReciboSilencioso(opts){
+  const c=opts.cuota;
+  if(!c)return;
+  window._silentMode=true;
+  try{mostrarRecibo(opts);}catch(e){}
+  window._silentMode=false;
 }
 
 seed();
