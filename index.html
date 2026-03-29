@@ -1520,10 +1520,19 @@ function rInicio(){
       </div>
     </div>
     <div id="fin-panel-body" style="display:none;padding:0 14px">
+      <!-- Inversión base + ojo para gestionar -->
       <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
         <span style="font-size:13px;color:var(--ash)">📥 Inversión base</span>
-        <span class="mono" style="font-weight:800;color:var(--jade)">${fmt(capB)}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="mono" style="font-weight:800;color:var(--jade)">${fmt(capB)}</span>
+          <button onclick="openModCapInline()" title="Gestionar inversión"
+            style="background:rgba(0,229,176,.12);border:1.5px solid rgba(0,229,176,.4);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:background .15s"
+            onmouseover="this.style.background='rgba(0,229,176,.25)'" onmouseout="this.style.background='rgba(0,229,176,.12)'">👁️</button>
+        </div>
       </div>
+      <!-- Panel inline de inversión (oculto por defecto) -->
+      <div id="inv-inline-panel" style="display:none;background:rgba(0,229,176,.05);border-bottom:1px solid var(--line);padding:10px 0"></div>
+
       <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
         <span style="font-size:13px;color:var(--ash)">📬 Capital recobrado</span>
         <span class="mono" style="font-weight:800;color:var(--amber)">${fmt(recibParcial)}</span>
@@ -1540,14 +1549,18 @@ function rInicio(){
         <span style="font-size:13px;color:var(--ash)">⚠️ Multas cobradas</span>
         <span class="mono" style="font-weight:800;color:var(--amber)">${fmt(multas)}</span>
       </div>
+      <!-- Total ganancias + ojo para retirar -->
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);background:rgba(57,216,112,.05)">
         <span style="font-size:14px;font-weight:900;color:var(--lime)">🏆 Total ganancias</span>
-        <span class="mono" style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="mono" style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</span>
+          <button onclick="openGanInline()" title="Retirar ganancias" ${gan<=0?'disabled':''} ${gan<=0?'style="opacity:.35;cursor:not-allowed"':''}
+            style="background:rgba(57,216,112,.12);border:1.5px solid rgba(57,216,112,.4);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:background .15s"
+            onmouseover="this.style.background='rgba(57,216,112,.25)'" onmouseout="this.style.background='rgba(57,216,112,.12)'">👁️</button>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 12px">
-        <button class="btn btn-jade btn-sm" onclick="openM_capital()" style="font-size:12px">📥 Agregar/bajar inversión</button>
-        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''} style="font-size:12px">💸 Retirar ganancias</button>
-      </div>
+      <!-- Panel inline de ganancias (oculto por defecto) -->
+      <div id="gan-inline-panel" style="display:none;background:rgba(57,216,112,.04);border-bottom:1px solid var(--line);padding:10px 0"></div>
     </div>
   </div>
 
@@ -3895,6 +3908,151 @@ function editarClienteDB(){
   if(cargado)cargado.innerHTML='✏️ <b>Editando: '+cli.nom+' '+cli.ape+'</b> — Modifica campos y guarda para actualizar.'+
     ' <button onclick="limpiarClienteForm()" style="background:none;border:none;color:var(--fire);cursor:pointer;font-size:11px">✕</button>';
   toast('✏️ Modifica los datos en el formulario');
+}
+
+
+/* ─── INVERSIÓN INLINE (👁️ en panel financiero) ─── */
+function openModCapInline(){
+  const panel=document.getElementById('inv-inline-panel');
+  if(!panel)return;
+  if(panel.style.display==='block'){panel.style.display='none';return;}
+
+  const c=S.cartera;const cap=getCap(c);
+  const recibParcial=capRecuperadoActivos(c); // capital ya recobrado de activos
+  // Máximo a retirar = capital recobrado (dinero que ya volvió a caja)
+  const maxRestar=recibParcial;
+
+  panel.style.display='block';
+  panel.innerHTML=`
+    <div style="padding:4px 0 8px">
+      <div style="font-size:11px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Gestionar inversión base</div>
+      <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
+        Inversión actual: <b style="color:var(--jade)">${fmt(cap.base)}</b><br>
+        Puedes <b>retirar hasta ${fmt(maxRestar)}</b> (capital ya recobrado de préstamos activos)
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+        <button class="btn btn-jade btn-sm" onclick="setModCapTipo('sumar')" id="mcb-sumar" style="font-size:12px">➕ Agregar</button>
+        <button class="btn btn-fire btn-sm" onclick="setModCapTipo('restar')" id="mcb-restar" style="font-size:12px" ${maxRestar<=0?'disabled style="opacity:.4"':''}>➖ Retirar</button>
+      </div>
+      <div id="mc-tipo-area"></div>
+    </div>`;
+}
+
+function setModCapTipo(tipo){
+  document.getElementById('mcb-sumar').style.opacity=tipo==='sumar'?'1':'.5';
+  document.getElementById('mcb-restar').style.opacity=tipo==='restar'?'1':'.5';
+  const c=S.cartera;const cap=getCap(c);
+  const recibParcial=capRecuperadoActivos(c);
+  const maxRestar=recibParcial;
+  const area=document.getElementById('mc-tipo-area');if(!area)return;
+  area.innerHTML=`
+    <div class="fg" style="margin-bottom:6px">
+      <label class="fl">💵 Monto a ${tipo==='sumar'?'agregar':'retirar'}</label>
+      <input type="number" class="fi" id="mc-inline-val" placeholder="${tipo==='sumar'?'Ej: 1000000':'Máx: '+fmt(maxRestar)}"
+        min="1" ${tipo==='restar'?'max="'+maxRestar+'"':''} oninput="prevMCInline('${tipo}')">
+    </div>
+    <div id="mc-inline-prev" style="font-size:12px;color:var(--smoke);padding:5px 8px;background:var(--ink3);border-radius:6px;margin-bottom:8px;display:none"></div>
+    <div class="fg" style="margin-bottom:6px">
+      <label class="fl">📝 Nota</label>
+      <input type="text" class="fi" id="mc-inline-nota" placeholder="${tipo==='sumar'?'Ej: Nuevo aporte':'Ej: Retiro personal'}">
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('inv-inline-panel').style.display='none'">✕ Cerrar</button>
+      <button class="btn ${tipo==='sumar'?'btn-jade':'btn-fire'} btn-sm" style="flex:1" onclick="confirmarMCInline('${tipo}',${maxRestar})">✅ Confirmar</button>
+    </div>`;
+}
+
+function prevMCInline(tipo){
+  const val=parseFloat(document.getElementById('mc-inline-val')?.value)||0;
+  const prev=document.getElementById('mc-inline-prev');if(!prev)return;
+  const cap=getCap(S.cartera);
+  if(val<=0){prev.style.display='none';return;}
+  prev.style.display='block';
+  prev.innerHTML=tipo==='sumar'
+    ?'Nueva inversión: <b style="color:var(--jade)">'+fmt(cap.base+val)+'</b>'
+    :'Nueva inversión: <b style="color:var(--jade)">'+fmt(Math.max(0,cap.base-val))+'</b>';
+}
+
+function confirmarMCInline(tipo,maxRestar){
+  const val=parseFloat(document.getElementById('mc-inline-val')?.value)||0;
+  const nota=document.getElementById('mc-inline-nota')?.value.trim()||(tipo==='sumar'?'Aporte de capital':'Retiro de capital');
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  if(tipo==='restar'&&val>maxRestar){
+    toast('❌ Solo puedes retirar hasta '+fmt(maxRestar)+' (capital ya recobrado)');return;
+  }
+  const cap=getCap(S.cartera);
+  if(tipo==='sumar') cap.base+=val;
+  else cap.base=Math.max(0,cap.base-val);
+  if(!cap.histInv)cap.histInv=[];
+  cap.histInv.push({fecha:new Date(),monto:cap.base,diff:(tipo==='sumar'?val:-val),nota});
+  toast((tipo==='sumar'?'✅ Capital aumentado +':' ✅ Capital retirado -')+fmt(val)+' · Nueva inversión: '+fmt(cap.base));
+  fsSave();
+  document.getElementById('inv-inline-panel').style.display='none';
+  render();
+}
+
+/* ─── GANANCIAS INLINE (👁️ en panel financiero) ─── */
+function openGanInline(){
+  const panel=document.getElementById('gan-inline-panel');
+  if(!panel)return;
+  if(panel.style.display==='block'){panel.style.display='none';return;}
+
+  const c=S.cartera;const cap=getCap(c);
+  const gan=gananciaTotal(c);
+  if(gan<=0){toast('⚠️ No hay ganancias para retirar');return;}
+
+  panel.style.display='block';
+  panel.innerHTML=`
+    <div style="padding:4px 0 8px">
+      <div style="font-size:11px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Retirar ganancias</div>
+      <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">
+        Ganancias disponibles: <b style="color:var(--lime)">${fmt(gan)}</b><br>
+        El monto retirado <b>sale del sistema</b>. No afecta el capital ni los préstamos.
+      </div>
+      <div class="fg" style="margin-bottom:6px">
+        <label class="fl">💵 Monto a retirar</label>
+        <input type="number" class="fi" id="gan-inline-val" value="${gan}" max="${gan}" min="1" oninput="prevGanInline(${gan})">
+      </div>
+      <div id="gan-inline-prev" style="font-size:12px;color:var(--smoke);padding:5px 8px;background:var(--ink3);border-radius:6px;margin-bottom:8px">
+        Retirarás: <b style="color:var(--amber)">${fmt(gan)}</b> · Restará: <b style="color:var(--lime)">$0</b>
+      </div>
+      <div class="fg" style="margin-bottom:6px">
+        <label class="fl">📝 Nota</label>
+        <input type="text" class="fi" id="gan-inline-nota" placeholder="Ej: Retiro personal de utilidades">
+      </div>
+      ${cap.histGan&&cap.histGan.length?`
+      <div style="font-size:11px;font-weight:700;color:var(--smoke);margin-bottom:5px">📜 Detalle ganancias:</div>
+      <div style="max-height:100px;overflow-y:auto;margin-bottom:8px;scrollbar-width:none">
+        ${[...cap.histGan].filter(h=>!h.retirado&&!h.reinvertido).reverse().slice(0,8).map(h=>
+          '<div class="ganancia-row" style="font-size:11px;border-bottom:1px solid var(--line);padding:3px 0">'+
+          '<span style="flex:1;color:var(--smoke)">'+new Date(h.fecha).toLocaleDateString('es-CO')+' · '+(h.cliente||'')+' · '+(h.nota||'')+'</span>'+
+          '<span class="mono" style="color:var(--lime);margin-left:8px">'+fmt(h.monto)+'</span></div>'
+        ).join('')}
+      </div>`:''}
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('gan-inline-panel').style.display='none'">✕ Cerrar</button>
+        <button class="btn btn-amber btn-sm" style="flex:1" onclick="confirmarGanInline(${gan})">💸 Confirmar retiro</button>
+      </div>
+    </div>`;
+}
+
+function prevGanInline(maxGan){
+  const val=Math.min(parseFloat(document.getElementById('gan-inline-val')?.value)||0,maxGan);
+  const prev=document.getElementById('gan-inline-prev');if(!prev)return;
+  prev.innerHTML='Retirarás: <b style="color:var(--amber)">'+fmt(val)+'</b> · Restará: <b style="color:var(--lime)">'+fmt(maxGan-val)+'</b>';
+}
+
+function confirmarGanInline(maxGan){
+  const val=Math.min(parseFloat(document.getElementById('gan-inline-val')?.value)||0,maxGan);
+  const nota=document.getElementById('gan-inline-nota')?.value.trim()||'Retiro de ganancias';
+  if(val<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const cap=getCap(S.cartera);
+  if(!cap.histGan)cap.histGan=[];
+  cap.histGan.push({fecha:new Date(),monto:-val,lid:'retiro',cliente:'Retiro',nota,retirado:true});
+  toast('💸 '+fmt(val)+' retirados de ganancias');
+  fsSave();
+  document.getElementById('gan-inline-panel').style.display='none';
+  render();
 }
 
 seed();
