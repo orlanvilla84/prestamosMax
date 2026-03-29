@@ -556,8 +556,8 @@ window._db = firebase.firestore();
     <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="f-ape" placeholder="Apellidos"></div>
   </div>
   <div class="r2">
-    <div class="fg"><label class="fl">🪪 Cédula * (10 dígitos)</label><input type="number" inputmode="numeric" class="fi" id="f-ced" placeholder="Ej: 1012345678" oninput="checkCedDup()"></div>
-    <div class="fg"><label class="fl">📱 WhatsApp * (10 dígitos)</label><input type="number" inputmode="numeric" class="fi" id="f-tel" placeholder="Ej: 3001234567"></div>
+    <div class="fg"><label class="fl">🪪 Cédula *</label><input type="text" inputmode="numeric" class="fi" id="f-ced" placeholder="Ej: 1012345678" oninput="checkCedDup()"></div>
+    <div class="fg"><label class="fl">📱 WhatsApp * (10 dígitos)</label><input type="tel" inputmode="numeric" class="fi" id="f-tel" placeholder="Ej: 3001234567" maxlength="10"></div>
   </div>
   <div class="r2">
     <div class="fg"><label class="fl">📞 Celular adicional (opcional)</label><input type="tel" class="fi" id="f-cel2" placeholder="+57 310..."></div>
@@ -960,6 +960,15 @@ function _loginDemo(){
   toast('✅ Modo prueba — configura Google OAuth');
 }
 
+
+function toggleFinPanel(){
+  const body=document.getElementById('fin-panel-body');
+  const arrow=document.getElementById('fin-panel-arrow');
+  if(!body)return;
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  if(arrow)arrow.style.transform=open?'':'rotate(180deg)';
+}
 
 function toggleTheme(){
   document.body.classList.toggle('light-mode');
@@ -1409,8 +1418,8 @@ function rInicio(){
   const ls=loans(),act=ls.filter(l=>l.activo);
   const c=S.cartera;
   const capB=getCap(c).base;
-  const recibParcial=capRecuperadoActivos(c);
   const pendiente=capEnCalle(c);
+  const recibParcial=Math.max(0,capB-pendiente); // Capital base ya recuperado = base - lo aún en calle
   const disp=capDisponible(c);
   const gan=gananciaTotal(c);
   const multas=multasTotales(c);
@@ -1438,58 +1447,52 @@ function rInicio(){
         <div class="cap-bar-prestado" style="width:${pct}%"></div>
       </div>
       <div class="cap-legend">
-        <span><span class="cap-dot" style="background:var(--fire)"></span>En la calle: ${fmt(pendiente)}</span>
+        <span><span class="cap-dot" style="background:var(--fire)"></span>En préstamo: ${fmt(pendiente)}</span>
         <span><span class="cap-dot" style="background:var(--jade)"></span>Disponible: ${fmt(disp)}</span>
       </div>
     </div>
   </div>
 
-  <!-- ── BLOQUE CAPITAL: inversión + recibido + pendiente ── -->
+  <!-- ── PANEL FINANCIERO COLAPSABLE ── -->
   <div style="background:var(--ink2);border:1.5px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
-    <div style="background:linear-gradient(90deg,rgba(0,229,176,.14),rgba(0,153,255,.07));padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px">📊 Capital</span>
-      <button class="btn btn-ghost btn-sm" style="padding:5px 12px;font-size:12px" onclick="openM_capital()">✏️ Modificar</button>
-    </div>
-    <div style="padding:0 14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
-        <span style="font-size:14px;font-weight:700;color:var(--ash)">📥 Inversión inicial</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--jade)">${fmt(capB)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);background:rgba(255,210,0,.05)">
-        <span style="font-size:14px;font-weight:700;color:var(--ash)">📬 Recibido (capital)</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--amber)">${fmt(recibParcial)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0">
-        <span style="font-size:14px;font-weight:700;color:var(--ash)">⏳ Pendiente en la calle</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--fire)">${fmt(pendiente)}</span>
+    <div onclick="toggleFinPanel()" style="background:linear-gradient(90deg,rgba(0,229,176,.1),rgba(0,153,255,.06));padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+      <span style="font-size:12px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px">📊 Capital &amp; Ganancias</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--smoke)">Gan: <b style="color:var(--lime)">${fmt(gan)}</b></span>
+        <span id="fin-panel-arrow" style="color:var(--jade);font-size:14px;transition:transform .2s">▼</span>
       </div>
     </div>
-  </div>
-
-  <!-- ── BLOQUE GANANCIAS: con botones enviar a capital / retirar ── -->
-  <div style="background:var(--ink2);border:1.5px solid rgba(57,216,112,.35);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
-    <div style="background:linear-gradient(90deg,rgba(57,216,112,.14),rgba(255,196,0,.07));padding:10px 14px;font-size:12px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:.6px">💹 Ganancias cobradas</div>
-    <div style="padding:0 14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
-        <span style="font-size:14px;font-weight:700;color:var(--ash)">💹 De cuotas</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--lime)">${fmt(ganCuotas)}</span>
+    <div id="fin-panel-body" style="display:none;padding:0 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">📥 Inversión base</span>
+        <span class="mono" style="font-weight:800;color:var(--jade)">${fmt(capB)}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
-        <span style="font-size:14px;font-weight:700;color:var(--ash)">⚠️ Multas</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--amber)">${fmt(multas)}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">📬 Capital recobrado</span>
+        <span class="mono" style="font-weight:800;color:var(--amber)">${fmt(recibParcial)}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);background:rgba(57,216,112,.06)">
-        <span style="font-size:15px;font-weight:900;color:var(--lime)">🏆 Total ganancias</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-weight:900;font-size:18px;color:var(--lime)">${fmt(gan)}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">📤 En préstamo</span>
+        <span class="mono" style="font-weight:800;color:var(--fire)">${fmt(pendiente)}</span>
       </div>
-      <!-- Botones de acción de ganancias -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0">
-        <button class="btn btn-jade btn-sm" onclick="openGananciaAccion('capital')" ${gan<=0?'disabled style="opacity:.45"':''}>
-          ➕ Enviar a capital
-        </button>
-        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''}>
-          💸 Retirar ganancias
-        </button>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">💹 Ganancias cuotas</span>
+        <span class="mono" style="font-weight:800;color:var(--lime)">${fmt(ganCuotas)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="font-size:13px;color:var(--ash)">⚠️ Multas cobradas</span>
+        <span class="mono" style="font-weight:800;color:var(--amber)">${fmt(multas)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);background:rgba(57,216,112,.05)">
+        <span style="font-size:14px;font-weight:900;color:var(--lime)">🏆 Total ganancias</span>
+        <span class="mono" style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0">
+        <button class="btn btn-jade btn-sm" onclick="openGananciaAccion('capital')" ${gan<=0?'disabled style="opacity:.45"':''}>➕ Al capital</button>
+        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''}>💸 Retirar</button>
+      </div>
+      <div style="padding:6px 0 10px">
+        <button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px" onclick="openM_capital()">✏️ Modificar capital base</button>
       </div>
     </div>
   </div>
@@ -2937,8 +2940,8 @@ function openM_capital(){
 function renderCapitalModal(){
   const c=S.cartera;const cap=getCap(c);
   const disp=capDisponible(c);
-  const recibParcial=capRecuperadoActivos(c);
   const pendiente=capEnCalle(c);
+  const recibParcial=Math.max(0,capB-pendiente); // Capital base ya recuperado = base - lo aún en calle
   const tieneInv=cap.histInv&&cap.histInv.length>0;
   const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
 
@@ -3503,28 +3506,61 @@ function actualizarMultaIndividual(lid,cn){
 
 function rPrestamosRecientes(act){
   if(!act.length)return'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos activos</div><div class="empty-s">Crea el primer préstamo con + Nuevo</div></div>';
-  const recientes=act.slice(0,5);
-  return'<div style="margin-bottom:10px"><div class="sh"><span class="st">📋 Préstamos recientes</span><span class="sl" onclick="goTab(\'prestamos\')">Ver todos →</span></div>'+
-    recientes.map(l=>{
-      const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
-      const enMora=l.cuotas.some(q=>q.estado==='mora');
-      const pct=Math.round(pag/l.ncu*100);
-      const sc=score(l);
-      return'<div class="lc" onclick="showLoan('+l.id+')">'+
-        '<div class="lstripe '+(enMora?'s-fire':pag>0?'s-jade':'s-amber')+'"></div>'+
-        '<div class="lhead">'+
-          '<div class="lav" style="color:'+sc.col+'">'+l.nom.charAt(0)+l.ape.charAt(0)+'</div>'+
-          '<div style="flex:1;min-width:0">'+
-            '<div class="lname">'+l.nom+' '+l.ape+'</div>'+
-            '<div class="lsub">CC '+l.ced+'</div>'+
-          '</div>'+
-          '<div class="lbadge '+(enMora?'bm':pag>0?'bd':'bq')+'">'+(enMora?'MORA':pct+'%')+'</div>'+
-        '</div>'+
-        '<div class="prog">'+
-          '<div class="pb-track"><div class="pb-fill" style="width:'+pct+'%"></div></div>'+
-          '<div class="pb-txt"><span>'+pag+'/'+l.ncu+' cuotas · '+fmt(l.cuo)+'/c</span><span>'+(enMora?'⚠️ EN MORA':'✅ Al día')+'</span></div>'+
-        '</div>'+
-      '</div>';
+  // Agrupar por cedula
+  const mapaR={};
+  act.forEach(function(l){
+    if(!mapaR[l.ced])mapaR[l.ced]={nom:l.nom,ape:l.ape,ced:l.ced,loans:[]};
+    mapaR[l.ced].loans.push(l);
+  });
+  const grupos=Object.values(mapaR).slice(0,6);
+  return '<div style="margin-bottom:10px"><div class="sh"><span class="st">📋 Préstamos recientes</span><span class="sl" onclick="goTab(\'prestamos\')">Ver todos →</span></div>'+
+    grupos.map(function(g){
+      const l=g.loans[0];
+      const mora=g.loans.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
+      const hoy=g.loans.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
+      const ini=g.nom.charAt(0)+g.ape.charAt(0);
+      // Medidor del primer préstamo
+      const pag0=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+      const tot0=l.cuotas.length;
+      const pct0=Math.round(pag0/tot0*100);
+      const maxD=Math.min(tot0,20);
+      const dP=Math.round(pag0/tot0*maxD);
+      var dotsMed='';
+      for(var di=0;di<dP;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--jade);margin:1px"></span>';
+      for(var di=dP;di<maxD;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--line);margin:1px"></span>';
+      const borderCol=mora?'rgba(255,61,90,.5)':hoy?'rgba(255,170,0,.4)':'var(--line)';
+      const bgCol=mora?'rgba(255,61,90,.04)':'var(--ink2)';
+      const clickFn=g.loans.length===1?'showLoan('+l.id+')':'';
+      // Sub-préstamos si hay más de uno
+      var inner='';
+      if(g.loans.length>1){
+        inner=g.loans.map(function(x){
+          var pp=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+          var pt=Math.round(pp/x.cuotas.length*100);
+          var xm=x.cuotas.some(function(c){return c.estado==='mora';});
+          return '<div onclick="event.stopPropagation();showLoan('+x.id+')" style="background:var(--ink3);border-radius:6px;padding:6px 10px;margin-top:5px;cursor:pointer;border:1px solid var(--line)">'
+            +'<div style="display:flex;justify-content:space-between">'
+            +'<span style="font-size:11px;font-weight:700">'+fmt(x.val)+' · '+x.mod+'</span>'
+            +(xm?'<span style="font-size:10px;color:var(--fire)">⚠️ Mora</span>':'<span style="font-size:10px;color:var(--jade)">'+pt+'%</span>')
+            +'</div>'
+            +'<div class="pb-track" style="height:2px;margin-top:3px"><div class="pb-fill" style="width:'+pt+'%"></div></div>'
+            +'</div>';
+        }).join('');
+      }
+      return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+' style="padding:10px 12px;cursor:'+(g.loans.length===1?'pointer':'default')+';border-color:'+borderCol+';background:'+bgCol+'">'
+        +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'" ></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+        +'<div class="lav" style="width:36px;height:36px;font-size:13px'+(mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:center;gap:4px"><span class="lname" style="font-size:13px">'+g.nom+' '+g.ape+'</span>'+(mora?'<span>🔴</span>':hoy?'<span>🟡</span>':'')+'</div>'
+        +'<div class="lsub" style="font-size:10px">CC '+g.ced+(g.loans.length>1?' · <b style="color:var(--jade)">'+g.loans.length+' créditos</b>':'')+'</div>'
+        +'</div>'
+        +'<div style="text-align:right"><div style="font-size:11px;color:var(--gold);font-weight:700">'+pct0+'%</div>'+(mora?'<div style="font-size:9px;color:var(--fire);font-weight:700">MORA</div>':hoy?'<div style="font-size:9px;color:var(--amber)">HOY</div>':'')+'</div>'
+        +'</div>'
+        +'<div style="margin-bottom:4px;line-height:1">'+dotsMed+'</div>'
+        +'<div style="font-size:9px;color:var(--smoke);display:flex;justify-content:space-between"><span>'+pag0+'/'+tot0+' cuotas · '+fmt(l.cuo)+'/c</span>'+(mora?'<span style="color:var(--fire)">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber)">📅 Hoy</span>':'<span style="color:var(--jade)">✅ Al día</span>')+'</div>'
+        +inner
+        +'</div>';
     }).join('')+'</div>';
 }
 
