@@ -551,7 +551,16 @@ window._db = firebase.firestore();
 
 <div class="overlay" id="m-loan"><div class="sheet">
   <div class="shandle"></div><div class="shtitle">💰 Nuevo Préstamo</div>
-  <div class="r2">
+  <!-- Buscador de cliente existente -->
+  <div id="buscar-cli-wrap" style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);margin-bottom:12px;overflow:hidden">
+    <div style="padding:8px 12px;font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px">🔍 Buscar cliente existente</div>
+    <div style="padding:0 10px 10px;position:relative">
+      <input type="text" class="fi" id="f-buscar-cli" placeholder="Nombre o cédula..." oninput="buscarClienteForm()" autocomplete="off" style="margin-bottom:0">
+      <div id="buscar-cli-results" style="background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);margin-top:4px;max-height:200px;overflow-y:auto;scrollbar-width:none"></div>
+    </div>
+  </div>
+  <div id="cli-cargado-info" style="display:none;background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.3);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--jade);margin-bottom:10px"></div>
+    <div class="r2">
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="f-nom" placeholder="Nombres"></div>
     <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="f-ape" placeholder="Apellidos"></div>
   </div>
@@ -817,7 +826,8 @@ function calcFechas(ini,mod,ncu){
 /* ─── STATE & DB ─── */
 const DB={
   users:[],
-  carteras:[]
+  carteras:[],
+  clientes:[]
 };
 const S={user:null,cartera:null,tab:'inicio',lid:null,pendingCid:null};
 
@@ -1728,47 +1738,99 @@ function rDetail(l){
   const sc=score(l),canRenew=pag>=Math.ceil(l.cuotas.length/2)&&pen>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const ganR=gananciaLoan(l);
-  const ganE=gananciaEstimadaLoan(l);
   const resumenFin=buildResumenFin(l,ganR);
-    // Multas por cuota para mostrar filas intercaladas
-    const multasMap={};
-    (l.histMultas||[]).forEach(function(m){if(!multasMap[m.cuota])multasMap[m.cuota]=[];multasMap[m.cuota].push(m);});
-    const cuotasH=l.cuotas.map(function(c){
-      const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
-      // Filas de multas cobradas antes de esta cuota
-      let multaRows='';
-      if(multasMap[c.num]){
-        multaRows=multasMap[c.num].map(function(m){
-          return '<div class="cuota" style="background:rgba(255,152,0,.07);border-left:3px solid var(--amber);margin-bottom:2px">'+
-            '<div class="cnum" style="background:var(--amber);color:#000;font-size:9px;line-height:1.2">M<br>'+c.num+'</div>'+
-            '<div class="cinf">'+
-              '<div class="cfecha">⚠️ Multa cuota #'+c.num+' · '+new Date(m.fecha).toLocaleDateString('es-CO')+'</div>'+
-              '<div class="csub">Cobrada · cuota reprogramada al siguiente día</div>'+
-            '</div>'+
-            '<div class="cval" style="color:var(--amber)">+'+fmt(m.monto)+'</div>'+
-          '</div>';
-        }).join('');
-      }
-      const cuotaRow='<div class="cuota">'+
-        '<div class="cnum '+cls+'">'+c.num+'</div>'+
-        '<div class="cinf">'+
-          '<div class="cfecha">'+fd(c.fecha)+' '+(c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳')+'</div>'+
-          '<div class="csub">'+(c.estado==='pagada'?'Pagada · <b>'+(c.pagadoPor||'Sistema')+'</b>'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'En mora':'Pendiente')+'</div>'+
-          (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(\"'+c.comprobante+'\")"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
-          (c.estado==='pagada'?'<div class="cact">'+
-            '<button class="btn btn-sky btn-sm" style="font-size:11px" onclick="verReciboCuota('+l.id+','+c.num+')">🧾 Ver recibo</button>'+
-            '<button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--fire)" onclick="deshacerPago('+l.id+','+c.num+')">⟳ Deshacer</button>'+
-          '</div>':'')+
-          (c.estado!=='pagada'?'<div class="cact">'+
-            '<button class="btn btn-lime btn-sm" onclick="openPay('+l.id+','+c.num+')">💰 Pagar cuota</button>'+
-            '<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Mora/Multa</button>'+
-            '<button class="btn btn-sky btn-sm" onclick="sendWA('+l.id+')">📲 WA</button>'+
-          '</div>':'')+
-        '</div>'+
-        '<div class="cval" style="color:'+(c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)')+'">'+fmt(c.valor)+'</div>'+
-      '</div>';
-      return multaRows+cuotaRow;
-    }).join('');
+  const multasMap={};
+  (l.histMultas||[]).forEach(function(m){if(!multasMap[m.cuota])multasMap[m.cuota]=[];multasMap[m.cuota].push(m);});
+
+  // Siguiente cuota a pagar (primera no pagada)
+  const proxCuota=l.cuotas.find(c=>c.estado!=='pagada');
+
+  // Build cuota row HTML
+  function buildCuotaRow(c){
+    const cls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
+    let multaRows='';
+    if(multasMap[c.num]){
+      multaRows=multasMap[c.num].map(function(m){
+        return '<div class="cuota" style="background:rgba(255,152,0,.07);border-left:3px solid var(--amber);margin-bottom:2px">'+
+          '<div class="cnum" style="background:var(--amber);color:#000;font-size:9px;line-height:1.2">M<br>'+c.num+'</div>'+
+          '<div class="cinf">'+
+            '<div class="cfecha">⚠️ Multa cuota #'+c.num+' · '+new Date(m.fecha).toLocaleDateString('es-CO')+'</div>'+
+            '<div class="csub">Cobrada · cuota reprogramada al siguiente día</div>'+
+          '</div>'+
+          '<div class="cval" style="color:var(--amber)">+'+fmt(m.monto)+'</div>'+
+        '</div>';
+      }).join('');
+    }
+    const cuotaRow='<div class="cuota">'+
+      '<div class="cnum '+cls+'">'+c.num+'</div>'+
+      '<div class="cinf">'+
+        '<div class="cfecha">'+fd(c.fecha)+' '+(c.estado==='pagada'?'✅':c.estado==='mora'?'🔴':'⏳')+'</div>'+
+        '<div class="csub">'+(c.estado==='pagada'?'Pagada · <b>'+(c.pagadoPor||'Sistema')+'</b>'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'En mora':'Pendiente')+'</div>'+
+        (c.comprobante?'<div style="margin-top:4px"><img src="'+c.comprobante+'" class="comp-thumb" onclick="viewImg(\"'+c.comprobante+'\")"><span style="font-size:10px;color:var(--jade)">📸 Ver comprobante</span></div>':'')+
+        (c.estado==='pagada'?'<div class="cact">'+
+          '<button class="btn btn-sky btn-sm" style="font-size:11px" onclick="verReciboCuota('+l.id+','+c.num+')">🧾 Ver recibo</button>'+
+          '<button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--fire)" onclick="deshacerPago('+l.id+','+c.num+')">⟳ Deshacer</button>'+
+        '</div>':'')+
+        (c.estado!=='pagada'?'<div class="cact">'+
+          '<button class="btn btn-lime btn-sm" onclick="openPay('+l.id+','+c.num+')">💰 Pagar cuota</button>'+
+          '<button class="btn btn-amber btn-sm" onclick="openMora('+l.id+','+c.num+')">⚠️ Mora/Multa</button>'+
+          '<button class="btn btn-sky btn-sm" onclick="sendWA('+l.id+')">📲 WA</button>'+
+        '</div>':'')+
+      '</div>'+
+      '<div class="cval" style="color:'+(c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)')+'">'+fmt(c.valor)+'</div>'+
+    '</div>';
+    return multaRows+cuotaRow;
+  }
+
+  const cuotasPagadas=l.cuotas.filter(c=>c.estado==='pagada');
+  const cuotasPendientes=l.cuotas.filter(c=>c.estado!=='pagada');
+
+  // Collapsible cards
+  const idPag='coll-pag-'+l.id;
+  const idPen='coll-pen-'+l.id;
+
+  const cardPagadas=pag===0?'':`
+    <div style="background:var(--ink2);border:1.5px solid rgba(57,216,112,.3);border-radius:var(--r);margin-bottom:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none"
+           onclick="toggleCollapsible('${idPag}',this)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">✅</span>
+          <div>
+            <div style="font-weight:800;font-size:14px;color:var(--lime)">Cuotas pagadas</div>
+            <div style="font-size:11px;color:var(--smoke)">${pag} de ${l.ncu} · ${fmt(pag*l.cuo)} cobrado</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="background:var(--lime);color:#000;font-weight:900;font-size:13px;padding:3px 10px;border-radius:20px">${pag}</div>
+          <span class="coll-arrow" style="font-size:18px;color:var(--smoke);transition:transform .2s">▼</span>
+        </div>
+      </div>
+      <div id="${idPag}" style="display:none;padding:0 8px 8px">
+        ${cuotasPagadas.map(c=>buildCuotaRow(c)).join('')}
+      </div>
+    </div>`;
+
+  const cardPendientes=pen===0?'':`
+    <div style="background:var(--ink2);border:1.5px solid ${moraN>0?'rgba(255,61,90,.4)':'rgba(0,153,255,.3)'};border-radius:var(--r);margin-bottom:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none"
+           onclick="toggleCollapsible('${idPen}',this)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${moraN>0?'🔴':'⏳'}</span>
+          <div>
+            <div style="font-weight:800;font-size:14px;color:${moraN>0?'var(--fire)':'var(--sky)'}">Cuotas pendientes${moraN>0?' · '+moraN+' en mora':''}</div>
+            <div style="font-size:11px;color:var(--smoke)">${proxCuota?'Próxima: '+fd(proxCuota.fecha)+' · '+fmt(proxCuota.valor):''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="background:${moraN>0?'var(--fire)':'var(--sky)'};color:#fff;font-weight:900;font-size:13px;padding:3px 10px;border-radius:20px">${pen}</div>
+          <span class="coll-arrow" style="font-size:18px;color:var(--smoke);transition:transform .2s">▼</span>
+        </div>
+      </div>
+      <div id="${idPen}" style="display:block;padding:0 8px 8px">
+        ${cuotasPendientes.map(c=>buildCuotaRow(c)).join('')}
+      </div>
+    </div>`;
+
   return`<div class="dhero">
     <div class="dav">${ini.toUpperCase()}</div>
     <div class="dname">${l.nom} ${l.ape}</div>
@@ -1795,9 +1857,12 @@ function rDetail(l){
     <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
     ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
   </div>
-  <div class="sh"><div class="st">📋 Plan de cuotas (${l.ncu})</div></div>${cuotasH}
-  ${l.historico.length?`<div class="hr"></div><div class="st" style="margin-bottom:6px">📜 Historial completo (${l.historico.length})</div>${l.historico.map(h=>`<div class="hitem">${h}</div>`).join('')}`:''}`;
+  <div class="sh" style="margin-bottom:8px"><div class="st">📋 Plan de cuotas (${l.ncu})</div></div>
+  ${cardPendientes}
+  ${cardPagadas}
+  ${l.historico.length?`<div class="hr"></div><div class="st" style="margin-bottom:6px">📜 Historial (${l.historico.length})</div>${l.historico.slice().reverse().slice(0,10).map(h=>`<div class="hitem">${h}</div>`).join('')}`:''}`;
 }
+
 
 /* ─── CLIENTES ─── */
 function rHistorial(){
@@ -2399,6 +2464,8 @@ function saveLoan(){
   loan.creadoPorEmail=S.user?.email||'';
   loan.fechaCreacion=new Date().toISOString();
   S.cartera.loans.unshift(loan);
+  // Guardar/actualizar cliente en DB.clientes
+  guardarClienteDB({nom,ape,ced,tel,cel2:cel2||'',email:email||'',cta:cta||''});
   closeM('m-loan');toast('✅ Préstamo guardado');fsSave();
   setTimeout(()=>sendWACreacion(loan),400);
   if(S.cartera.cfg?.grupoWA)setTimeout(()=>notifGrupo('nuevo',loan),900);
@@ -2409,6 +2476,9 @@ function saveLoan(){
   const lbl=document.getElementById('f-ini-label');if(lbl){lbl.textContent='Seleccionar fecha...';lbl.style.color='var(--smoke)';};
   ['not-wa','not-sms','not-email','not-call'].forEach(i=>{const e=document.getElementById(i);if(e)e.checked=(i==='not-wa');});;
   $('cprev').style.display='none';$('sched-prev').style.display='none';$('ced-dup-warn').style.display='none';
+  const bcr=document.getElementById('buscar-cli-results');if(bcr)bcr.innerHTML='';
+  const bci=document.getElementById('cli-cargado-info');if(bci)bci.style.display='none';
+  const bfc=document.getElementById('f-buscar-cli');if(bfc)bfc.value='';
   resetComp('loan-comp-wrap','loan-comp-data');
 }
 
@@ -2946,9 +3016,10 @@ function openM_capital(){
 
 function renderCapitalModal(){
   const c=S.cartera;const cap=getCap(c);
+  const capB=cap.base;
   const disp=capDisponible(c);
   const pendiente=capEnCalle(c);
-  const recibParcial=Math.max(0,capB-pendiente); // Capital base ya recuperado = base - lo aún en calle
+  const recibParcial=capRecuperadoActivos(c); // Capital base ya recuperado = base - lo aún en calle
   const tieneInv=cap.histInv&&cap.histInv.length>0;
   const tieneActivos=(c?.loans||[]).filter(l=>l.activo).length>0;
 
@@ -3687,6 +3758,98 @@ function mostrarReciboSilencioso(opts){
   window._silentMode=true;
   try{mostrarRecibo(opts);}catch(e){}
   window._silentMode=false;
+}
+
+
+function toggleCollapsible(id, header){
+  const el=document.getElementById(id);if(!el)return;
+  const arrow=header?.querySelector('.coll-arrow');
+  const open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  if(arrow)arrow.style.transform=open?'':'rotate(180deg)';
+}
+
+
+// ─── CLIENTES DB ───
+function guardarClienteDB(data){
+  if(!data.ced||!S.cartera)return;
+  if(!S.cartera.clientes)S.cartera.clientes=[];
+  const idx=S.cartera.clientes.findIndex(c=>c.ced===data.ced);
+  const entry={nom:data.nom,ape:data.ape,ced:data.ced,tel:data.tel,cel2:data.cel2||'',email:data.email||'',cta:data.cta||'',updated:new Date().toISOString()};
+  if(idx>=0)S.cartera.clientes[idx]=entry;
+  else S.cartera.clientes.push(entry);
+  // fsSave is called after loan save
+}
+
+function buscarClienteForm(){
+  const q=(document.getElementById('f-buscar-cli')?.value||'').trim().toLowerCase();
+  const resultDiv=document.getElementById('buscar-cli-results');
+  if(!resultDiv)return;
+  if(q.length<2){resultDiv.innerHTML='';return;}
+  // Buscar en DB.clientes y también en todos los préstamos de la cartera
+  const fuente=[...(S.cartera?.clientes||[])];
+  // Agregar clientes de préstamos que no estén en DB.clientes
+  allLoans().forEach(function(l){
+    if(!fuente.find(c=>c.ced===l.ced)){
+      fuente.push({nom:l.nom,ape:l.ape,ced:l.ced,tel:l.tel,cel2:l.cel2||'',email:l.email||'',cta:l.cta||''});
+    }
+  });
+  const res=fuente.filter(c=>(c.nom+' '+c.ape+' '+c.ced).toLowerCase().includes(q)).slice(0,5);
+  if(!res.length){resultDiv.innerHTML='<div style="font-size:12px;color:var(--fog);padding:8px">Sin resultados</div>';return;}
+  resultDiv.innerHTML=res.map(c=>`
+    <div onclick="cargarClienteForm(${JSON.stringify(c).replace(/"/g,'&quot;')})"
+         style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px"
+         onmouseover="this.style.background='rgba(0,229,176,.08)'" onmouseout="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;flex-shrink:0">
+        ${(c.nom[0]||'')+(c.ape[0]||'')}
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:13px">${c.nom} ${c.ape}</div>
+        <div style="font-size:11px;color:var(--smoke)">CC ${c.ced} · ${c.tel}</div>
+      </div>
+    </div>`).join('');
+}
+
+function cargarClienteForm(cli){
+  if(document.getElementById('f-nom'))document.getElementById('f-nom').value=cli.nom||'';
+  if(document.getElementById('f-ape'))document.getElementById('f-ape').value=cli.ape||'';
+  if(document.getElementById('f-ced'))document.getElementById('f-ced').value=cli.ced||'';
+  if(document.getElementById('f-tel'))document.getElementById('f-tel').value=cli.tel||'';
+  if(document.getElementById('f-cel2'))document.getElementById('f-cel2').value=cli.cel2||'';
+  if(document.getElementById('f-email'))document.getElementById('f-email').value=cli.email||'';
+  const resultDiv=document.getElementById('buscar-cli-results');
+  if(resultDiv)resultDiv.innerHTML='';
+  const buscadorDiv=document.getElementById('buscar-cli-wrap');
+  if(buscadorDiv){buscadorDiv.style.background='rgba(0,229,176,.08)';buscadorDiv.style.borderColor='var(--jade)';}
+  const cargado=document.getElementById('cli-cargado-info');
+  if(cargado){
+    cargado.style.display='block';
+    cargado.innerHTML='✅ Cliente: <b>'+cli.nom+' '+cli.ape+'</b> · CC '+cli.ced+
+      ' <button onclick="limpiarClienteForm()" style="background:none;border:none;color:var(--fire);cursor:pointer;font-size:11px;margin-left:6px">✕ Limpiar</button>'+
+      ' <button onclick="editarClienteDB()" style="background:none;border:none;color:var(--sky);cursor:pointer;font-size:11px;margin-left:4px">✏️ Editar</button>';
+  }
+  // Store current cli for editing
+  window._cliActual=cli;
+  toast('✅ Datos de '+cli.nom+' cargados');
+}
+
+function limpiarClienteForm(){
+  ['f-nom','f-ape','f-ced','f-tel','f-cel2','f-email'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const cargado=document.getElementById('cli-cargado-info');
+  if(cargado)cargado.style.display='none';
+  const buscadorDiv=document.getElementById('buscar-cli-wrap');
+  if(buscadorDiv){buscadorDiv.style.background='';buscadorDiv.style.borderColor='';}
+  if(document.getElementById('f-buscar-cli'))document.getElementById('f-buscar-cli').value='';
+  document.getElementById('buscar-cli-results').innerHTML='';
+}
+
+
+function editarClienteDB(){
+  const cli=window._cliActual;if(!cli)return;
+  const cargado=document.getElementById('cli-cargado-info');
+  if(cargado)cargado.innerHTML='✏️ <b>Editando: '+cli.nom+' '+cli.ape+'</b> — Modifica campos y guarda para actualizar.'+
+    ' <button onclick="limpiarClienteForm()" style="background:none;border:none;color:var(--fire);cursor:pointer;font-size:11px">✕</button>';
+  toast('✏️ Modifica los datos en el formulario');
 }
 
 seed();
