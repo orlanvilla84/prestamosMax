@@ -59,48 +59,96 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 
 /* ─── TABLET / DESKTOP RESPONSIVE ─── */
 @media(min-width:600px){
-  #app{max-width:600px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
-  .sheet{max-width:600px}
-  .toast{max-width:600px}
+  #app{max-width:680px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .sheet{max-width:680px}
+  .toast{max-width:680px}
   .dp-day.past-sel{opacity:.6;font-style:italic;}
-#date-picker-box{max-width:600px}
+  #date-picker-box{max-width:680px}
   .r2{grid-template-columns:1fr 1fr}
-  .fi,.fsel{font-size:14px;padding:11px 13px}
-  .btn{font-size:14px;padding:11px 16px}
-  .lc{padding:14px}
-  .bar{padding:10px 20px}
+  .fi,.fsel{font-size:16px;padding:13px 15px}
+  .btn{font-size:15px;padding:12px 18px}
+  .btn-sm{font-size:13px;padding:9px 14px}
+  .lc{padding:16px}
+  .bar{padding:12px 22px}
+  .bar-title{font-size:18px}
+  .bar-back,.bar-ico{width:42px;height:42px;font-size:20px}
   .nv{font-size:12px}
-  .nvi{font-size:22px}
-  .hero{padding:20px}
-  .chart-card{padding:16px}
+  .nvi{font-size:24px}
+  .nav{padding-bottom:4px}
+  .hero{padding:22px}
+  .chart-card{padding:18px}
   .inicio-hero{padding:52px 32px 28px}
   .inicio-brand{font-size:46px}
   .inicio-body{padding:0 32px 40px}
   .inicio-card{padding:24px}
-  #s-admin .admin-card{max-width:420px}
+  #s-admin .admin-card{max-width:480px}
+  .lname{font-size:16px}
+  .lsub{font-size:13px}
+  .hstat-v{font-size:17px}
+  .stv{font-size:24px}
+  .dname{font-size:22px}
+  .dinfo{font-size:13px}
+  .cfecha{font-size:14px}
+  .csub{font-size:12px}
+  .cval{font-size:14px}
+  .fl{font-size:12px}
+  .shtitle{font-size:20px}
+  .cartera-name{font-size:20px}
+  .cartera-desc{font-size:14px}
 }
 
 @media(min-width:768px){
-  #app{max-width:720px}
-  .sheet{max-width:720px}
-  .toast{max-width:720px}
-  #date-picker-box{max-width:720px}
-  body{font-size:15px}
+  #app{max-width:800px}
+  .sheet{max-width:800px}
+  .toast{max-width:800px}
+  #date-picker-box{max-width:800px}
+  body{font-size:17px}
   .shandle{display:none}
-  .sheet{border-radius:16px;margin:auto;max-height:88dvh}
-  .overlay{align-items:center;padding:20px}
-  .dp-day{height:46px;font-size:14px}
-  .dp-dow{font-size:11px}
-  .sched-row{font-size:13px;padding:7px 0}
-  .cartera-card{padding:22px}
-  .inicio-brand{font-size:52px}
+  .sheet{border-radius:20px;margin:auto;max-height:88dvh}
+  .overlay{align-items:center;padding:24px}
+  .dp-day{height:52px;font-size:16px}
+  .dp-dow{font-size:13px}
+  .sched-row{font-size:14px;padding:9px 0}
+  .cartera-card{padding:24px}
+  .inicio-brand{font-size:54px}
+  .fi,.fsel{font-size:17px;padding:14px 16px}
+  .btn{font-size:16px;padding:13px 20px}
+  .btn-sm{font-size:14px;padding:10px 16px}
+  .lname{font-size:18px}
+  .lsub{font-size:14px}
+  .hstat-v{font-size:20px}
+  .stv{font-size:28px}
+  .nvi{font-size:26px}
+  .nv{font-size:13px}
+  .bar{padding:14px 28px}
+  .bar-title{font-size:20px}
+  .bar-back,.bar-ico{width:46px;height:46px;font-size:22px}
+  .dname{font-size:24px}
+  .cfecha{font-size:15px}
+  .csub{font-size:13px}
+  .cval{font-size:15px}
+  .cap-hero{padding:20px}
+  .scroll{padding:16px 20px 0}
+  .carteras-scroll{padding:20px}
 }
 
 @media(min-width:1024px){
   body{background:#030a10}
-  #app{max-width:480px;box-shadow:0 0 60px rgba(0,0,0,.6)}
-  .sheet{max-width:480px}
-  .toast{max-width:480px}
+  #app{max-width:860px;box-shadow:0 0 60px rgba(0,0,0,.6);margin:0 auto}
+  .sheet{max-width:680px}
+  .toast{max-width:860px}
+  .scroll{padding:18px 24px 0}
+}
+
+@media(min-width:1200px){
+  #app{max-width:960px}
+}
+
+
+@media(min-width:1280px){
+  #app{max-width:960px}
+  .sheet{max-width:720px}
+  .toast{max-width:720px}
 }
 .screen{display:none;flex-direction:column;position:absolute;inset:0;overflow:hidden;z-index:1;background:var(--ink)}
 .screen.on{display:flex;z-index:10}
@@ -1496,12 +1544,9 @@ function rInicio(){
         <span style="font-size:14px;font-weight:900;color:var(--lime)">🏆 Total ganancias</span>
         <span class="mono" style="font-weight:900;font-size:16px;color:var(--lime)">${fmt(gan)}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0">
-        <button class="btn btn-jade btn-sm" onclick="openGananciaAccion('capital')" ${gan<=0?'disabled style="opacity:.45"':''}>➕ Al capital</button>
-        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''}>💸 Retirar</button>
-      </div>
-      <div style="padding:6px 0 10px">
-        <button class="btn btn-ghost btn-sm" style="width:100%;font-size:11px" onclick="openM_capital()">✏️ Modificar capital base</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 12px">
+        <button class="btn btn-jade btn-sm" onclick="openM_capital()" style="font-size:12px">📥 Agregar/bajar inversión</button>
+        <button class="btn btn-amber btn-sm" onclick="openGananciaAccion('retirar')" ${gan<=0?'disabled style="opacity:.45"':''} style="font-size:12px">💸 Retirar ganancias</button>
       </div>
     </div>
   </div>
@@ -1826,7 +1871,7 @@ function rDetail(l){
           <span class="coll-arrow" style="font-size:18px;color:var(--smoke);transition:transform .2s">▼</span>
         </div>
       </div>
-      <div id="${idPen}" style="display:block;padding:0 8px 8px">
+      <div id="${idPen}" style="display:none;padding:0 8px 8px">
         ${cuotasPendientes.map(c=>buildCuotaRow(c)).join('')}
       </div>
     </div>`;
