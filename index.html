@@ -54,47 +54,50 @@ body.light-mode .inicio-brand{background:linear-gradient(110deg,var(--jade),var(
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:17px;line-height:1.58;-webkit-font-smoothing:antialiased}
+body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
 #app{height:100dvh;position:relative;overflow:hidden;max-width:480px;margin:0 auto}
 
 /* ─── TABLET / DESKTOP RESPONSIVE ─── */
 @media(min-width:600px){
-  #app{max-width:680px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
-  .sheet{max-width:680px}
-  .toast{max-width:680px}
-  .dp-day.past-sel{opacity:.6;font-style:italic;}
-  #date-picker-box{max-width:680px}
+  #app{max-width:760px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .sheet{max-width:760px}
+  .toast{max-width:760px}
+  #date-picker-box{max-width:760px}
+  body{font-size:19px}
   .r2{grid-template-columns:1fr 1fr}
-  .fi,.fsel{font-size:16px;padding:13px 15px}
-  .btn{font-size:15px;padding:12px 18px}
-  .btn-sm{font-size:13px;padding:9px 14px}
-  .lc{padding:16px}
-  .bar{padding:12px 22px}
-  .bar-title{font-size:18px}
-  .bar-back,.bar-ico{width:42px;height:42px;font-size:20px}
-  .nv{font-size:12px}
-  .nvi{font-size:24px}
-  .nav{padding-bottom:4px}
-  .hero{padding:22px}
-  .chart-card{padding:18px}
+  .fi,.fsel{font-size:18px;padding:14px 16px}
+  .btn{font-size:17px;padding:13px 20px}
+  .btn-sm{font-size:15px;padding:10px 16px}
+  .lc{padding:18px}
+  .bar{padding:14px 24px}
+  .bar-title{font-size:20px}
+  .bar-back,.bar-ico{width:46px;height:46px;font-size:22px}
+  .nv{font-size:13px}
+  .nvi{font-size:26px}
+  .nav{padding-bottom:6px}
+  .hero{padding:24px}
+  .chart-card{padding:20px}
   .inicio-hero{padding:52px 32px 28px}
-  .inicio-brand{font-size:46px}
+  .inicio-brand{font-size:48px}
   .inicio-body{padding:0 32px 40px}
-  .inicio-card{padding:24px}
+  .inicio-card{padding:26px}
   #s-admin .admin-card{max-width:480px}
-  .lname{font-size:16px}
-  .lsub{font-size:13px}
-  .hstat-v{font-size:17px}
-  .stv{font-size:24px}
-  .dname{font-size:22px}
-  .dinfo{font-size:13px}
-  .cfecha{font-size:14px}
-  .csub{font-size:12px}
-  .cval{font-size:14px}
-  .fl{font-size:12px}
-  .shtitle{font-size:20px}
-  .cartera-name{font-size:20px}
-  .cartera-desc{font-size:14px}
+  .lname{font-size:18px}
+  .lsub{font-size:15px}
+  .hstat-v{font-size:20px}
+  .stv{font-size:26px}
+  .dname{font-size:24px}
+  .dinfo{font-size:15px}
+  .cfecha{font-size:16px}
+  .csub{font-size:14px}
+  .cval{font-size:16px}
+  .fl{font-size:13px}
+  .shtitle{font-size:22px}
+  .cartera-name{font-size:22px}
+  .cartera-desc{font-size:15px}
+  .crow2{font-size:15px}
+  .cfg-lbl{font-size:16px}
+  .cfg-sub{font-size:13px}
 }
 
 @media(min-width:768px){
@@ -102,34 +105,44 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
   .sheet{max-width:800px}
   .toast{max-width:800px}
   #date-picker-box{max-width:800px}
-  body{font-size:17px}
+  body{font-size:20px}
   .shandle{display:none}
   .sheet{border-radius:20px;margin:auto;max-height:88dvh}
   .overlay{align-items:center;padding:24px}
-  .dp-day{height:52px;font-size:16px}
-  .dp-dow{font-size:13px}
-  .sched-row{font-size:14px;padding:9px 0}
-  .cartera-card{padding:24px}
-  .inicio-brand{font-size:54px}
-  .fi,.fsel{font-size:17px;padding:14px 16px}
-  .btn{font-size:16px;padding:13px 20px}
-  .btn-sm{font-size:14px;padding:10px 16px}
-  .lname{font-size:18px}
-  .lsub{font-size:14px}
-  .hstat-v{font-size:20px}
-  .stv{font-size:28px}
-  .nvi{font-size:26px}
-  .nv{font-size:13px}
-  .bar{padding:14px 28px}
-  .bar-title{font-size:20px}
-  .bar-back,.bar-ico{width:46px;height:46px;font-size:22px}
-  .dname{font-size:24px}
-  .cfecha{font-size:15px}
-  .csub{font-size:13px}
-  .cval{font-size:15px}
-  .cap-hero{padding:20px}
-  .scroll{padding:16px 20px 0}
-  .carteras-scroll{padding:20px}
+  .dp-day{height:56px;font-size:17px}
+  .dp-dow{font-size:14px}
+  .sched-row{font-size:16px;padding:10px 0}
+  .cartera-card{padding:26px}
+  .inicio-brand{font-size:58px}
+  .fi,.fsel{font-size:19px;padding:15px 18px}
+  .btn{font-size:18px;padding:15px 22px}
+  .btn-sm{font-size:16px;padding:12px 18px}
+  .lname{font-size:20px}
+  .lsub{font-size:16px}
+  .hstat-v{font-size:22px}
+  .stv{font-size:30px}
+  .nvi{font-size:28px}
+  .nv{font-size:14px}
+  .nav{height:72px}
+  .bar{padding:16px 32px}
+  .bar-title{font-size:22px}
+  .bar-back,.bar-ico{width:50px;height:50px;font-size:24px}
+  .dname{font-size:26px}
+  .cfecha{font-size:17px}
+  .csub{font-size:15px}
+  .cval{font-size:17px}
+  .cap-hero{padding:22px}
+  .scroll{padding:18px 22px 0}
+  .carteras-scroll{padding:22px}
+  .crow2{font-size:17px}
+  .dinfo{font-size:16px}
+  .cfg-lbl{font-size:18px}
+  .cfg-sub{font-size:15px}
+  .shtitle{font-size:24px}
+  .toast{font-size:16px;padding:13px 16px}
+  .lc{padding:20px}
+  .cuota{padding:14px 16px}
+  .cnum{width:32px;height:32px;font-size:14px}
 }
 
 @media(min-width:1024px){
@@ -2220,110 +2233,111 @@ function removeCollab(email){
 
 function rConfig(){
   const c=S.cartera;
-  const fin=c?.fin||{pctGanancia:20,liberaCapital:true};
-  // Cuotas cobradas hoy
   const hoy=new Date().toDateString();
   const cuotasHoy=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy));
   const totalHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
-  // Cuotas próximos 7 días
   const en7=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>{
     if(q.estado!=='pendiente')return false;
     const d=new Date(q.fecha);const hoy2=new Date();
     return d>=hoy2&&d<=new Date(hoy2.getTime()+7*86400000);
   }));
   const total7=en7.reduce((s,q)=>s+q.valor,0);
-  return`
-  <div class="cfg-grp">
-    <div class="cfg-title">💹 Configuración Financiera</div>
-    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--jade);font-weight:800;margin-bottom:10px">¿Cómo se distribuye cada cuota?</div>
-      <div style="font-size:12px;color:var(--ash);margin-bottom:12px;line-height:1.6">
-        Cada cuota cobrada se divide en <b>capital</b> (recuperación del préstamo) y <b>ganancia</b>.
-        El capital liberado vuelve al disponible para prestar a nuevos clientes.
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;color:var(--smoke);font-weight:700;display:block;margin-bottom:6px">% Ganancia por préstamo (sobre el total)</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="cfg-pct" min="1" max="100" value="${fin.pctGanancia||20}"
-            oninput="this.nextElementSibling.textContent=this.value+'%';updateFinPreview(this.value)"
-            style="flex:1;accent-color:var(--jade)">
-          <span style="font-weight:900;font-size:18px;color:var(--jade);min-width:42px;text-align:right">${fin.pctGanancia||20}%</span>
-        </div>
-        <div id="fin-preview" style="font-size:11px;color:var(--smoke);margin-top:6px"></div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)">
-        <div>
-          <div style="font-size:13px;font-weight:700">Liberar capital al cobrar</div>
-          <div style="font-size:11px;color:var(--smoke)">El capital recuperado vuelve al disponible</div>
-        </div>
-        <div class="toggle ${fin.liberaCapital!==false?'on':''}" onclick="togFinCfg('liberaCapital',this)"></div>
-      </div>
-      <button class="btn btn-jade btn-w" style="margin-top:10px" onclick="saveFinCfg()">💾 Guardar configuración</button>
-    </div>
-    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px">
-      <div style="font-size:11px;color:var(--amber);font-weight:800;margin-bottom:8px">📋 Ejemplo con configuración actual</div>
-      <div id="fin-ejemplo"></div>
-    </div>
-  </div>
 
+  return`
+  <!-- ── COBROS PROGRAMADOS ── -->
   <div class="cfg-grp">
     <div class="cfg-title">📅 Cobros programados</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div style="background:var(--ink3);border:1px solid var(--jade);border-radius:var(--r-sm);padding:12px;text-align:center">
-        <div style="font-weight:900;font-size:22px;color:var(--jade)">${fmt(totalHoy)}</div>
-        <div style="font-size:10px;color:var(--smoke);margin-top:2px">💰 Cobros hoy (${cuotasHoy.length})</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:var(--ink3);border:1.5px solid var(--jade);border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-weight:900;font-size:26px;color:var(--jade)">${fmt(totalHoy)}</div>
+        <div style="font-size:12px;color:var(--smoke);margin-top:3px">💰 Hoy (${cuotasHoy.length} cuotas)</div>
       </div>
-      <div style="background:var(--ink3);border:1px solid var(--sky);border-radius:var(--r-sm);padding:12px;text-align:center">
-        <div style="font-weight:900;font-size:22px;color:var(--sky)">${fmt(total7)}</div>
-        <div style="font-size:10px;color:var(--smoke);margin-top:2px">📆 Próximos 7 días (${en7.length})</div>
+      <div style="background:var(--ink3);border:1.5px solid var(--sky);border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-weight:900;font-size:26px;color:var(--sky)">${fmt(total7)}</div>
+        <div style="font-size:12px;color:var(--smoke);margin-top:3px">📆 Próx. 7 días (${en7.length})</div>
       </div>
     </div>
-    ${cuotasHoy.length?`<div style="font-size:11px;color:var(--smoke);margin-bottom:6px;font-weight:700">Detalle de hoy:</div>
-    ${loans().filter(l=>l.activo).map(l=>{
-      const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy);
-      if(!qh.length)return'';
-      return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px">
-        <span>${l.nom} ${l.ape}</span>
-        <span style="color:var(--jade);font-weight:700">${fmt(qh.reduce((s,q)=>s+q.valor,0))}</span>
-      </div>`;
-    }).join('')}`:'<div style="font-size:12px;color:var(--fog);text-align:center;padding:8px 0">Sin cobros programados para hoy</div>'}
+    ${cuotasHoy.length?`
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
+      <div style="padding:8px 12px;font-size:12px;font-weight:800;color:var(--jade);background:rgba(0,229,176,.07)">Detalle de hoy</div>
+      ${loans().filter(l=>l.activo).map(l=>{
+        const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy);
+        if(!qh.length)return'';
+        return`<div style="display:flex;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--line);font-size:14px">
+          <span>${l.nom} ${l.ape}</span>
+          <span style="color:var(--jade);font-weight:700">${fmt(qh.reduce((s,q)=>s+q.valor,0))}</span>
+        </div>`;
+      }).join('')}
+    </div>`:'<div style="font-size:13px;color:var(--fog);text-align:center;padding:10px 0">Sin cobros programados hoy</div>'}
   </div>
 
-  <div class="cfg-grp"><div class="cfg-title">Cartera: ${c?.name}</div>
-    <div class="cfg-row"><div class="cfg-ico">📲</div><div style="flex:1"><div class="cfg-lbl">WA automático</div><div class="cfg-sub">Al crear/renovar y recordatorios</div></div><div class="toggle ${c?.cfg?.autoWA?'on':''}" onclick="togCfg('autoWA',this)"></div></div>
-  </div>
-  <div class="cfg-grp"><div class="cfg-title">📢 Grupo WA Empresa</div>
-    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.2);border-radius:var(--r-sm);padding:11px;margin-bottom:5px">
-      <div style="font-size:10px;font-weight:800;color:var(--jade);margin-bottom:6px">Link del grupo o número cobrador</div>
-      <input type="text" class="fi" id="cfg-grupo" placeholder="https://chat.whatsapp.com/..." value="${c?.cfg?.grupoWA||''}" oninput="S.cartera.cfg.grupoWA=this.value" style="font-size:12px">
+  <!-- ── NOTIFICACIONES ── -->
+  <div class="cfg-grp">
+    <div class="cfg-title">🔔 Notificaciones</div>
+    <div class="cfg-row">
+      <div class="cfg-ico">📲</div>
+      <div style="flex:1">
+        <div class="cfg-lbl">WhatsApp automático</div>
+        <div class="cfg-sub">Aviso al crear préstamo y renovar</div>
+      </div>
+      <div class="toggle ${c?.cfg?.autoWA?'on':''}" onclick="togCfg('autoWA',this)"></div>
     </div>
   </div>
+
+  <!-- ── GRUPO WA ── -->
   <div class="cfg-grp">
-    <div class="cfg-title">👥 Colaboradores de esta cartera</div>
-    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
-      <div style="font-size:11px;color:var(--smoke);margin-bottom:8px">Personas con acceso a esta cartera:</div>
-      <div id="collabs-list">
-        ${(c?.collabs||[]).length?
-          (c.collabs.map(email=>`
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)">
-              <span style="font-size:12px">${email}</span>
-              <button class="btn btn-ghost btn-sm" style="color:var(--fire);font-size:11px" onclick="removeCollab('${email}')">✕ Quitar</button>
-            </div>`).join(''))
-          :'<div style="font-size:12px;color:var(--fog);padding:4px 0">Solo tú tienes acceso</div>'}
+    <div class="cfg-title">📢 Grupo WhatsApp</div>
+    <div style="font-size:13px;color:var(--smoke);margin-bottom:10px">Link del grupo o número del cobrador para notificaciones internas.</div>
+    <input type="text" class="fi" id="cfg-grupo"
+      placeholder="https://chat.whatsapp.com/... o 57300..."
+      value="${c?.cfg?.grupoWA||''}"
+      oninput="S.cartera.cfg.grupoWA=this.value">
+    <button class="btn btn-jade btn-sm" style="width:100%;margin-top:8px" onclick="fsSave();toast('✅ Guardado')">💾 Guardar</button>
+  </div>
+
+  <!-- ── COLABORADORES ── -->
+  <div class="cfg-grp">
+    <div class="cfg-title">👥 Colaboradores</div>
+    <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:10px">
+      ${(c?.collabs||[]).length?
+        (c.collabs.map(email=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+            <span style="font-size:14px">${email}</span>
+            <button class="btn btn-ghost btn-sm" style="color:var(--fire)" onclick="removeCollab('${email}')">✕ Quitar</button>
+          </div>`).join(''))
+        :'<div style="font-size:13px;color:var(--fog)">Solo tú tienes acceso a esta cartera</div>'}
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="email" class="fi" id="new-collab-input" placeholder="correo@gmail.com" style="flex:1">
+      <button class="btn btn-jade" onclick="addCollab()" style="flex-shrink:0">➕</button>
+    </div>
+  </div>
+
+  <!-- ── CUENTA ── -->
+  <div class="cfg-grp">
+    <div class="cfg-title">Cuenta</div>
+    <div class="cfg-row">
+      <div class="cfg-ico">👤</div>
+      <div style="flex:1">
+        <div class="cfg-lbl">${S.user?.name}</div>
+        <div class="cfg-sub">${S.user?.email}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <input type="email" class="fi" id="new-collab-input" placeholder="nuevo@gmail.com" style="flex:1;font-size:13px">
-      <button class="btn btn-jade" onclick="addCollab()">➕ Agregar</button>
+    <div class="cfg-row" onclick="backToCarteras()" style="cursor:pointer">
+      <div class="cfg-ico">📁</div>
+      <div style="flex:1"><div class="cfg-lbl">Cambiar de cartera</div></div>
+      <span style="color:var(--smoke)">›</span>
+    </div>
+    <div class="cfg-row" onclick="logout()" style="cursor:pointer">
+      <div class="cfg-ico">🚪</div>
+      <div style="flex:1"><div class="cfg-lbl" style="color:var(--fire)">Cerrar sesión</div></div>
     </div>
   </div>
-  <div class="cfg-grp"><div class="cfg-title">Cuenta</div>
-    <div class="cfg-row"><div class="cfg-ico">👤</div><div style="flex:1"><div class="cfg-lbl">${S.user?.name}</div><div class="cfg-sub">${S.user?.email}</div></div></div>
-    <div class="cfg-row" onclick="backToCarteras()" style="cursor:pointer"><div class="cfg-ico">📁</div><div style="flex:1"><div class="cfg-lbl">Cambiar de cartera</div></div></div>
-    <div class="cfg-row" onclick="logout()" style="cursor:pointer"><div class="cfg-ico">🚪</div><div style="flex:1"><div class="cfg-lbl" style="color:var(--fire)">Cerrar sesión</div></div></div>
-  </div>
-  <div style="text-align:center;color:var(--fog);font-size:11px;padding:4px 0 20px">PrestaMax v3.0 · Carteras independientes · Google Auth · Calendario hábil CO 🇨🇴</div>`;
+
+  <div style="text-align:center;color:var(--fog);font-size:12px;padding:6px 0 24px">PrestaMax v3.0 · 🇨🇴</div>`;
 }
+
+
 
 function togFinCfg(key,el){
   if(!S.cartera.fin)S.cartera.fin={pctGanancia:20,liberaCapital:true};
@@ -3058,11 +3072,31 @@ function notifGrupo(tipo,l,extra={}){
 }
 function openRenCompInp(){const el=document.getElementById('ren-comp-inp');if(el)el.click();}
 function openWA(tel,msg){
-  // Limpiar número: quitar todo excepto dígitos, agregar 57 si no tiene código
   let num=tel.replace(/\D/g,'');
   if(num.startsWith('0'))num=num.substring(1);
   if(!num.startsWith('57')&&num.length===10)num='57'+num;
-  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+  // wa.me funciona sin tener el contacto guardado en cualquier dispositivo
+  const url='https://wa.me/'+num+'?text='+encodeURIComponent(msg);
+  const w=window.open(url,'_blank');
+  if(!w){
+    // Popup bloqueado: copiar mensaje al portapapeles y mostrar instrucciones
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(msg).then(()=>{
+        toast('📋 Mensaje copiado. Abre WhatsApp y pégalo al número: '+tel);
+      });
+    } else {
+      toast('📲 Abre WhatsApp y escribe al número: '+tel);
+    }
+  }
+}
+
+function openWADirecto(tel,msg){
+  // Intenta wa.me, si falla muestra modal con número y mensaje para copiar
+  let num=tel.replace(/\D/g,'');
+  if(num.startsWith('0'))num=num.substring(1);
+  if(!num.startsWith('57')&&num.length===10)num='57'+num;
+  const url='https://wa.me/'+num+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
 }
 
 
