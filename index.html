@@ -1978,67 +1978,107 @@ function rHistorial(){
   return html;
 }
 function rClientes(){
-  // Solo agrupar clientes con préstamos ACTIVOS
+  const todos=allLoans();
+  if(!todos.length)return'<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">Sin clientes</div><div class="empty-s">Crea un préstamo para ver clientes aquí</div></div>';
+  return`<div class="swrap" style="margin-bottom:12px">
+    <div class="sico">🔍</div>
+    <input class="sinp" id="cl-search-inp" placeholder="Nombre o cédula..." oninput="searchCl(this.value)" autocomplete="off">
+  </div>
+  <div id="cllist">${renderClList(todos)}</div>`;
+}
+
+function renderClList(loans_lista){
+  if(!loans_lista||!loans_lista.length)return'<div style="text-align:center;padding:24px;color:var(--fog);font-size:14px">Sin resultados</div>';
+  // Agrupar por cédula
   const map={};
-  allLoans().forEach(function(l){
-    if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,email:l.email||'',loans:[]};
+  loans_lista.forEach(function(l){
+    if(!map[l.ced])map[l.ced]={nom:l.nom,ape:l.ape,ced:l.ced,tel:l.tel,cel2:l.cel2||'',email:l.email||'',loans:[]};
     map[l.ced].loans.push(l);
   });
-  const cl=Object.values(map);
-  if(!cl.length)return'<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">Sin clientes</div></div>';
-  return`<div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchCl(this.value)"></div>
-  <div id="cllist">${renderClList(cl)}</div>`;
-}
-function renderClList(cl){return cl.map(function(c){
-  const sc=clientSc(c.loans);
-  const activos=c.loans.filter(function(l){return l.activo;});
-  const cerrados=c.loans.filter(function(l){return !l.activo;});
-  const totalActivo=activos.reduce(function(s,l){return s+l.val;},0);
-  const pend=activos.reduce(function(s,l){return s+l.cuotas.filter(function(x){return x.estado!=='pagada';}).length;},0);
-  const mora=activos.some(function(l){return l.cuotas.some(function(x){return x.estado==='mora';});});
-  const ini=(c.loans[0].nom[0]||'')+(c.loans[0].ape[0]||'');
-  // Si tiene múltiples activos, mostrar lista expandible
-  const multiLoans=activos.length>1;
-  const clickAction=multiLoans?'toggleClientLoans("cl-'+c.ced+'")':(activos.length?'showLoan('+activos[0].id+')':'showLoan('+c.loans[0].id+')');
-  let html='<div class="clcard" style="cursor:pointer">'+
-    '<div class="lstripe '+(mora?'s-fire':pend>0?'s-amber':'s-jade')+'"></div>'+
-    '<div style="display:flex;align-items:center;gap:10px" onclick="'+clickAction+'">'+
-      '<div class="lav">'+ini.toUpperCase()+'</div>'+
+  const clientes=Object.values(map);
+
+  return clientes.map(function(c){
+    const ini=(c.nom[0]||'')+(c.ape[0]||'');
+    const activos=c.loans.filter(function(l){return l.activo;});
+    const cerrados=c.loans.filter(function(l){return !l.activo;});
+    const mora=activos.some(function(l){return l.cuotas.some(function(q){return q.estado==='mora';});});
+    const sc=clientSc(c.loans);
+    const ultimoId=c.loans[c.loans.length-1].id;
+
+    // Encabezado del cliente
+    let html='<div style="margin-bottom:14px">';
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--ink2);border:1.5px solid '+(mora?'var(--fire)':activos.length?'rgba(0,229,176,.4)':'var(--line)')+';border-radius:var(--r) var(--r) 0 0">'+
+      '<div class="lav" style="color:'+sc.col+'">'+ini.toUpperCase()+'</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-weight:700;font-size:13px">'+c.nom+'</div>'+
-        '<div style="font-size:10px;color:var(--smoke)">CC '+c.ced+' · '+c.tel+'</div>'+
-        (c.email?'<div style="font-size:10px;color:var(--fog)">'+c.email+'</div>':'')+
+        '<div style="font-weight:800;font-size:15px">'+c.nom+' '+c.ape+'</div>'+
+        '<div style="font-size:13px;color:var(--smoke)">CC '+c.ced+'</div>'+
+        '<div style="font-size:12px;color:var(--fog)">📱 '+c.tel+(c.cel2?' · '+c.cel2:'')+'</div>'+
       '</div>'+
-      '<div style="text-align:right">'+
-        '<div class="mono" style="font-weight:700;font-size:11px">'+fmt(totalActivo)+'</div>'+
-        '<div style="font-size:10px;color:'+(pend>0?'var(--amber)':'var(--lime)')+'">'+
-          (multiLoans?activos.length+' créditos activos':pend+' cuotas pend.')+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">'+
+        '<div style="font-size:12px;font-weight:700;color:'+(mora?'var(--fire)':activos.length?'var(--lime)':'var(--fog)')+'">'+
+          (mora?'⚠️ Mora':activos.length?activos.length+' activo'+(activos.length>1?'s':''):'📜 Hist.')+
         '</div>'+
-        (cerrados.length?'<div style="font-size:9px;color:var(--fog)">'+cerrados.length+' histórico</div>':'')+
+        '<button onclick="event.stopPropagation();openNuevoPrestamoCliente('+ultimoId+')" style="background:rgba(0,229,176,.15);border:1px solid rgba(0,229,176,.4);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--jade);cursor:pointer">➕ Crédito</button>'+
       '</div>'+
     '</div>';
-  // Expandible con lista de préstamos si tiene varios
-  if(multiLoans){
-    html+='<div id="cl-'+c.ced+'" style="display:none;margin-top:8px;border-top:1px solid var(--line);padding-top:8px">'+
-      activos.map(function(l){
-        const lPag=l.cuotas.filter(function(q){return q.estado==='pagada';}).length;
-        const lMora=l.cuotas.some(function(q){return q.estado==='mora';});
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer" onclick="showLoan('+l.id+')">'+
-          '<div>'+
-            '<span class="lbadge '+(l.mod==='diario'?'bd':l.mod==='semanal'?'bs':l.mod==='quincenal'?'bq':'bm')+'">'+l.mod+'</span>'+
-            ' <span style="font-size:11px">'+fmt(l.val)+'</span>'+
+
+    // Una tarjeta por cada préstamo
+    c.loans.forEach(function(l,idx){
+      const pag=l.cuotas.filter(function(q){return q.estado==='pagada';}).length;
+      const pen=l.cuotas.filter(function(q){return q.estado!=='pagada';}).length;
+      const lMora=l.cuotas.some(function(q){return q.estado==='mora';});
+      const pct=Math.round(pag/l.cuotas.length*100);
+      const isLast=idx===c.loans.length-1;
+      const br=isLast?'0 0 var(--r) var(--r)':'0';
+      const borderCol=!l.activo?'var(--line)':lMora?'rgba(255,61,90,.5)':'rgba(0,229,176,.2)';
+      const bgCol=!l.activo?'transparent':lMora?'rgba(255,61,90,.03)':'rgba(0,229,176,.02)';
+
+      html+='<div onclick="showLoan('+l.id+')" style="background:'+bgCol+';border:1.5px solid '+borderCol+';border-top:none;border-radius:'+br+';padding:12px 14px;cursor:pointer;position:relative;overflow:hidden">'+
+        '<div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:'+(lMora?'var(--fire)':l.activo?'var(--jade)':'var(--smoke)')+'"></div>'+
+        '<div style="padding-left:10px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+            '<div style="display:flex;align-items:center;gap:8px">'+
+              '<span class="lbadge '+(l.mod==='diario'?'bd':l.mod==='semanal'?'bs':l.mod==='quincenal'?'bq':'bm')+'">'+l.mod+'</span>'+
+              '<span style="font-weight:800;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</span>'+
+            '</div>'+
+            '<span style="font-size:12px;font-weight:700;color:'+(lMora?'var(--fire)':l.activo?'var(--lime)':'var(--fog)')+'">'+
+              (lMora?'🔴 MORA':l.activo?'✅ Al día':'📜 Finalizado')+
+            '</span>'+
           '</div>'+
-          '<div style="font-size:10px;color:'+(lMora?'var(--fire)':'var(--smoke)')+'">'+lPag+'/'+l.cuotas.length+' cuotas</div>'+
-        '</div>';
-      }).join('')+
-      '<button class="btn btn-jade btn-sm" style="width:100%;margin-top:8px" onclick="openNuevoPrestamoCliente('+activos[0].id+')">➕ Nuevo crédito</button>'+
-    '</div>';
-  }
-  html+='</div>';
-  return html;
-}).join('');}
+          '<div class="pb-track" style="margin-bottom:5px"><div class="pb-fill" style="width:'+pct+'%;background:'+(lMora?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'"></div></div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--smoke)">'+
+            '<span>'+pag+'/'+l.cuotas.length+' cuotas · '+fmt(l.cuo)+'/c</span>'+
+            '<span style="color:var(--jade);font-weight:700">'+pct+'%</span>'+
+          '</div>'+
+          (lMora?'<div style="font-size:12px;color:var(--fire);margin-top:5px;font-weight:700">⚠️ '+l.cuotas.filter(function(q){return q.estado==='mora';}).length+' cuota(s) en mora</div>':'')+
+          (!l.activo&&l.fechaCierre?'<div style="font-size:11px;color:var(--fog);margin-top:4px">Cerrado: '+new Date(l.fechaCierre).toLocaleDateString('es-CO')+'</div>':'')+
+        '</div>'+
+      '</div>';
+    });
+
+    html+='</div>';
+    return html;
+  }).join('');
+}
+
 function toggleClientLoans(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
-function searchCl(q){const map={};loans().forEach(l=>{if(!map[l.ced])map[l.ced]={nom:l.nom+' '+l.ape,ced:l.ced,tel:l.tel,loans:[]};map[l.ced].loans.push(l);});$('cllist').innerHTML=renderClList(Object.values(map).filter(c=>c.nom.toLowerCase().includes(q.toLowerCase())||c.ced.includes(q)));}
+
+function searchCl(q){
+  q=(q||'').trim().toLowerCase();
+  const todos=allLoans();
+  if(!q){
+    const el=document.getElementById('cllist');
+    if(el)el.innerHTML=renderClList(todos);
+    return;
+  }
+  const filtrados=todos.filter(function(l){
+    return (l.nom+' '+l.ape).toLowerCase().includes(q)||
+           l.ced.toLowerCase().includes(q)||
+           (l.tel||'').replace(/\D/g,'').includes(q.replace(/\D/g,''));
+  });
+  const el=document.getElementById('cllist');
+  if(el)el.innerHTML=renderClList(filtrados);
+}
 
 /* ─── ALERTAS ─── */
 function getAlerts(){
