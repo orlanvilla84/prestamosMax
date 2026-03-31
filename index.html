@@ -244,15 +244,15 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .lstripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r)}
 .s-jade{background:var(--jade)}.s-amber{background:var(--amber)}.s-fire{background:var(--fire)}
 .lhead{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-left:7px}
-.lav{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--ink3),var(--ink4));border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--jade);flex-shrink:0}
-.lname{font-weight:800;font-size:13px;letter-spacing:-.2px}.lsub{font-size:10px;color:var(--smoke)}
-.lbadge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
+.lav{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--ink3),var(--ink4));border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:var(--jade);flex-shrink:0}
+.lname{font-weight:800;font-size:16px;letter-spacing:-.2px}.lsub{font-size:13px;color:var(--smoke)}
+.lbadge{font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
 .bd{background:rgba(0,229,176,.15);color:var(--jade)}.bs{background:rgba(0,153,255,.15);color:var(--sky)}
 .bq{background:rgba(255,170,0,.15);color:var(--amber)}.bm{background:rgba(255,61,90,.15);color:var(--fire)}
 .prog{padding-left:7px;margin-bottom:8px}
-.pb-track{height:4px;border-radius:3px;background:var(--line2);overflow:hidden;margin-bottom:3px}
+.pb-track{height:6px;border-radius:3px;background:var(--line2);overflow:hidden;margin-bottom:4px}
 .pb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--jade),var(--sky))}
-.pb-txt{display:flex;justify-content:space-between;font-size:10px;color:var(--smoke)}
+.pb-txt{display:flex;justify-content:space-between;font-size:13px;color:var(--smoke)}
 .lchips{display:flex;gap:4px;flex-wrap:wrap;padding-left:7px}
 .chip{background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:2px 6px;font-size:10px;color:var(--smoke)}
 .chip b{color:var(--white)}.chip-fire{border-color:var(--fire);color:var(--fire)}.chip-amber{border-color:var(--amber);color:var(--amber)}.chip-violet{border-color:var(--violet);color:var(--violet)}
@@ -1702,8 +1702,8 @@ function rLCard(l){
   const dotsPag=Math.round(pag/total*maxDots);
   const dotsLeft=maxDots-dotsPag;
   let dots='';
-  for(let i=0;i<dotsPag;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--jade);margin:1px;opacity:.9"></span>';
-  for(let i=0;i<dotsLeft;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--line);margin:1px"></span>';
+  for(let i=0;i<dotsPag;i++)dots+='<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--jade);margin:1px;opacity:.9"></span>';
+  for(let i=0;i<dotsLeft;i++)dots+='<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--line);margin:1px"></span>';
   const borderColor=mora?'rgba(255,61,90,.6)':hoy?'rgba(255,170,0,.5)':'var(--line)';
   const bgColor=mora?'rgba(255,61,90,.04)':'var(--ink2)';
   const statusHtml=mora
@@ -1718,18 +1718,18 @@ function rLCard(l){
       '<div class="lav" style="width:36px;height:36px;font-size:13px;flex-shrink:0'+avatarStyle+'">'+ini.toUpperCase()+'</div>'+
       '<div style="flex:1;min-width:0">'+
         '<div style="display:flex;align-items:center;gap:5px">'+
-          '<div class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</div>'+
+          '<div class="lname">'+l.nom+' '+l.ape+'</div>'+
           (mora?'<span style="font-size:10px">🔴</span>':hoy?'<span style="font-size:10px">🟡</span>':'')+
         '</div>'+
-        '<div class="lsub" style="font-size:10px">CC '+l.ced+' · <b style="color:var(--jade)">'+fmt(l.val)+'</b></div>'+
+        '<div class="lsub">CC '+l.ced+' · <b style="color:var(--jade)">'+fmt(l.val)+'</b></div>'+
       '</div>'+
       '<div style="text-align:right">'+
-        '<span class="lbadge '+bc+'" style="font-size:9px">'+l.mod+'</span>'+
+        '<span class="lbadge '+bc+'">'+l.mod+'</span>'+
         '<div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:2px">'+pct+'%</div>'+
       '</div>'+
     '</div>'+
     '<div style="margin-bottom:4px;line-height:1">'+dots+'</div>'+
-    '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--smoke)">'+
+    '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--smoke)">'+
       '<span>'+pag+'/'+total+' cuotas · '+fmt(l.cuo)+'/c</span>'+
       statusHtml+
     '</div>'+
@@ -2647,8 +2647,8 @@ function confirmPay(lid,cn){
   fsSave();closeM('m-pay');
   if(document.getElementById('s-detail').classList.contains('on')&&S.lid===lid)$('dcontent').innerHTML=rDetail(l);
   updDot();render();
-  // Generar y guardar recibo en la cuota (sin popup automático)
-  setTimeout(()=>mostrarReciboSilencioso({tipo:todasPagadas?'pazysalvo':'cuota',loan:l,cuota:c,quien:who,metodo:met,cartera:S.cartera}),300);
+  // Mostrar recibo con opción de enviar (también lo guarda en la cuota)
+  setTimeout(()=>mostrarRecibo({tipo:todasPagadas?'pazysalvo':'cuota',loan:l,cuota:c,quien:who,metodo:met,cartera:S.cartera}),350);
 }
 
 /* ─── MORA ─── */
@@ -2892,7 +2892,14 @@ function confirmRenew(lid,efectivoCliente,interesCiclo){
 
 function openEditCliente(lid){
   const l=getL(lid);if(!l)return;
+  // Buscar todos los préstamos con la misma cédula (activos y cerrados)
+  const todosLosSuyos=allLoans().filter(function(x){return x.ced===l.ced;});
+  const nCreditos=todosLosSuyos.length;
   document.getElementById('edit-cliente-body').innerHTML=`
+    <div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.25);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--jade)">
+      👤 <b>${l.nom} ${l.ape}</b> · CC ${l.ced}<br>
+      <span style="font-size:12px;color:var(--smoke)">Se actualizarán <b style="color:var(--jade)">${nCreditos} crédito(s)</b> con la misma cédula.</span>
+    </div>
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="ec-nom" value="${l.nom}"></div>
     <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="ec-ape" value="${l.ape}"></div>
     <div class="fg"><label class="fl">Cédula</label><input type="text" class="fi" id="ec-ced" value="${l.ced}"></div>
@@ -2900,30 +2907,48 @@ function openEditCliente(lid){
     <div class="fg"><label class="fl">Teléfono 2 (opcional)</label><input type="text" class="fi" id="ec-cel2" value="${l.cel2||''}"></div>
     <div class="fg"><label class="fl">Email (opcional)</label><input type="text" class="fi" id="ec-email" value="${l.email||''}"></div>
     <div class="fg"><label class="fl">Hora de pago</label><input type="time" class="fi" id="ec-hor" value="${l.hor||'15:00'}"></div>
-
     <div class="brow">
       <button class="btn btn-ghost btn-w" onclick="closeM('m-edit-cliente')">Cancelar</button>
       <button class="btn btn-jade btn-w" onclick="saveEditCliente(${lid})">✅ Guardar cambios</button>
     </div>`;
   closeM('m-opts');openM('m-edit-cliente');
 }
+
 function saveEditCliente(lid){
   const l=getL(lid);if(!l)return;
+  const cedAntigua=l.ced;
   const nom=document.getElementById('ec-nom')?.value.trim();
   const ape=document.getElementById('ec-ape')?.value.trim();
   const ced=document.getElementById('ec-ced')?.value.trim();
   const tel=document.getElementById('ec-tel')?.value.trim();
   if(!nom||!ape||!ced||!tel){toast('⚠️ Nombre, apellido, cédula y teléfono son obligatorios');return;}
-  l.nom=nom;l.ape=ape;l.ced=ced;l.tel=tel;
-  l.cel2=document.getElementById('ec-cel2')?.value.trim()||'';
-  l.email=document.getElementById('ec-email')?.value.trim()||'';
-  l.hor=document.getElementById('ec-hor')?.value||'15:00';
-  l.historico.push('✏️ Datos editados — '+new Date().toLocaleDateString('es-CO'));
+  const cel2=document.getElementById('ec-cel2')?.value.trim()||'';
+  const email=document.getElementById('ec-email')?.value.trim()||'';
+  const hor=document.getElementById('ec-hor')?.value||'15:00';
+
+  // Actualizar TODOS los préstamos con la cédula antigua
+  const todosLosSuyos=allLoans().filter(function(x){return x.ced===cedAntigua;});
+  todosLosSuyos.forEach(function(x){
+    x.nom=nom; x.ape=ape; x.ced=ced; x.tel=tel;
+    x.cel2=cel2; x.email=email; x.hor=hor;
+    x.historico.push('Datos actualizados (todos los creditos) — '+new Date().toLocaleDateString('es-CO'));
+  });
+
+  // Actualizar en DB.clientes si existe
+  if(S.cartera?.clientes){
+    const idxC=S.cartera.clientes.findIndex(function(c){return c.ced===cedAntigua;});
+    if(idxC>=0){
+      S.cartera.clientes[idxC]={...S.cartera.clientes[idxC],nom,ape,ced,tel,cel2,email};
+    }
+  }
+
   closeM('m-edit-cliente');
-  toast('✅ Cliente actualizado');
+  toast('✅ Cliente actualizado en '+todosLosSuyos.length+' crédito(s)');
   fsSave();
-  $('dcontent').innerHTML=rDetail(l);updDot();render();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
 }
+
 
 function openRenewReq(lid){
   const l=getL(lid);if(!l)return;
@@ -3724,63 +3749,53 @@ function actualizarMultaIndividual(lid,cn){
 
 function rPrestamosRecientes(act){
   if(!act.length)return'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos activos</div><div class="empty-s">Crea el primer préstamo con + Nuevo</div></div>';
-  // Agrupar por cedula
-  const mapaR={};
-  act.forEach(function(l){
-    if(!mapaR[l.ced])mapaR[l.ced]={nom:l.nom,ape:l.ape,ced:l.ced,loans:[]};
-    mapaR[l.ced].loans.push(l);
+  // Ordenar: mora primero, luego hoy, luego al día
+  const ordenados=[...act].sort(function(a,b){
+    const aM=a.cuotas.some(c=>c.estado==='mora');
+    const bM=b.cuotas.some(c=>c.estado==='mora');
+    if(aM&&!bM)return -1; if(!aM&&bM)return 1;
+    const aH=a.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
+    const bH=b.cuotas.some(c=>isToday(c.fecha)&&c.estado==='pendiente');
+    if(aH&&!bH)return -1; if(!aH&&bH)return 1;
+    return 0;
   });
-  const grupos=Object.values(mapaR).slice(0,6);
+  const recientes=ordenados.slice(0,6);
   return '<div style="margin-bottom:10px"><div class="sh"><span class="st">📋 Préstamos recientes</span><span class="sl" onclick="goTab(\'prestamos\')">Ver todos →</span></div>'+
-    grupos.map(function(g){
-      const l=g.loans[0];
-      const mora=g.loans.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
-      const hoy=g.loans.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
-      const ini=g.nom.charAt(0)+g.ape.charAt(0);
-      // Medidor del primer préstamo
-      const pag0=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-      const tot0=l.cuotas.length;
-      const pct0=Math.round(pag0/tot0*100);
-      const maxD=Math.min(tot0,20);
-      const dP=Math.round(pag0/tot0*maxD);
-      var dotsMed='';
-      for(var di=0;di<dP;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--jade);margin:1px"></span>';
-      for(var di=dP;di<maxD;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--line);margin:1px"></span>';
-      const borderCol=mora?'rgba(255,61,90,.5)':hoy?'rgba(255,170,0,.4)':'var(--line)';
+    recientes.map(function(l){
+      const pag=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+      const total=l.cuotas.length;
+      const pct=Math.round(pag/total*100);
+      const mora=l.cuotas.some(function(c){return c.estado==='mora';});
+      const hoy=l.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
+      const ini=(l.nom[0]||'')+(l.ape[0]||'');
+      const borderCol=mora?'rgba(255,61,90,.6)':hoy?'rgba(255,170,0,.5)':'var(--line)';
       const bgCol=mora?'rgba(255,61,90,.04)':'var(--ink2)';
-      const clickFn=g.loans.length===1?'showLoan('+l.id+')':'';
-      // Sub-préstamos si hay más de uno
-      var inner='';
-      if(g.loans.length>1){
-        inner=g.loans.map(function(x){
-          var pp=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-          var pt=Math.round(pp/x.cuotas.length*100);
-          var xm=x.cuotas.some(function(c){return c.estado==='mora';});
-          return '<div onclick="event.stopPropagation();showLoan('+x.id+')" style="background:var(--ink3);border-radius:6px;padding:6px 10px;margin-top:5px;cursor:pointer;border:1px solid var(--line)">'
-            +'<div style="display:flex;justify-content:space-between">'
-            +'<span style="font-size:11px;font-weight:700">'+fmt(x.val)+' · '+x.mod+'</span>'
-            +(xm?'<span style="font-size:10px;color:var(--fire)">⚠️ Mora</span>':'<span style="font-size:10px;color:var(--jade)">'+pt+'%</span>')
-            +'</div>'
-            +'<div class="pb-track" style="height:2px;margin-top:3px"><div class="pb-fill" style="width:'+pt+'%"></div></div>'
-            +'</div>';
-        }).join('');
-      }
-      return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+' style="padding:10px 12px;cursor:'+(g.loans.length===1?'pointer':'default')+';border-color:'+borderCol+';background:'+bgCol+'">'
-        +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'" ></div>'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-        +'<div class="lav" style="width:36px;height:36px;font-size:13px'+(mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
+      const statusHtml=mora
+        ?'<span style="color:var(--fire);font-weight:700;font-size:12px">⚠️ EN MORA</span>'
+        :hoy?'<span style="color:var(--amber);font-weight:700;font-size:12px">📅 HOY</span>'
+        :'<span style="color:var(--jade);font-size:12px">✅ Al día</span>';
+      // Próxima cuota
+      const prox=l.cuotas.find(function(c){return c.estado!=='pagada';});
+      return '<div class="lc" onclick="showLoan('+l.id+')" style="padding:12px 14px;cursor:pointer;border-color:'+borderCol+';background:'+bgCol+'">'
+        +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<div class="lav" style="'+(mora?'background:rgba(255,61,90,.2);border:2px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
         +'<div style="flex:1;min-width:0">'
-        +'<div style="display:flex;align-items:center;gap:4px"><span class="lname" style="font-size:13px">'+g.nom+' '+g.ape+'</span>'+(mora?'<span>🔴</span>':hoy?'<span>🟡</span>':'')+'</div>'
-        +'<div class="lsub" style="font-size:10px">CC '+g.ced+(g.loans.length>1?' · <b style="color:var(--jade)">'+g.loans.length+' créditos</b>':'')+'</div>'
+        +'<div class="lname">'+l.nom+' '+l.ape+'</div>'
+        +'<div class="lsub">CC '+l.ced+' · <b style="color:var(--jade)">'+fmt(l.val)+'</b> · '+l.mod+'</div>'
         +'</div>'
-        +'<div style="text-align:right"><div style="font-size:11px;color:var(--gold);font-weight:700">'+pct0+'%</div>'+(mora?'<div style="font-size:9px;color:var(--fire);font-weight:700">MORA</div>':hoy?'<div style="font-size:9px;color:var(--amber)">HOY</div>':'')+'</div>'
+        +statusHtml
         +'</div>'
-        +'<div style="margin-bottom:4px;line-height:1">'+dotsMed+'</div>'
-        +'<div style="font-size:9px;color:var(--smoke);display:flex;justify-content:space-between"><span>'+pag0+'/'+tot0+' cuotas · '+fmt(l.cuo)+'/c</span>'+(mora?'<span style="color:var(--fire)">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber)">📅 Hoy</span>':'<span style="color:var(--jade)">✅ Al día</span>')+'</div>'
-        +inner
+        // Barra de progreso
+        +'<div class="pb-track" style="margin-bottom:5px"><div class="pb-fill" style="width:'+pct+'%;background:'+(mora?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'""></div></div>'
+        +'<div class="pb-txt">'
+        +'<span>'+pag+'/'+total+' cuotas · '+fmt(l.cuo)+'/c</span>'
+        +(prox?'<span>Próx: '+fd(prox.fecha)+'</span>':'<span style="color:var(--lime)">✅ Completado</span>')
+        +'</div>'
         +'</div>';
     }).join('')+'</div>';
 }
+
 
 
 function deshacerPago(lid, cn){
