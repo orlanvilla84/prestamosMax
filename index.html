@@ -209,7 +209,12 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .bar{background:var(--ink2);border-bottom:1px solid var(--line);padding:11px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0}
 .bar-logo{font-weight:900;font-size:16px;letter-spacing:-1px;background:linear-gradient(120deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .bar-title{font-weight:800;font-size:14px;flex:1;letter-spacing:-.3px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-back{width:40px;height:40px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ash);cursor:pointer;flex-shrink:0}
+.bar-back{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(0,229,176,.18),rgba(0,153,255,.12));border:2.5px solid rgba(0,229,176,.55);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s,background .18s}
+.bar-back::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(0,229,176,.25),transparent 70%);opacity:0;transition:opacity .25s}
+.bar-back:active{transform:scale(.88)}
+.bar-back:hover::before,.bar-back:active::before{opacity:1}
+.bar-back svg{transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.bar-back:hover svg,.bar-back:active svg{transform:translateX(-3px)}
 .bar-btn{height:33px;padding:0 12px;background:linear-gradient(135deg,var(--jade),var(--jade2));border:none;border-radius:20px;font-family:'Exo 2',sans-serif;font-size:11px;font-weight:800;color:#000;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0}
 .bar-btn:active{opacity:.85;transform:scale(.97)}
 .bar-ico{width:40px;height:40px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;flex-shrink:0;position:relative}
@@ -404,6 +409,12 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .gitem{font-size:11px;color:var(--smoke);padding:3px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 .no-cap-warn{background:rgba(255,61,90,.08);border:1.5px solid rgba(255,61,90,.35);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--fire);margin-bottom:8px}
 
+/* ─── NOTAS ─── */
+.nota-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,208,96,.1);border:1.5px solid rgba(255,208,96,.3);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:6px;width:100%;cursor:pointer;transition:background .15s}
+.nota-chip:hover{background:rgba(255,208,96,.18)}
+.nota-chip-txt{flex:1;font-size:13px;color:var(--ash);line-height:1.4;white-space:pre-wrap;word-break:break-word}
+.nota-chip-date{font-size:10px;color:var(--fog);flex-shrink:0}
+.nota-empty{text-align:center;padding:20px;color:var(--fog);font-size:13px}
 #s-admin{background:var(--ink);justify-content:center;align-items:center;padding:40px 28px;gap:22px;overflow-y:auto}
 .admin-screen-back{position:absolute;top:16px;left:16px;width:46px;height:46px;border-radius:50%;background:var(--ink3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;color:var(--ash)}
 
@@ -504,7 +515,7 @@ window._db = firebase.firestore();
 <!-- MAIN -->
 <div id="s-main" class="screen">
   <div class="bar">
-    <div class="bar-back" onclick="backToCarteras()">←</div>
+    <div class="bar-back" onclick="backToCarteras()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
     <div class="bar-title" id="cartera-bar-title">Cartera</div>
     <div class="bar-ico" id="alert-btn" onclick="goTab('alertas')" style="margin-left:auto">🔔<div class="ndot" id="ndot" style="display:none">0</div></div>
     <div class="bar-btn" onclick="openLoanModal()">＋ Nuevo</div>
@@ -522,13 +533,13 @@ window._db = firebase.firestore();
 </div>
 <!-- DETAIL -->
 <div id="s-detail" class="screen">
-  <div class="bar"><div class="bar-back" onclick="goBack()">←</div><div class="bar-title" id="dtitle">Detalle</div><div class="bar-ico" onclick="openOpts()">⋮</div></div>
+  <div class="bar"><div class="bar-back" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div><div class="bar-title" id="dtitle">Detalle</div><div class="bar-ico" onclick="openOpts()">⋮</div></div>
   <div class="scroll pb" id="dcontent"></div>
 </div>
 <!-- PORTAL CLIENTE -->
 <div id="s-portal" class="screen">
   <div class="bar" style="background:var(--ink2);border-bottom:1px solid var(--line)">
-    <div class="bar-back" onclick="portalLogout()" title="Volver">←</div>
+    <div class="bar-back" onclick="portalLogout()" title="Volver"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
     <div style="flex:1;text-align:center">
       <span style="font-weight:900;font-size:15px;letter-spacing:-1px;background:linear-gradient(110deg,var(--jade),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent">PrestaMax</span>
     </div>
@@ -560,6 +571,33 @@ window._db = firebase.firestore();
   <div id="recibo-body"></div>
 </div></div>
 </div><!-- #app -->
+
+<!-- NOTA MODAL -->
+<div class="overlay" id="m-nota"><div class="sheet">
+  <div class="shandle"></div>
+  <div class="shtitle">📝 Notas del préstamo</div>
+  <div id="nota-list" style="margin-bottom:12px;max-height:220px;overflow-y:auto;scrollbar-width:none"></div>
+  <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px;margin-bottom:10px">
+    <div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">✏️ Nueva nota</div>
+    <textarea class="fi" id="nota-text" rows="3" placeholder="Escribe aquí tu nota..." style="resize:none;font-family:inherit;line-height:1.5"></textarea>
+  </div>
+  <div class="brow">
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-nota')">Cancelar</button>
+    <button class="btn btn-jade btn-w" onclick="saveNota()">💾 Guardar nota</button>
+  </div>
+</div></div>
+
+<!-- NOTA EDIT MODAL -->
+<div class="overlay" id="m-nota-edit"><div class="sheet">
+  <div class="shandle"></div>
+  <div class="shtitle">✏️ Editar nota</div>
+  <textarea class="fi" id="nota-edit-text" rows="4" placeholder="Editar nota..." style="resize:none;font-family:inherit;line-height:1.5;margin-bottom:12px"></textarea>
+  <div class="brow">
+    <button class="btn btn-fire btn-w" onclick="deleteNota()">🗑️ Eliminar</button>
+    <button class="btn btn-ghost btn-w" onclick="closeM('m-nota-edit')">Cancelar</button>
+    <button class="btn btn-jade btn-w" onclick="updateNota()">✅ Guardar</button>
+  </div>
+</div></div>
 
 <!-- DATE PICKER -->
 <div id="date-picker-overlay" onclick="if(event.target===this)closeDatePicker()">
@@ -939,6 +977,81 @@ function fsSave(){
 function simHash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffffffff;return h.toString(16);}
 function chkHash(s,h){return simHash(s)===h;}
 
+/* ─── NOTAS ─── */
+let _notaLid=null,_notaEditIdx=null;
+
+function openNotas(lid){
+  _notaLid=lid;
+  const l=getL(lid);if(!l)return;
+  if(!l._notas)l._notas=[];
+  renderNotaList(l);
+  document.getElementById('nota-text').value='';
+  openM('m-nota');
+}
+
+function renderNotaList(l){
+  const list=document.getElementById('nota-list');if(!list)return;
+  if(!l._notas||!l._notas.length){
+    list.innerHTML='<div class="nota-empty">📭 Sin notas aún. Agrega la primera.</div>';return;
+  }
+  list.innerHTML=l._notas.map(function(n,i){
+    return '<div class="nota-chip" onclick="openEditNota('+i+')">'
+      +'<span style="font-size:16px;flex-shrink:0">📌</span>'
+      +'<span class="nota-chip-txt">'+escHtml(n.texto)+'</span>'
+      +'<span class="nota-chip-date">'+new Date(n.fecha).toLocaleDateString('es-CO')+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function saveNota(){
+  const lid=_notaLid;const l=getL(lid);if(!l)return;
+  const txt=(document.getElementById('nota-text').value||'').trim();
+  if(!txt){toast('⚠️ Escribe algo antes de guardar');return;}
+  if(!l._notas)l._notas=[];
+  l._notas.push({texto:txt,fecha:new Date().toISOString()});
+  renderNotaList(l);
+  document.getElementById('nota-text').value='';
+  fsSave();
+  toast('📝 Nota guardada');
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+}
+
+function openEditNota(idx){
+  const l=getL(_notaLid);if(!l||!l._notas||!l._notas[idx])return;
+  _notaEditIdx=idx;
+  document.getElementById('nota-edit-text').value=l._notas[idx].texto;
+  openM('m-nota-edit');
+}
+
+function updateNota(){
+  const l=getL(_notaLid);if(!l||_notaEditIdx===null)return;
+  const txt=(document.getElementById('nota-edit-text').value||'').trim();
+  if(!txt){toast('⚠️ La nota no puede estar vacía');return;}
+  l._notas[_notaEditIdx].texto=txt;
+  l._notas[_notaEditIdx].fecha=new Date().toISOString();
+  closeM('m-nota-edit');
+  renderNotaList(l);
+  fsSave();
+  toast('✅ Nota actualizada');
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+}
+
+function deleteNota(){
+  const l=getL(_notaLid);if(!l||_notaEditIdx===null)return;
+  if(!confirm('¿Eliminar esta nota?'))return;
+  l._notas.splice(_notaEditIdx,1);
+  _notaEditIdx=null;
+  closeM('m-nota-edit');
+  renderNotaList(l);
+  fsSave();
+  toast('🗑️ Nota eliminada');
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+}
+
+function escHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 /* ─── SEED ─── */
 function seed(){
   // Producción — sin datos demo
@@ -1077,36 +1190,119 @@ function inicioLogin(){
 }
 
 function showPortalMulti(prestamos){
-  // Mostrar lista de todos los créditos del cliente
-  ['s-inicio','s-admin','s-carteras','s-main','s-detail','s-lock'].forEach(id=>{
-    document.getElementById(id)?.classList.remove('on');
+  ['s-inicio','s-admin','s-carteras','s-main','s-detail','s-lock'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.classList.remove('on');
   });
   document.getElementById('s-portal').classList.add('on');
-  const l0=prestamos[0].loan;
-  document.getElementById('portal-bar-name').textContent=l0.nom+' '+l0.ape;
-  const el=document.getElementById('portal-content');
-  el.innerHTML=`
-    <div style="padding:16px">
-      <div style="font-weight:800;font-size:16px;margin-bottom:4px">Tus créditos activos</div>
-      <div style="font-size:12px;color:var(--smoke);margin-bottom:14px">CC ${l0.ced}</div>
-      ${prestamos.map(({loan:l,cartera:c},i)=>{
-        const pag=l.cuotas.filter(q=>q.estado==='pagada').length;
-        const pen=l.cuotas.filter(q=>q.estado==='pendiente').length;
-        const mora=l.cuotas.filter(q=>q.estado==='mora').length;
-        return`<div style="background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:10px;cursor:pointer" onclick="showPortal(DB.carteras.find(c=>c.id==='${c.id}').loans.find(l=>l.id===${l.id}))">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div style="font-weight:800">Crédito #${i+1}</div>
-            <div style="font-weight:900;color:var(--jade)">${fmt(l.val)}</div>
-          </div>
-          <div style="font-size:11px;color:var(--smoke);margin-bottom:6px">${c.name}</div>
-          <div style="display:flex;gap:8px;font-size:11px">
-            <span style="color:var(--lime)">✅ ${pag} pagadas</span>
-            <span style="color:var(--sky)">⏳ ${pen} pendientes</span>
-            ${mora>0?`<span style="color:var(--fire)">⚠️ ${mora} mora</span>`:''}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
+  var l0=prestamos[0].loan;
+  var el=document.getElementById('portal-content');
+  var totalPrestado=prestamos.reduce(function(s,p){return s+p.loan.val;},0);
+  var totalPagado=prestamos.reduce(function(s,p){return s+p.loan.cuotas.filter(function(q){return q.estado==='pagada';}).length*p.loan.cuo;},0);
+  var totalPendiente=prestamos.reduce(function(s,p){return s+p.loan.cuotas.filter(function(q){return q.estado!=='pagada';}).reduce(function(ss,q){return ss+q.valor;},0);},0);
+  var enMora=prestamos.some(function(p){return p.loan.cuotas.some(function(q){return q.estado==='mora';});});
+  var ini=(l0.nom[0]||'')+(l0.ape[0]||'');
+
+  var html='<div style="padding:14px">'
+    +'<div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#081820,#0c1e2c);border:1px solid rgba(0,229,176,.3);border-radius:var(--r-lg);padding:16px;margin-bottom:14px">'
+      +'<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#000;flex-shrink:0">'+ini.toUpperCase()+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:900;font-size:17px">'+l0.nom+' '+l0.ape+'</div>'
+        +'<div style="font-size:12px;color:var(--smoke)">CC '+l0.ced+'</div>'
+        +(enMora?'<div style="font-size:12px;color:var(--fire);font-weight:700;margin-top:2px">\u26a0\ufe0f Tienes cuotas en mora</div>':'<div style="font-size:12px;color:var(--lime);margin-top:2px">\u2705 Al d\u00eda</div>')
+      +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
+      +'<div style="background:var(--ink2);border:1px solid rgba(0,229,176,.2);border-radius:10px;padding:10px;text-align:center">'
+        +'<div style="font-weight:900;font-size:15px;color:var(--jade)">'+fmt(totalPrestado)+'</div>'
+        +'<div style="font-size:10px;color:var(--fog);margin-top:2px">Total prestado</div>'
+      +'</div>'
+      +'<div style="background:var(--ink2);border:1px solid rgba(57,216,112,.2);border-radius:10px;padding:10px;text-align:center">'
+        +'<div style="font-weight:900;font-size:15px;color:var(--lime)">'+fmt(totalPagado)+'</div>'
+        +'<div style="font-size:10px;color:var(--fog);margin-top:2px">Ya pagado</div>'
+      +'</div>'
+      +'<div style="background:var(--ink2);border:1px solid rgba(255,170,0,.2);border-radius:10px;padding:10px;text-align:center">'
+        +'<div style="font-weight:900;font-size:15px;color:var(--amber)">'+fmt(totalPendiente)+'</div>'
+        +'<div style="font-size:10px;color:var(--fog);margin-top:2px">Pendiente</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="font-weight:800;font-size:14px;color:var(--jade);margin-bottom:10px;letter-spacing:.3px">'+prestamos.length+' CR\u00c9DITOS ACTIVOS</div>';
+
+  prestamos.forEach(function(item, idx){
+    var l=item.loan;
+    var pag=l.cuotas.filter(function(q){return q.estado==='pagada';}).length;
+    var pen=l.cuotas.filter(function(q){return q.estado!=='pagada';}).length;
+    var moraN=l.cuotas.filter(function(q){return q.estado==='mora';}).length;
+    var pct=Math.round(pag/l.cuotas.length*100);
+    var canSolicit=pag>=6&&pen>0&&!l.renewRequest;
+    var panelId='pc-'+l.id;
+    var arrId='pca-'+l.id;
+
+    var cuotasH=l.cuotas.map(function(c){
+      var estadoCls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
+      var estadoTxt=c.estado==='pagada'
+        ?'\u2705 Pagada'+(c.fechaPago?' \u00b7 '+new Date(c.fechaPago).toLocaleDateString('es-CO'):'')
+        :c.estado==='mora'?'\ud83d\udd34 Mora':'\u23f3 Pendiente';
+      var colorVal=c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)';
+      var compHtml='';
+      if(c.comprobante){
+        compHtml='<img src="'+c.comprobante+'" style="width:30px;height:30px;border-radius:6px;object-fit:cover;border:1px solid var(--line2);cursor:pointer;margin-left:6px" onclick="viewImg(this.src)">';
+      } else {
+        compHtml='<label style="margin-left:6px;cursor:pointer" title="Adjuntar comprobante"><input type="file" accept="image/*" style="display:none" onchange="uploadClientComp(this,'+l.id+','+c.num+')"><span style="font-size:13px">\ud83d\udcf8</span></label>';
+      }
+      return '<div class="portal-row">'
+        +'<div class="cnum '+estadoCls+'" style="flex-shrink:0">'+c.num+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-weight:600;font-size:13px">'+fd(c.fecha)+'</div>'
+          +'<div style="font-size:11px;color:var(--smoke)">'+estadoTxt+'</div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:4px">'
+          +'<div class="mono" style="font-size:13px;font-weight:700;color:'+colorVal+'">'+fmt(c.valor+(c.multa||0))+'</div>'
+          +compHtml
+        +'</div>'
+      +'</div>';
+    }).join('');
+
+    html+='<div style="background:var(--ink2);border:1.5px solid '+(moraN>0?'rgba(255,61,90,.4)':'rgba(0,229,176,.2)')+';border-radius:var(--r-lg);margin-bottom:14px;overflow:hidden">'
+      +'<div style="padding:12px 14px;background:'+(moraN>0?'rgba(255,61,90,.06)':'rgba(0,229,176,.05)')+';border-bottom:1px solid var(--line)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<div style="font-weight:900;font-size:15px;color:var(--jade)">Cr\u00e9dito #'+(idx+1)+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:'+(moraN>0?'var(--fire)':'var(--lime)')+'">'+(moraN>0?'\u26a0\ufe0f '+moraN+' en mora':'\u2705 Al d\u00eda')+'</span>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">'
+          +'<div style="background:rgba(0,229,176,.08);border-radius:8px;padding:7px;text-align:center">'
+            +'<div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div>'
+            +'<div style="font-size:10px;color:var(--fog)">Valor prestado</div>'
+          +'</div>'
+          +'<div style="background:rgba(0,153,255,.08);border-radius:8px;padding:7px;text-align:center">'
+            +'<div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo)+'</div>'
+            +'<div style="font-size:10px;color:var(--fog)">Valor cuota</div>'
+          +'</div>'
+          +'<div style="background:rgba(57,216,112,.08);border-radius:8px;padding:7px;text-align:center">'
+            +'<div style="font-weight:900;font-size:16px;color:var(--lime)">'+pag+'/'+l.ncu+'</div>'
+            +'<div style="font-size:10px;color:var(--fog)">Cuotas pagadas</div>'
+          +'</div>'
+          +'<div style="background:rgba(255,170,0,.08);border-radius:8px;padding:7px;text-align:center">'
+            +'<div style="font-weight:900;font-size:16px;color:var(--amber)">'+pen+'</div>'
+            +'<div style="font-size:10px;color:var(--fog)">Pendientes</div>'
+          +'</div>'
+        +'</div>'
+        +'<div class="pb-track" style="margin-bottom:4px"><div class="pb-fill" style="width:'+pct+'%;background:'+(moraN>0?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'"></div></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--smoke)"><span>Progreso: '+pct+'%</span><span>'+cap(l.mod)+'</span></div>'
+      +'</div>'
+      +'<div style="padding:10px 14px">'
+        +'<div onclick="togglePortalCuotas(\''+panelId+'\')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0;margin-bottom:2px">'
+          +'<span style="font-weight:800;font-size:13px;color:var(--ash)">\ud83d\udccb Ver todas las cuotas ('+l.ncu+')</span>'
+          +'<span id="'+arrId+'" style="font-size:16px;color:var(--fog);transition:transform .2s">\u25bc</span>'
+        +'</div>'
+        +'<div id="'+panelId+'" style="display:none;margin-top:6px">'+cuotasH+'</div>'
+      +'</div>'
+      +(canSolicit?'<div style="padding:0 14px 14px"><div class="renew-box"><div class="renew-box-t">\u00bfQuieres renovar este cr\u00e9dito?</div><div class="renew-box-s">Has pagado '+pag+' cuotas. El administrador revisar\u00e1 tu solicitud.</div><button class="btn btn-violet btn-w" onclick="solicitarRenovacion('+l.id+')">\ud83d\udd04 Solicitar renovaci\u00f3n</button></div></div>':'')
+      +(l.renewRequest?'<div style="margin:0 14px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--violet)">\ud83d\udd04 Tu solicitud de renovaci\u00f3n est\u00e1 siendo revisada.</div>':'')
+    +'</div>';
+  });
+
+  html+='<div class="brow" style="margin-top:4px;padding-bottom:8px"><button class="btn btn-ghost btn-w" onclick="portalLogout()">\u2190 Volver al inicio</button></div></div>';
+  el.innerHTML=html;
 }
 
 function doClientLogin(){
@@ -1996,8 +2192,8 @@ function rDetail(l){
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
     <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
     <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})" ${pag<Math.ceil(l.cuotas.length/2)||pen===0?'style="opacity:.45"':''}>🔄 Renovar</button>
-    <button class="btn btn-ghost btn-sm" onclick="openEditCliente(${l.id})">✏️ Editar cliente</button>
     <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
+    <button class="btn btn-ghost btn-sm" onclick="openNotas(${l.id})" style="border-color:rgba(255,208,96,.45);color:var(--gold)">📝 Nota${l._notas&&l._notas.length?" ("+l._notas.length+")":''}</button>
     ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
   </div>
   <div class="sh" style="margin-bottom:8px"><div class="st">📋 Plan de cuotas (${l.ncu})</div></div>
@@ -3112,12 +3308,14 @@ function renderPortal(l){
   const cuotasH=l.cuotas.map(c=>`<div class="portal-row">
     <div class="cnum ${c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p'}" style="flex-shrink:0">${c.num}</div>
     <div style="flex:1;min-width:0">
-      <div style="font-weight:600;font-size:11px">${fd(c.fecha)}</div>
-      <div style="font-size:10px;color:var(--smoke)">${c.estado==='pagada'?'✅ Pagada':c.estado==='mora'?'🔴 Mora':'⏳ Pendiente'}</div>
+      <div style="font-weight:600;font-size:13px">${fd(c.fecha)}</div>
+      <div style="font-size:11px;color:var(--smoke)">${c.estado==='pagada'?'✅ Pagada'+(c.fechaPago?' · '+new Date(c.fechaPago).toLocaleDateString('es-CO'):''):c.estado==='mora'?'🔴 Mora':'⏳ Pendiente'}</div>
     </div>
-    <div class="mono" style="font-size:11px;font-weight:700;color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
-    ${c.comprobante?`<img src="${c.comprobante}" style="width:28px;height:28px;border-radius:5px;object-fit:cover;border:1px solid var(--line2);cursor:pointer;margin-left:5px" onclick="viewImg('${c.comprobante}')">`:
-    (c.estado!=='pagada'?`<label style="margin-left:5px;cursor:pointer"><input type="file" accept="image/*" style="display:none" onchange="uploadClientComp(this,${l.id},${c.num})"><span style="font-size:10px;color:var(--jade)">📸 Adjuntar</span></label>`:'')}
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="mono" style="font-size:13px;font-weight:700;color:${c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)'}">${fmt(c.valor+(c.multa||0))}</div>
+      ${c.comprobante?`<img src="${c.comprobante}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;border:1px solid var(--line2);cursor:pointer" onclick="viewImg('${c.comprobante}')">`:
+      `<label style="cursor:pointer" title="Adjuntar comprobante"><input type="file" accept="image/*" style="display:none" onchange="uploadClientComp(this,${l.id},${c.num})"><span style="font-size:13px">📸</span></label>`}
+    </div>
   </div>`).join('');
   $('portal-content').innerHTML=`<div class="portal-loan">
     <div class="portal-loan-head">
@@ -3167,10 +3365,22 @@ function uploadClientComp(inp,lid,cn){
     renderPortal(loan);toast('📸 Comprobante adjuntado');
   };r.readAsDataURL(file);
 }
+function togglePortalCuotas(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const arr=document.getElementById('pc-arr-'+id.replace('pc-',''));
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(arr)arr.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
 function portalLogout(){
   document.getElementById('s-portal').classList.remove('on');
   document.getElementById('s-inicio').classList.add('on');
-  if(document.getElementById('inicio-ced'))document.getElementById('inicio-ced').value='';
+  const cedEl=document.getElementById('inicio-ced');
+  if(cedEl){cedEl.value='';cedEl.focus();}
+  // Limpiar contenido del portal para que no se quede pegado
+  const pc=document.getElementById('portal-content');
+  if(pc)pc.innerHTML='';
 }
 
 /* ─── MENSAJES WHATSAPP ─── */
