@@ -1617,7 +1617,7 @@ function rInicio(){
 
 
 function rClientesAgrupados(lista){
-  // Agrupar por cédula
+  // Agrupar por cedula
   const mapa={};
   lista.forEach(function(l){
     if(!mapa[l.ced])mapa[l.ced]={l,todos:[]};
@@ -1629,49 +1629,54 @@ function rClientesAgrupados(lista){
     const mora=todos.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
     const hoy=todos.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
     const ini=(l.nom[0]||'')+(l.ape[0]||'');
-    const multipleTag=todos.length>1?'<span style="background:rgba(0,229,176,.15);color:var(--jade);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700">'+todos.length+' créditos</span>':'';
-    const inner=todos.length>1
-      ? todos.map(function(x){
-          const pp=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-          const pt=Math.round(pp/x.cuotas.length*100);
-          const xmora=x.cuotas.some(function(c){return c.estado==='mora';});
-          const xhoy=x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
-          return '<div onclick="event.stopPropagation();showLoan('+x.id+')" style="background:var(--ink3);border-radius:6px;padding:6px 8px;margin-top:5px;cursor:pointer;border:1px solid var(--line)">'
-            +'<div style="display:flex;justify-content:space-between;align-items:center">'
-            +'<span style="font-size:11px;font-weight:700">'+fmt(x.val)+' · '+x.mod+'</span>'
-            +(xmora?'<span style="font-size:9px;color:var(--fire)">⚠️ Mora</span>':xhoy?'<span style="font-size:9px;color:var(--amber)">📅 Hoy</span>':'<span style="font-size:9px;color:var(--jade)">✅ Al día</span>')
-            +'</div>'
-            +'<div class="pb-track" style="height:2px;margin-top:3px"><div class="pb-fill" style="width:'+pt+'%"></div></div>'
-            +'<div style="font-size:9px;color:var(--smoke);margin-top:1px">'+pp+'/'+x.cuotas.length+' cuotas · '+pt+'%</div>'
-            +'</div>';
-        }).join('')
-      : '';
-    // Medidor de progreso
-    const pp0=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-    const pt0=l.cuotas.length;
-    const pct0=Math.round(pp0/pt0*100);
-    const maxD=Math.min(pt0,20);
-    const dPag=Math.round(pp0/pt0*maxD);
-    let dotsMed='';
-    for(var di=0;di<dPag;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--jade);margin:1px"></span>';
-    for(var di=dPag;di<maxD;di++)dotsMed+='<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:var(--line);margin:1px"></span>';
-    const borderCol=mora?'rgba(255,61,90,.5)':hoy?'rgba(255,170,0,.4)':'var(--line)';
-    const bgCol=mora?'rgba(255,61,90,.04)':'var(--ink2)';
-    const clickFn=todos.length===1?'showLoan('+l.id+')':'';
-    return '<div class="lc" '+(clickFn?'onclick="'+clickFn+'"':'')+' style="padding:10px 12px;cursor:'+(todos.length===1?'pointer':'default')+';border-color:'+borderCol+';background:'+bgCol+'">'
-      +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'" ></div>'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-      +'<div class="lav" style="width:36px;height:36px;font-size:13px'+(mora?';background:rgba(255,61,90,.2);border:1.5px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="display:flex;align-items:center;gap:4px"><span class="lname" style="font-size:13px">'+l.nom+' '+l.ape+'</span>'+(mora?'<span>🔴</span>':hoy?'<span>🟡</span>':'')+' </div>'
-      +'<div class="lsub" style="font-size:10px">CC '+l.ced+(todos.length>1?' · <b style="color:var(--jade)">'+todos.length+' créditos</b>':'')+' </div>'
-      +'</div>'
-      +'<div style="text-align:right"><div style="font-size:11px;color:var(--gold);font-weight:700">'+pct0+'%</div>'+(mora?'<div style="font-size:9px;color:var(--fire);font-weight:700">MORA</div>':hoy?'<div style="font-size:9px;color:var(--amber)">HOY</div>':'')+'</div>'
-      +'</div>'
-      +'<div style="margin-bottom:4px;line-height:1">'+dotsMed+'</div>'
-      +'<div style="font-size:9px;color:var(--smoke);display:flex;justify-content:space-between"><span>'+pp0+'/'+pt0+' cuotas · '+fmt(l.cuo)+'/c</span>'+(mora?'<span style="color:var(--fire)">⚠️ EN MORA</span>':hoy?'<span style="color:var(--amber)">📅 Pago hoy</span>':'<span style="color:var(--jade)">✅ Al día</span>')+'</div>'
-      +inner
-      +'</div>';
+    const borderCol=mora?'rgba(255,61,90,.55)':hoy?'rgba(255,170,0,.45)':'rgba(0,229,176,.2)';
+    let html='<div class="lc" style="padding:0;border-color:'+borderCol+';background:var(--ink2);overflow:hidden;margin-bottom:10px">';
+    html+='<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>';
+    // Encabezado cliente con boton editar
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px 10px;'+(mora?'background:rgba(255,61,90,.04)':'')+'">'+
+      '<div class="lav" style="flex-shrink:0'+(mora?';background:rgba(255,61,90,.2);border:2px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="lname">'+l.nom+' '+l.ape+(mora?'<span style="font-size:14px;margin-left:4px">🔴</span>':hoy?'<span style="font-size:14px;margin-left:4px">🟡</span>':'')+'</div>'+
+        '<div class="lsub">CC '+l.ced+(todos.length>1?' &nbsp;·&nbsp; <b style="color:var(--jade)">'+todos.length+' créditos</b>':'')+'</div>'+
+      '</div>'+
+      '<button onclick="event.stopPropagation();openEditCliente('+l.id+')" title="Editar datos del cliente" style="background:rgba(0,229,176,.12);border:1.5px solid rgba(0,229,176,.35);border-radius:9px;padding:7px 11px;font-size:14px;cursor:pointer;color:var(--jade);font-weight:700;flex-shrink:0">✏️</button>'+
+    '</div>';
+    // Un bloque por cada prestamo
+    todos.forEach(function(x){
+      const pag=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+      const total=x.cuotas.length;
+      const pct=Math.round(pag/total*100);
+      const xmora=x.cuotas.some(function(c){return c.estado==='mora';});
+      const xhoy=x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
+      const prox=x.cuotas.find(function(c){return c.estado!=='pagada';});
+      const maxDots=Math.min(total,20);
+      const dotsPag=Math.round(pag/total*maxDots);
+      var dots='';
+      for(var i=0;i<dotsPag;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--jade);margin:1px;opacity:.95"></span>';
+      for(var i=dotsPag;i<maxDots;i++)dots+='<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--line);margin:1px"></span>';
+      const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[x.mod]||'bd';
+      const statusHtml=xmora
+        ?'<span style="color:var(--fire);font-weight:700;font-size:12px">⚠️ EN MORA</span>'
+        :xhoy?'<span style="color:var(--amber);font-weight:700;font-size:12px">📅 HOY</span>'
+        :'<span style="color:var(--jade);font-size:12px">✅ Al día</span>';
+      html+='<div onclick="showLoan('+x.id+')" style="border-top:1px solid var(--line);padding:10px 14px;cursor:pointer;background:'+(xmora?'rgba(255,61,90,.03)':'transparent')+'">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'+
+          '<div style="display:flex;align-items:center;gap:7px">'+
+            '<span class="lbadge '+bc+'">'+x.mod+'</span>'+
+            '<span style="font-weight:800;color:var(--jade)">'+fmt(x.val)+'</span>'+
+          '</div>'+
+          statusHtml+
+        '</div>'+
+        '<div style="margin-bottom:5px;line-height:1">'+dots+'</div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--smoke)">'+
+          '<span>'+pag+'/'+total+' cuotas &nbsp;·&nbsp; '+fmt(x.cuo)+'/c</span>'+
+          (prox?'<span>Próx: '+fd(prox.fecha)+'</span>':'<span style="color:var(--lime)">✅ Completado</span>')+
+        '</div>'+
+        (xmora?'<div style="font-size:12px;color:var(--fire);margin-top:5px;font-weight:700">⚠️ '+x.cuotas.filter(function(c){return c.estado==="mora";}).length+' cuota(s) en mora</div>':'')+
+      '</div>';
+    });
+    html+='</div>';
+    return html;
   }).join('');
 }
 
@@ -1680,13 +1685,13 @@ function rPrestamos(flt){
   let list=flt==='todos'?loans():loans().filter(l=>l.mod===flt);
   return`<div class="crow">${['todos','diario','semanal','quincenal','mensual'].map(f=>`<div class="cf ${flt===f?'on':''}" onclick="filterL('${f}')">${f==='todos'?'Todos ('+loans().length+')':cap(f)}</div>`).join('')}</div>
   <div class="swrap"><div class="sico">🔍</div><input class="sinp" placeholder="Nombre o cédula..." oninput="searchL(this.value,'${flt}')"></div>
-  <div id="llist">${list.length?list.map(rLCard).join(''):'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos</div></div>'}</div>`;
+  <div id="llist">${list.length?rLCardAgrupado(list):'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos</div></div>'}</div>`;
 }
 function filterL(f){$('tabcontent').innerHTML=rPrestamos(f);}
 function searchL(q,flt){
   let list=flt==='todos'?loans():loans().filter(l=>l.mod===flt);
   if(q)list=list.filter(l=>(l.nom+' '+l.ape+' '+l.ced).toLowerCase().includes(q.toLowerCase()));
-  $('llist').innerHTML=list.map(rLCard).join('');
+  $('llist').innerHTML=list.length?rLCardAgrupado(list):'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin resultados</div></div>';
 }
 function rLCard(l){
   const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
@@ -1734,6 +1739,73 @@ function rLCard(l){
       statusHtml+
     '</div>'+
   '</div>';
+}
+
+function rLCardAgrupado(lista){
+  // Agrupar por cedula
+  const mapa={};const cedOrder=[];
+  lista.forEach(function(l){
+    if(!mapa[l.ced]){mapa[l.ced]={l,todos:[]};cedOrder.push(l.ced);}
+    mapa[l.ced].todos.push(l);
+  });
+  return cedOrder.map(function(ced){
+    const g=mapa[ced];
+    const l=g.l;
+    const todos=g.todos;
+    const mora=todos.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
+    const hoy=todos.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
+    const ini=(l.nom[0]||'')+(l.ape[0]||'');
+    const borderCol=mora?'rgba(255,61,90,.55)':hoy?'rgba(255,170,0,.45)':'rgba(0,229,176,.2)';
+    let html='<div class="lc" style="padding:0;border-color:'+borderCol+';background:var(--ink2);overflow:hidden;margin-bottom:10px">';
+    html+='<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>';
+    // Encabezado cliente con boton editar a nivel de cliente
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px 10px;'+(mora?'background:rgba(255,61,90,.04)':'')+'">'
+      +'<div class="lav" style="flex-shrink:0'+(mora?';background:rgba(255,61,90,.2);border:2px solid var(--fire)':'')+'" >'+ini.toUpperCase()+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div class="lname">'+l.nom+' '+l.ape+(mora?'<span style="font-size:14px;margin-left:4px">🔴</span>':hoy?'<span style="font-size:14px;margin-left:4px">🟡</span>':'')+' </div>'
+        +'<div class="lsub">CC '+l.ced+(todos.length>1?' &nbsp;·&nbsp; <b style="color:var(--jade)">'+todos.length+' créditos</b>':'')+' </div>'
+      +'</div>'
+      +'<button onclick="event.stopPropagation();openEditCliente('+l.id+')" title="Editar cliente" style="background:rgba(0,229,176,.12);border:1.5px solid rgba(0,229,176,.35);border-radius:9px;padding:7px 11px;font-size:14px;cursor:pointer;color:var(--jade);font-weight:700;flex-shrink:0">✏️</button>'
+    +'</div>';
+    // Un bloque por cada prestamo
+    todos.forEach(function(x){
+      const pag=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+      const total=x.cuotas.length;
+      const pct=Math.round(pag/total*100);
+      const xmora=x.cuotas.some(function(c){return c.estado==='mora';});
+      const xhoy=x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
+      const tieneMulta=(x.histMultas||[]).length>0;
+      const prox=x.cuotas.find(function(c){return c.estado!=='pagada';});
+      const maxDots=Math.min(total,20);
+      const dotsPag=Math.round(pag/total*maxDots);
+      var dots='';
+      for(var i=0;i<dotsPag;i++)dots+='<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--jade);margin:1px;opacity:.95"></span>';
+      for(var i=dotsPag;i<maxDots;i++)dots+='<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--line);margin:1px"></span>';
+      const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[x.mod]||'bd';
+      const statusHtml=xmora
+        ?'<span style="color:var(--fire);font-weight:700;font-size:12px">⚠️ EN MORA</span>'
+        :xhoy?'<span style="color:var(--amber);font-weight:700;font-size:12px">📅 HOY</span>'
+        :tieneMulta?'<span style="color:var(--amber);font-size:12px">💸 Multa cobrada</span>'
+        :'<span style="color:var(--jade);font-size:12px">✅ Al día</span>';
+      html+='<div onclick="showLoan('+x.id+')" style="border-top:1px solid var(--line);padding:10px 14px;cursor:pointer;background:'+(xmora?'rgba(255,61,90,.03)':'transparent')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'
+          +'<div style="display:flex;align-items:center;gap:7px">'
+            +'<span class="lbadge '+bc+'">'+x.mod+'</span>'
+            +'<span style="font-weight:800;color:var(--jade)">'+fmt(x.val)+'</span>'
+          +'</div>'
+          +statusHtml+
+        '</div>'
+        +'<div style="margin-bottom:5px;line-height:1">'+dots+'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--smoke)">'
+          +'<span>'+pag+'/'+total+' cuotas &nbsp;·&nbsp; '+fmt(x.cuo)+'/c</span>'
+          +(prox?'<span>Próx: '+fd(prox.fecha)+'</span>':'<span style="color:var(--lime)">✅ Completado</span>')+
+        '</div>'
+        +(xmora?'<div style="font-size:12px;color:var(--fire);margin-top:5px;font-weight:700">⚠️ '+x.cuotas.filter(function(c){return c.estado==='mora';}).length+' cuota(s) en mora</div>':'')+
+      '</div>';
+    });
+    html+='</div>';
+    return html;
+  }).join('');
 }
 /* ─── DETAIL ─── */
 function buildResumenFin(l,ganR){
@@ -1924,7 +1996,7 @@ function rDetail(l){
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
     <button class="btn btn-sky btn-sm" onclick="sendWA(${l.id})">📲 WA</button>
     <button class="btn btn-amber btn-sm" onclick="openRenew(${l.id})" ${pag<Math.ceil(l.cuotas.length/2)||pen===0?'style="opacity:.45"':''}>🔄 Renovar</button>
-    <button class="btn btn-ghost btn-sm" onclick="openEditCliente(${l.id})">✏️ Editar</button>
+    <button class="btn btn-ghost btn-sm" onclick="openEditCliente(${l.id})">✏️ Editar cliente</button>
     <button class="btn btn-jade btn-sm" onclick="openNuevoPrestamoCliente(${l.id})">➕ Otro crédito</button>
     ${l.renewRequest?`<button class="btn btn-violet btn-sm" onclick="openRenewReq(${l.id})">📋 Solicitud</button>`:''}
   </div>
@@ -2018,7 +2090,10 @@ function renderClList(loans_lista){
         '<div style="font-size:12px;font-weight:700;color:'+(mora?'var(--fire)':activos.length?'var(--lime)':'var(--fog)')+'">'+
           (mora?'⚠️ Mora':activos.length?activos.length+' activo'+(activos.length>1?'s':''):'📜 Hist.')+
         '</div>'+
-        '<button onclick="event.stopPropagation();openNuevoPrestamoCliente('+ultimoId+')" style="background:rgba(0,229,176,.15);border:1px solid rgba(0,229,176,.4);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--jade);cursor:pointer">➕ Crédito</button>'+
+        '<div style="display:flex;gap:5px">'+
+          '<button onclick="event.stopPropagation();openEditCliente('+ultimoId+')" title="Editar cliente" style="background:rgba(0,229,176,.12);border:1.5px solid rgba(0,229,176,.35);border-radius:8px;padding:5px 10px;font-size:14px;cursor:pointer;color:var(--jade);font-weight:700">✏️</button>'+
+          '<button onclick="event.stopPropagation();openNuevoPrestamoCliente('+ultimoId+')" style="background:rgba(0,229,176,.15);border:1px solid rgba(0,229,176,.4);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--jade);cursor:pointer">➕</button>'+
+        '</div>'+
       '</div>'+
     '</div>';
 
@@ -3749,7 +3824,7 @@ function actualizarMultaIndividual(lid,cn){
 
 function rPrestamosRecientes(act){
   if(!act.length)return'<div class="empty"><div class="empty-ico">💳</div><div class="empty-t">Sin préstamos activos</div><div class="empty-s">Crea el primer préstamo con + Nuevo</div></div>';
-  // Ordenar: mora primero, luego hoy, luego al día
+  // Ordenar: mora primero, luego hoy, luego al dia
   const ordenados=[...act].sort(function(a,b){
     const aM=a.cuotas.some(c=>c.estado==='mora');
     const bM=b.cuotas.some(c=>c.estado==='mora');
@@ -3759,40 +3834,59 @@ function rPrestamosRecientes(act){
     if(aH&&!bH)return -1; if(!aH&&bH)return 1;
     return 0;
   });
-  const recientes=ordenados.slice(0,6);
+  // Agrupar por cedula manteniendo orden
+  const mapa={};const cedOrder=[];
+  ordenados.forEach(function(l){
+    if(!mapa[l.ced]){mapa[l.ced]={l,todos:[]};cedOrder.push(l.ced);}
+    mapa[l.ced].todos.push(l);
+  });
+  const grupos=cedOrder.slice(0,6).map(function(ced){return mapa[ced];});
   return '<div style="margin-bottom:10px"><div class="sh"><span class="st">📋 Préstamos recientes</span><span class="sl" onclick="goTab(\'prestamos\')">Ver todos →</span></div>'+
-    recientes.map(function(l){
-      const pag=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-      const total=l.cuotas.length;
-      const pct=Math.round(pag/total*100);
-      const mora=l.cuotas.some(function(c){return c.estado==='mora';});
-      const hoy=l.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
-      const ini=(l.nom[0]||'')+(l.ape[0]||'');
-      const borderCol=mora?'rgba(255,61,90,.6)':hoy?'rgba(255,170,0,.5)':'var(--line)';
-      const bgCol=mora?'rgba(255,61,90,.04)':'var(--ink2)';
-      const statusHtml=mora
-        ?'<span style="color:var(--fire);font-weight:700;font-size:12px">⚠️ EN MORA</span>'
-        :hoy?'<span style="color:var(--amber);font-weight:700;font-size:12px">📅 HOY</span>'
-        :'<span style="color:var(--jade);font-size:12px">✅ Al día</span>';
-      // Próxima cuota
-      const prox=l.cuotas.find(function(c){return c.estado!=='pagada';});
-      return '<div class="lc" onclick="showLoan('+l.id+')" style="padding:12px 14px;cursor:pointer;border-color:'+borderCol+';background:'+bgCol+'">'
-        +'<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>'
-        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-        +'<div class="lav" style="'+(mora?'background:rgba(255,61,90,.2);border:2px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
+    grupos.map(function(g){
+      const l=g.l;
+      const todos=g.todos;
+      const mora=todos.some(function(x){return x.cuotas.some(function(c){return c.estado==='mora';});});
+      const hoy=todos.some(function(x){return x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});});
+      const ini=(l.nom[0]||'')+''+( l.ape[0]||'');
+      const borderCol=mora?'rgba(255,61,90,.55)':hoy?'rgba(255,170,0,.45)':' var(--line)';
+      let html='<div class="lc" style="padding:0;border-color:'+borderCol+';background:var(--ink2);overflow:hidden;margin-bottom:8px">';
+      html+='<div class="lstripe '+(mora?'s-fire':hoy?'s-amber':'s-jade')+'"></div>';
+      // Encabezado cliente con boton editar
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:11px 14px 9px;'+(mora?'background:rgba(255,61,90,.04)':'')+'">'
+        +'<div class="lav" style="flex-shrink:0'+(mora?';background:rgba(255,61,90,.2);border:2px solid var(--fire)':'')+'">'+ini.toUpperCase()+'</div>'
         +'<div style="flex:1;min-width:0">'
-        +'<div class="lname">'+l.nom+' '+l.ape+'</div>'
-        +'<div class="lsub">CC '+l.ced+' · <b style="color:var(--jade)">'+fmt(l.val)+'</b> · '+l.mod+'</div>'
+          +'<div class="lname">'+l.nom+' '+l.ape+(mora?'<span style="font-size:14px;margin-left:4px">🔴</span>':hoy?'<span style="font-size:14px;margin-left:4px">🟡</span>':'')+'</div>'
+          +'<div class="lsub">CC '+l.ced+(todos.length>1?' &nbsp;·&nbsp; <b style="color:var(--jade)">'+todos.length+' créditos</b>':'')+'</div>'
         +'</div>'
-        +statusHtml
-        +'</div>'
-        // Barra de progreso
-        +'<div class="pb-track" style="margin-bottom:5px"><div class="pb-fill" style="width:'+pct+'%;background:'+(mora?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'""></div></div>'
-        +'<div class="pb-txt">'
-        +'<span>'+pag+'/'+total+' cuotas · '+fmt(l.cuo)+'/c</span>'
-        +(prox?'<span>Próx: '+fd(prox.fecha)+'</span>':'<span style="color:var(--lime)">✅ Completado</span>')
-        +'</div>'
-        +'</div>';
+        +'<button onclick="event.stopPropagation();openEditCliente('+l.id+')" title="Editar cliente" style="background:rgba(0,229,176,.12);border:1.5px solid rgba(0,229,176,.35);border-radius:9px;padding:7px 11px;font-size:14px;cursor:pointer;color:var(--jade);font-weight:700;flex-shrink:0">✏️</button>'
+      +'</div>';
+      // Un bloque por cada prestamo
+      todos.forEach(function(x){
+        const pag=x.cuotas.filter(function(c){return c.estado==='pagada';}).length;
+        const total=x.cuotas.length;
+        const pct=Math.round(pag/total*100);
+        const xmora=x.cuotas.some(function(c){return c.estado==='mora';});
+        const xhoy=x.cuotas.some(function(c){return isToday(c.fecha)&&c.estado==='pendiente';});
+        const prox=x.cuotas.find(function(c){return c.estado!=='pagada';});
+        const bc={diario:'bd',semanal:'bs',quincenal:'bq',mensual:'bm'}[x.mod]||'bd';
+        const statusHtml=xmora
+          ?'<span style="color:var(--fire);font-weight:700;font-size:12px">⚠️ EN MORA</span>'
+          :xhoy?'<span style="color:var(--amber);font-weight:700;font-size:12px">📅 HOY</span>'
+          :'<span style="color:var(--jade);font-size:12px">✅ Al día</span>';
+        html+='<div onclick="showLoan('+x.id+')" style="border-top:1px solid var(--line);padding:10px 14px;cursor:pointer;background:'+(xmora?'rgba(255,61,90,.03)':' transparent')+'">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'
+            +'<div style="display:flex;align-items:center;gap:7px"><span class="lbadge '+bc+'">'+x.mod+'</span><span style="font-weight:800;color:var(--jade)">'+fmt(x.val)+'</span></div>'
+            +statusHtml+
+          '</div>'+
+          '<div class="pb-track" style="margin-bottom:5px"><div class="pb-fill" style="width:'+pct+'%;background:'+(xmora?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'"></div></div>'+
+          '<div class="pb-txt"><span>'+pag+'/'+total+' cuotas · '+fmt(x.cuo)+'/c</span>'
+            +(prox?'<span>Próx: '+fd(prox.fecha)+'</span>':'<span style="color:var(--lime)">✅ Completado</span>')+
+          '</div>'+
+          (xmora?'<div style="font-size:12px;color:var(--fire);margin-top:5px;font-weight:700">⚠️ '+x.cuotas.filter(function(c){return c.estado==='mora';}).length+' cuota(s) en mora</div>':'')+
+        '</div>';
+      });
+      html+='</div>';
+      return html;
     }).join('')+'</div>';
 }
 
