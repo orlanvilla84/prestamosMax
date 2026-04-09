@@ -439,6 +439,41 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 .dp-day.past{opacity:.35;cursor:not-allowed}
 .dp-legend{display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--fog)}
 .dp-legend span{display:flex;align-items:center;gap:4px}
+
+/* ─── CALCULADORA PRÉSTAMOS ─── */
+.calc-hero-card{background:linear-gradient(135deg,rgba(0,229,176,.12),rgba(0,153,255,.08));border:1.5px solid rgba(0,229,176,.35);border-radius:var(--r-lg);padding:18px;margin-bottom:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.calc-hero-card::before{content:'';position:absolute;top:-40px;right:-40px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,176,.12),transparent 70%);pointer-events:none}
+.calc-hero-card:hover,.calc-hero-card:active{border-color:var(--jade);background:linear-gradient(135deg,rgba(0,229,176,.18),rgba(0,153,255,.12))}
+.calc-hero-ico{font-size:28px;margin-bottom:6px}
+.calc-hero-t{font-weight:900;font-size:15px;letter-spacing:-.3px;color:var(--jade)}
+.calc-hero-s{font-size:12px;color:var(--smoke);margin-top:3px;line-height:1.4}
+
+#m-calc.overlay{overflow-y:auto}
+#m-calc .sheet{max-height:none;border-radius:var(--r-lg) var(--r-lg) 0 0;padding-bottom:32px}
+.calc-section{background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.calc-section-t{font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.calc-result-box{background:linear-gradient(135deg,rgba(0,229,176,.09),rgba(0,153,255,.06));border:1.5px solid rgba(0,229,176,.4);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.calc-result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.calc-result-row:last-child{border-bottom:none;padding-bottom:0}
+.calc-result-lbl{font-size:13px;color:var(--smoke)}
+.calc-result-val{font-weight:800;font-size:14px;font-family:'JetBrains Mono',monospace}
+.calc-result-total{background:linear-gradient(135deg,rgba(0,229,176,.18),rgba(0,153,255,.1));border:2px solid var(--jade);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:12px}
+.calc-mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.calc-mod-btn{background:var(--ink4);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 8px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:700}
+.calc-mod-btn.on{background:rgba(0,229,176,.15);border-color:var(--jade);color:var(--jade)}
+.calc-sub-mods{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.calc-sub-btn{flex:1;min-width:80px;background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:7px 4px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;transition:all .15s}
+.calc-sub-btn.on{background:rgba(0,153,255,.15);border-color:var(--sky);color:var(--sky)}
+.calc-action-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.calc-action-bar .btn{font-size:13px;padding:12px 10px}
+.calc-search-result{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);margin-top:4px;max-height:220px;overflow-y:auto;scrollbar-width:none}
+#calc-wa-num-row{display:flex;gap:8px;align-items:center}
+
+/* Calculadora sin login */
+.calc-login-notice{background:rgba(255,170,0,.08);border:1.5px solid rgba(255,170,0,.3);border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--amber);text-align:center;margin-bottom:10px}
+
+/* canvas invisible para export */
+#calc-export-canvas{position:absolute;left:-9999px;top:-9999px}
 </style>
 
 <!-- Firebase SDK compat -->
@@ -481,7 +516,6 @@ window._db = firebase.firestore();
       <span style="font-size:13px;opacity:.5">⚙️</span>
       <span class="admin-link-t">Acceso administrador / colaborador</span>
     </div>
-    
   </div>
 </div>
 <!-- CARTERAS -->
@@ -497,6 +531,16 @@ window._db = firebase.firestore();
     <div class="new-cartera-btn" onclick="openM('m-new-cartera')">
       <div class="new-cartera-ico">➕</div><div class="new-cartera-t">Nueva Cartera</div>
       <div class="new-cartera-s">Grupo independiente con clave opcional</div>
+    </div>
+    <!-- CALCULADORA DE CRÉDITOS -->
+    <div onclick="openCalc()" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(0,229,176,.1),rgba(0,153,255,.06));border:1.5px solid rgba(0,229,176,.3);border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .18s;margin-top:4px"
+      onmouseover="this.style.borderColor='var(--jade)'" onmouseout="this.style.borderColor='rgba(0,229,176,.3)'">
+      <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(0,229,176,.2),rgba(0,153,255,.15));border:1.5px solid rgba(0,229,176,.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🧮</div>
+      <div style="flex:1">
+        <div style="font-weight:900;font-size:15px;letter-spacing:-.3px;color:var(--jade)">Calcular Crédito</div>
+        <div style="font-size:12px;color:var(--smoke);margin-top:2px">Simula cuotas, fechas y aplica directamente</div>
+      </div>
+      <div style="font-size:20px;color:var(--jade);opacity:.7">›</div>
     </div>
   </div>
 </div>
@@ -571,6 +615,181 @@ window._db = firebase.firestore();
   <div id="recibo-body"></div>
 </div></div>
 </div><!-- #app -->
+
+<!-- ═══════════════════════════════════════════════════════
+     CALCULADORA DE PRÉSTAMOS — Modal global (fuera de #app)
+     ═══════════════════════════════════════════════════════ -->
+<div class="overlay" id="m-calc" style="z-index:9500;align-items:flex-end">
+  <div class="sheet" style="max-height:96dvh;border-radius:20px 20px 0 0;overflow-y:auto;scrollbar-width:none;padding:0 0 24px">
+    <!-- Handle -->
+    <div class="shandle" style="margin:10px auto 0"></div>
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,rgba(0,229,176,.12),rgba(0,153,255,.08));padding:16px 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:2;backdrop-filter:blur(10px)">
+      <div style="font-size:26px">🧮</div>
+      <div style="flex:1">
+        <div style="font-weight:900;font-size:17px;letter-spacing:-.5px;color:var(--jade)">Calculadora de Préstamos</div>
+        <div style="font-size:11px;color:var(--smoke)">Simula, cotiza y aplica préstamos</div>
+      </div>
+      <button onclick="closeM('m-calc')" style="background:var(--ink3);border:1px solid var(--line);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--ash)">✕</button>
+    </div>
+
+    <div style="padding:14px 16px 0">
+
+      <!-- ── SECCIÓN 1: DATOS DEL PRÉSTAMO ── -->
+      <div class="calc-section">
+        <div class="calc-section-t">💵 Datos del préstamo</div>
+        <div class="fg" style="margin-bottom:10px">
+          <label class="fl">Valor del préstamo</label>
+          <input type="number" class="fi" id="calc-val" placeholder="Ej: 500000" oninput="calcRecalc()">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">Valor cuota</label>
+            <input type="number" class="fi" id="calc-cuo" placeholder="Ej: 55000" oninput="calcRecalc()">
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">% sobre capital <span style="color:var(--fog);font-size:10px">(opcional)</span></label>
+            <input type="number" class="fi" id="calc-pct" placeholder="Ej: 20" min="0" max="200" oninput="calcPctToCuota()" style="border-color:rgba(0,153,255,.4)">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--fog);margin-bottom:10px;margin-top:-4px">💡 Ingresa % para calcular cuota automáticamente, o escribe la cuota directamente</div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Número de cuotas</label>
+          <input type="number" class="fi" id="calc-ncu" placeholder="Ej: 10" min="1" oninput="calcRecalc()">
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 2: RESULTADO AUTOMÁTICO ── -->
+      <div id="calc-result-wrap" style="display:none">
+        <div class="calc-result-box">
+          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">📊 Resumen del préstamo</div>
+          <div class="calc-result-row">
+            <span class="calc-result-lbl">💵 Capital prestado</span>
+            <span class="calc-result-val" id="cr-base" style="color:var(--sky)">-</span>
+          </div>
+          <div class="calc-result-row">
+            <span class="calc-result-lbl">💹 Interés total</span>
+            <span class="calc-result-val" id="cr-int" style="color:var(--lime)">-</span>
+          </div>
+          <div class="calc-result-row">
+            <span class="calc-result-lbl">💳 Valor cuota</span>
+            <span class="calc-result-val" id="cr-cuo" style="color:var(--white)">-</span>
+          </div>
+          <div class="calc-result-row" style="border-bottom:none;padding-top:10px;margin-top:2px;border-top:1px solid rgba(0,229,176,.3)">
+            <span style="font-weight:900;font-size:14px;color:var(--jade)">🏆 Total a pagar</span>
+            <span class="calc-result-val" id="cr-tot" style="color:var(--jade);font-size:18px">-</span>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 3: MODALIDAD ── -->
+        <div class="calc-section">
+          <div class="calc-section-t">📅 Modalidad de pago</div>
+          <!-- Diario -->
+          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="margin-bottom:7px;display:flex;align-items:center;gap:8px;justify-content:center">
+            <span>⚡</span><span>Diario</span>
+          </div>
+          <div id="calc-sub-diario" class="calc-sub-mods" style="margin-bottom:10px">
+            <div id="calc-cal-lv" class="calc-sub-btn on" onclick="calcSetCal('lv')">Lun–Vie</div>
+            <div id="calc-cal-ls" class="calc-sub-btn" onclick="calcSetCal('ls')">Lun–Sáb</div>
+            <div id="calc-cal-td" class="calc-sub-btn" onclick="calcSetCal('td')">Todos</div>
+          </div>
+          <!-- Otras modalidades -->
+          <div class="calc-mod-grid">
+            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')">📆 Semanal</div>
+            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')">📆 Quincenal</div>
+            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')">📅 Mensual</div>
+          </div>
+        </div>
+
+        <!-- ── SECCIÓN 4: FECHA INICIO ── -->
+        <div class="calc-section">
+          <div class="calc-section-t">📅 Inicio de pago</div>
+          <div class="fi" id="calc-ini-display" onclick="openCalcDatePicker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;min-height:42px;margin-bottom:0">
+            <span id="calc-ini-label" style="color:var(--smoke)">Seleccionar fecha de primera cuota...</span>
+            <span style="font-size:16px">📅</span>
+          </div>
+          <input type="hidden" id="calc-ini">
+        </div>
+
+        <!-- ── SECCIÓN 5: CONSOLIDADO FINAL ── -->
+        <div id="calc-consolidado" style="display:none;background:linear-gradient(135deg,#081820,#0c1e2c);border:1.5px solid rgba(0,229,176,.4);border-radius:var(--r-lg);padding:16px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📋 Cotización completa</div>
+          <div id="calc-cons-rows"></div>
+          <!-- Plan primeras cuotas -->
+          <div id="calc-plan-wrap" style="margin-top:10px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">
+            <div style="font-size:10px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Primeras cuotas:</div>
+            <div id="calc-plan-rows"></div>
+          </div>
+        </div>
+
+        <!-- ── ACCIONES ── -->
+        <div style="margin-bottom:12px">
+          <button class="btn btn-jade btn-w" style="margin-bottom:8px;font-size:14px" onclick="calcAplicarPrestamo()">✅ Aplicar Préstamo</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-ghost" style="font-size:13px" onclick="calcDescargar()">📥 Descargar imagen</button>
+            <button class="btn btn-ghost" style="font-size:13px;border-color:rgba(37,211,102,.4);color:#25d366" onclick="calcMostrarWA()">📲 WhatsApp</button>
+          </div>
+        </div>
+
+        <!-- ── PANEL WA ── -->
+        <div id="calc-wa-panel" style="display:none;background:rgba(37,211,102,.06);border:1.5px solid rgba(37,211,102,.3);border-radius:var(--r);padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:#25d366;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📲 Enviar por WhatsApp</div>
+          <div class="fg" style="margin-bottom:8px">
+            <label class="fl">Número de WhatsApp (10 dígitos)</label>
+            <input type="tel" inputmode="numeric" class="fi" id="calc-wa-num" placeholder="Ej: 3001234567" maxlength="10" oninput="calcWABuscarCliente()">
+          </div>
+          <div id="calc-wa-sugerencias" style="margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('calc-wa-panel').style.display='none'">✕ Cerrar</button>
+            <button class="btn" style="flex:1;background:#25d366;border:none;color:#000;font-weight:800;font-size:13px;border-radius:var(--r-sm)" onclick="calcEnviarWA()">📲 Enviar</button>
+          </div>
+        </div>
+
+        <!-- ── PANEL APLICAR ── -->
+        <div id="calc-aplicar-panel" style="display:none;background:rgba(0,229,176,.06);border:1.5px solid rgba(0,229,176,.35);border-radius:var(--r);padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">✅ Aplicar préstamo</div>
+          <div id="calc-login-notice" style="display:none" class="calc-login-notice">⚠️ Debes iniciar sesión como administrador para aplicar préstamos.</div>
+          <div id="calc-aplicar-carteras-wrap">
+            <div style="font-size:12px;color:var(--smoke);margin-bottom:8px">Selecciona la cartera destino:</div>
+            <div id="calc-carteras-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+          </div>
+          <div id="calc-buscar-cli-wrap" style="display:none">
+            <div style="font-size:12px;color:var(--smoke);margin-bottom:6px">Buscar cliente existente:</div>
+            <input type="text" class="fi" id="calc-buscar-cli" placeholder="Nombre, apellido o cédula..." oninput="calcBuscarCliente()" autocomplete="off" style="margin-bottom:4px">
+            <div id="calc-buscar-resultados" class="calc-search-result"></div>
+            <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="calcAplicarNuevo()">👤 Aplicar a cliente nuevo</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="document.getElementById('calc-aplicar-panel').style.display='none'">✕ Cerrar</button>
+        </div>
+
+      </div><!-- /#calc-result-wrap -->
+
+      <!-- warn cuando no hay suficientes datos -->
+      <div id="calc-hint" style="text-align:center;padding:16px 0;color:var(--fog);font-size:13px">
+        Ingresa el valor, cuota y número de cuotas para ver el cálculo automático 👆
+      </div>
+
+    </div><!-- /padding wrapper -->
+  </div>
+</div>
+
+<!-- Date picker propio de la calculadora (independiente del de prestamos) -->
+<div id="calc-dp-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9600;display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeCalcDp()">
+  <div id="calc-dp-box" style="background:var(--ink2);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-weight:900;font-size:16px" id="calc-dp-label">Abril 2026</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="calcDpNav(-1)" style="background:var(--ink3);border:1px solid var(--line);border-radius:8px;color:var(--white);width:32px;height:32px;font-size:16px;cursor:pointer">‹</button>
+        <button onclick="calcDpNav(1)"  style="background:var(--ink3);border:1px solid var(--line);border-radius:8px;color:var(--white);width:32px;height:32px;font-size:16px;cursor:pointer">›</button>
+        <button onclick="closeCalcDp()" style="background:var(--ink3);border:1px solid var(--line);border-radius:8px;color:var(--white);height:32px;padding:0 10px;font-size:12px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div class="dp-grid" id="calc-dp-grid"></div>
+  </div>
+</div>
+
+<!-- Canvas oculto para exportar imagen -->
+<canvas id="calc-export-canvas" style="display:none"></canvas>
 
 <!-- NOTA MODAL -->
 <div class="overlay" id="m-nota"><div class="sheet">
@@ -4446,6 +4665,656 @@ function confirmarGanInline(maxGan){
   fsSave();
   document.getElementById('gan-inline-panel').style.display='none';
   render();
+}
+
+/* ═══════════════════════════════════════════════════════
+   CALCULADORA DE PRÉSTAMOS
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Estado interno de la calculadora ── */
+const CALC = {
+  mod: 'diario',   // modalidad activa
+  cal: 'lv',       // modo calendario para diario
+  ini: '',         // ISO fecha primera cuota
+  dpY: 0,
+  dpM: 0,
+  _carteraSelId: null  // cartera destino seleccionada en "aplicar"
+};
+
+function openCalc(){
+  // Reset a fresh state
+  CALC.ini = '';
+  CALC._carteraSelId = null;
+  const dpEl = document.getElementById('calc-dp-overlay');
+  if(dpEl) dpEl.style.display = 'none';
+  document.getElementById('calc-aplicar-panel').style.display = 'none';
+  document.getElementById('calc-wa-panel').style.display = 'none';
+  const lbl = document.getElementById('calc-ini-label');
+  if(lbl){ lbl.textContent = 'Seleccionar fecha de primera cuota...'; lbl.style.color = 'var(--smoke)'; }
+  openM('m-calc');
+  calcRecalc();
+}
+
+/* ── Calcular cuota desde porcentaje ── */
+function calcPctToCuota(){
+  const val = parseFloat(document.getElementById('calc-val')?.value) || 0;
+  const pct = parseFloat(document.getElementById('calc-pct')?.value) || 0;
+  if(val > 0 && pct > 0){
+    const cuota = Math.ceil(val * (1 + pct/100) / Math.max(1, parseFloat(document.getElementById('calc-ncu')?.value)||1));
+    const el = document.getElementById('calc-cuo');
+    if(el) el.value = cuota;
+  }
+  calcRecalc();
+}
+
+/* ── Motor de cálculo ── */
+function calcRecalc(){
+  const val  = parseFloat(document.getElementById('calc-val')?.value)  || 0;
+  const cuo  = parseFloat(document.getElementById('calc-cuo')?.value)  || 0;
+  const ncu  = parseInt(document.getElementById('calc-ncu')?.value)    || 0;
+
+  const hint  = document.getElementById('calc-hint');
+  const wrap  = document.getElementById('calc-result-wrap');
+  const cons  = document.getElementById('calc-consolidado');
+
+  if(val <= 0 || cuo <= 0 || ncu <= 0){
+    if(wrap)  wrap.style.display  = 'none';
+    if(cons)  cons.style.display  = 'none';
+    if(hint)  hint.style.display  = 'block';
+    return;
+  }
+  if(hint)  hint.style.display  = 'none';
+  if(wrap)  wrap.style.display  = 'block';
+
+  const total = cuo * ncu;
+  const interes = total - val;
+
+  document.getElementById('cr-base').textContent = fmt(val);
+  document.getElementById('cr-cuo').textContent  = fmt(cuo);
+  document.getElementById('cr-int').textContent  = fmt(Math.max(0, interes));
+  document.getElementById('cr-int').style.color  = interes < 0 ? 'var(--fire)' : 'var(--lime)';
+  document.getElementById('cr-tot').textContent  = fmt(total);
+  document.getElementById('cr-tot').style.color  = interes <= 0 ? 'var(--fire)' : 'var(--jade)';
+
+  calcActualizarConsolidado(val, cuo, ncu, total, interes);
+}
+
+/* ── Consolidado completo (con fechas) ── */
+function calcActualizarConsolidado(val, cuo, ncu, total, interes){
+  const cons = document.getElementById('calc-consolidado');
+  const ini  = CALC.ini;
+
+  if(!ini){ if(cons) cons.style.display = 'none'; return; }
+
+  if(cons) cons.style.display = 'block';
+
+  // Calcular fechas usando las funciones existentes del app
+  const primeraCuota = new Date(ini + 'T12:00:00');
+
+  // Temporalmente pisar _calMode para el cálculo
+  const modoAntes = _calMode;
+  _calMode = CALC.cal;
+
+  let fechas;
+  try {
+    fechas = calcFechasDesde(primeraCuota, CALC.mod, ncu);
+  } catch(e){
+    fechas = [];
+  }
+  _calMode = modoAntes;
+
+  const fechaFin = fechas.length ? fechas[fechas.length - 1] : null;
+  const modNombre = {diario:'Diario', semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual'}[CALC.mod];
+  const calNombre = CALC.mod === 'diario' ? ({'lv':'Lun–Vie','ls':'Lun–Sáb','td':'Todos los días'}[CALC.cal]) : 'Calendario corrido';
+
+  const rows = [
+    {l:'💵 Capital prestado',    v: fmt(val),       c:'var(--sky)'},
+    {l:'💹 Interés total',       v: fmt(Math.max(0,interes)), c: interes<0?'var(--fire)':'var(--lime)'},
+    {l:'💳 Valor cuota',         v: fmt(cuo),       c:'var(--white)'},
+    {l:'🔢 Número de cuotas',    v: ncu,            c:'var(--ash)'},
+    {l:'📋 Modalidad',           v: modNombre,      c:'var(--ash)'},
+    {l:'📆 Calendario',          v: calNombre,      c:'var(--ash)'},
+    {l:'📅 Inicio de pago',      v: fdCalc(primeraCuota), c:'var(--amber)'},
+    {l:'🏁 Fecha pago final',    v: fechaFin ? fdCalc(fechaFin) : '—', c:'var(--amber)'},
+    {l:'🏆 TOTAL A PAGAR',       v: fmt(total),     c:'var(--jade)', bold:true},
+  ];
+
+  document.getElementById('calc-cons-rows').innerHTML = rows.map(r =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:12px;color:var(--smoke)">${r.l}</span>
+      <span style="font-weight:${r.bold?'900':'700'};font-size:${r.bold?'15':'13'}px;color:${r.c};font-family:'JetBrains Mono',monospace">${r.v}</span>
+    </div>`
+  ).join('');
+
+  // Primeras 6 cuotas
+  const planFechas = fechas.slice(0, 6);
+  document.getElementById('calc-plan-rows').innerHTML = planFechas.map((f, i) =>
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <span style="color:var(--jade);font-weight:700;width:56px;flex-shrink:0">Cuota ${i+1}</span>
+      <span style="color:var(--ash);flex:1">${fdCalc(f)}</span>
+      <span style="color:var(--white);font-family:monospace">${fmt(cuo)}</span>
+    </div>`
+  ).join('') + (ncu > 6 ? `<div style="font-size:10px;color:var(--fog);padding:4px 0">+${ncu-6} cuotas más...</div>` : '');
+}
+
+function fdCalc(d){
+  return new Date(d).toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+}
+
+/* ── Cambiar modalidad ── */
+function calcSetMod(m){
+  CALC.mod = m;
+  ['diario','semanal','quincenal','mensual'].forEach(function(k){
+    const el = document.getElementById('calc-mod-' + k);
+    if(el) el.classList.toggle('on', k === m);
+  });
+  // Mostrar/ocultar opciones de calendario diario
+  const subDiv = document.getElementById('calc-sub-diario');
+  if(subDiv) subDiv.style.display = m === 'diario' ? 'flex' : 'none';
+  // Para no-diario usar Todos (calendario corrido)
+  if(m !== 'diario') CALC.cal = 'td';
+  calcRecalc();
+}
+
+/* ── Cambiar calendario para diario ── */
+function calcSetCal(c){
+  CALC.cal = c;
+  ['lv','ls','td'].forEach(function(k){
+    const el = document.getElementById('calc-cal-' + k);
+    if(el) el.classList.toggle('on', k === c);
+  });
+  calcRecalc();
+}
+
+/* ══ DATE PICKER DE LA CALCULADORA ══ */
+function openCalcDatePicker(){
+  const t = new Date();
+  CALC.dpY = t.getFullYear();
+  CALC.dpM = t.getMonth();
+  calcRenderDp();
+  document.getElementById('calc-dp-overlay').style.display = 'flex';
+}
+function closeCalcDp(){
+  document.getElementById('calc-dp-overlay').style.display = 'none';
+}
+function calcDpNav(dir){
+  CALC.dpM += dir;
+  if(CALC.dpM > 11){ CALC.dpM = 0; CALC.dpY++; }
+  if(CALC.dpM < 0){ CALC.dpM = 11; CALC.dpY--; }
+  calcRenderDp();
+}
+function calcRenderDp(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayISO = today.toISOString().slice(0,10);
+  const selISO = CALC.ini;
+  const mode = CALC.mod === 'diario' ? CALC.cal : 'td';
+
+  document.getElementById('calc-dp-label').textContent = MESES[CALC.dpM] + ' ' + CALC.dpY;
+  const grid = document.getElementById('calc-dp-grid');
+  const dows = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = '';
+  for(let i = 0; i < 7; i++){
+    const isBlocked = mode==='td' ? false : (i===0)||(i===6&&mode==='lv');
+    html += '<div class="dp-dow'+(isBlocked?' blocked':'')+'">'+dows[i]+'</div>';
+  }
+  const first = new Date(CALC.dpY, CALC.dpM, 1).getDay();
+  for(let i = 0; i < first; i++) html += '<div class="dp-day empty"></div>';
+  const dim = new Date(CALC.dpY, CALC.dpM+1, 0).getDate();
+  for(let d = 1; d <= dim; d++){
+    const dt = new Date(CALC.dpY, CALC.dpM, d, 12, 0, 0);
+    const iso = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    const dow = dt.getDay();
+    const blocked = mode==='td' ? false : dow===0||(dow===6&&mode==='lv')||FEST.has(iso);
+    let cls = 'dp-day' + (blocked ? ' blocked' : ' available');
+    if(iso === selISO) cls += ' selected';
+    if(iso === todayISO && !blocked) cls += ' today';
+    if(blocked){
+      html += '<div class="'+cls+'">'+d+'</div>';
+    } else {
+      const isPast = dt < today;
+      html += '<div class="'+cls+(isPast?' past-sel':'')+'" data-iso="'+iso+'" onclick="calcDpSelect(this.dataset.iso)">'+d+'</div>';
+    }
+  }
+  grid.innerHTML = html;
+}
+function calcDpSelect(iso){
+  CALC.ini = iso;
+  const d = new Date(iso + 'T12:00:00');
+  const lbl = d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const el = document.getElementById('calc-ini-label');
+  if(el){ el.textContent = lbl; el.style.color = 'var(--white)'; }
+  closeCalcDp();
+  calcRecalc();
+}
+
+/* ══ DESCARGAR COMO IMAGEN ══ */
+function calcDescargar(){
+  const val  = parseFloat(document.getElementById('calc-val')?.value)  || 0;
+  const cuo  = parseFloat(document.getElementById('calc-cuo')?.value)  || 0;
+  const ncu  = parseInt(document.getElementById('calc-ncu')?.value)    || 0;
+  if(!val || !cuo || !ncu){ toast('⚠️ Completa los datos del préstamo primero'); return; }
+
+  const total = cuo * ncu;
+  const interes = total - val;
+  const modNombre = {diario:'Diario',semanal:'Semanal',quincenal:'Quincenal',mensual:'Mensual'}[CALC.mod];
+  const calNombre = CALC.mod==='diario' ? ({'lv':'Lun–Vie','ls':'Lun–Sáb','td':'Todos los días'}[CALC.cal]) : 'Calendario corrido';
+  const ini = CALC.ini;
+
+  let fechaInicio = '—', fechaFin = '—';
+  if(ini){
+    const primeraCuota = new Date(ini + 'T12:00:00');
+    const modoAntes = _calMode; _calMode = CALC.cal;
+    try {
+      const fechas = calcFechasDesde(primeraCuota, CALC.mod, ncu);
+      fechaInicio = fdCalc(primeraCuota);
+      fechaFin = fechas.length ? fdCalc(fechas[fechas.length-1]) : '—';
+    } catch(e){}
+    _calMode = modoAntes;
+  }
+
+  const W = 700, H = 540;
+  const canvas = document.getElementById('calc-export-canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Fondo
+  ctx.fillStyle = '#0d1520';
+  ctx.fillRect(0, 0, W, H);
+
+  // Header gradient
+  const hg = ctx.createLinearGradient(0,0,W,0);
+  hg.addColorStop(0,'#003328'); hg.addColorStop(1,'#001a40');
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, W, 110);
+
+  // Línea acento top
+  ctx.fillStyle = '#00e5b0';
+  ctx.fillRect(0, 0, W, 5);
+
+  // Ícono círculo
+  ctx.fillStyle = 'rgba(0,229,176,0.15)';
+  ctx.beginPath(); ctx.arc(56,56,34,0,Math.PI*2); ctx.fill();
+  ctx.font = '28px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🧮', 56, 56);
+
+  // Título
+  ctx.font = 'bold 22px sans-serif'; ctx.fillStyle = '#00e5b0';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('COTIZACIÓN DE PRÉSTAMO', 102, 52);
+  ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.fillText('PrestaMax · ' + new Date().toLocaleDateString('es-CO'), 102, 74);
+  ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(0,229,176,0.6)';
+  ctx.fillText(modNombre.toUpperCase() + ' — ' + calNombre, 102, 96);
+
+  // Divisor
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, 124); ctx.lineTo(W-40, 124); ctx.stroke();
+
+  let ry = 158;
+  function dr(label, value, valColor){
+    ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(168,187,200,0.8)';
+    ctx.textAlign = 'left'; ctx.fillText(label, 60, ry);
+    ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = valColor || '#eef4f8';
+    ctx.textAlign = 'right'; ctx.fillText(value, W-60, ry);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(60, ry+9); ctx.lineTo(W-60, ry+9); ctx.stroke();
+    ry += 36;
+  }
+
+  dr('💵 Capital prestado', fmt(val), '#0099ff');
+  dr('💹 Interés total', fmt(Math.max(0,interes)), '#39d870');
+  dr('💳 Valor cuota', fmt(cuo), '#eef4f8');
+  dr('🔢 Número de cuotas', ncu.toString(), '#a8bbc8');
+  if(ini){ dr('📅 Inicio de pago', fechaInicio, '#ffaa00'); }
+  if(ini){ dr('🏁 Fecha pago final', fechaFin, '#ffaa00'); }
+
+  // Total destacado
+  ry += 8;
+  const tg = ctx.createLinearGradient(40,ry-20,W-40,ry+20);
+  tg.addColorStop(0,'rgba(0,229,176,0.15)'); tg.addColorStop(1,'rgba(0,153,255,0.08)');
+  ctx.fillStyle = tg;
+  ctx.beginPath();
+  calcRoundRect(ctx, 40, ry-24, W-80, 52, 10);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,229,176,0.5)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); calcRoundRect(ctx, 40, ry-24, W-80, 52, 10); ctx.stroke();
+
+  ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(0,229,176,0.8)';
+  ctx.textAlign = 'left'; ctx.fillText('🏆 TOTAL A PAGAR', 60, ry+2);
+  ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#00e5b0';
+  ctx.textAlign = 'right'; ctx.fillText(fmt(total), W-60, ry+4);
+
+  // Footer
+  ctx.font = '11px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Generado por PrestaMax · Solo referencial · sujeto a confirmación', W/2, H-20);
+
+  // Descargar
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'cotizacion-prestamo.png';
+  link.click();
+  toast('✅ Imagen descargada');
+}
+
+function calcRoundRect(ctx, x, y, w, h, r){
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+/* ══ WHATSAPP ══ */
+function calcMostrarWA(){
+  const panel = document.getElementById('calc-wa-panel');
+  const isVisible = panel.style.display !== 'none';
+  panel.style.display = isVisible ? 'none' : 'block';
+  if(!isVisible){
+    const numEl = document.getElementById('calc-wa-num');
+    if(numEl) numEl.value = '';
+    document.getElementById('calc-wa-sugerencias').innerHTML = '';
+  }
+}
+
+function calcWABuscarCliente(){
+  const q = (document.getElementById('calc-wa-num')?.value || '').trim();
+  const sugs = document.getElementById('calc-wa-sugerencias');
+  if(!sugs) return;
+  if(q.length < 4){ sugs.innerHTML = ''; return; }
+
+  // Buscar en clientes de todas las carteras
+  const clientes = [];
+  DB.carteras.forEach(function(c){
+    (c.clientes||[]).forEach(function(cli){
+      if(!clientes.find(x=>x.tel===cli.tel)){
+        clientes.push(cli);
+      }
+    });
+    (c.loans||[]).forEach(function(l){
+      if(!clientes.find(x=>x.tel===l.tel) && l.tel){
+        clientes.push({nom:l.nom,ape:l.ape,tel:l.tel,ced:l.ced||''});
+      }
+    });
+  });
+
+  const matches = clientes.filter(function(c){
+    return (c.nom+' '+c.ape+' '+(c.tel||'')+(c.ced||'')).toLowerCase().includes(q.toLowerCase());
+  }).slice(0,4);
+
+  if(!matches.length){ sugs.innerHTML = ''; return; }
+  sugs.innerHTML = matches.map(function(c){
+    return `<div onclick="calcSeleccionarContactoWA('${c.tel}')"
+      style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;background:var(--ink2);border-radius:8px;margin-bottom:4px"
+      onmouseover="this.style.background='rgba(37,211,102,.08)'" onmouseout="this.style.background='var(--ink2)'">
+      <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#000;flex-shrink:0">
+        ${(c.nom[0]||'')+(c.ape?c.ape[0]:'')}
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:13px">${c.nom} ${c.ape||''}</div>
+        <div style="font-size:11px;color:var(--smoke)">${c.tel}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcSeleccionarContactoWA(tel){
+  const el = document.getElementById('calc-wa-num');
+  if(el) el.value = tel;
+  document.getElementById('calc-wa-sugerencias').innerHTML = '';
+}
+
+function calcEnviarWA(){
+  const val  = parseFloat(document.getElementById('calc-val')?.value)  || 0;
+  const cuo  = parseFloat(document.getElementById('calc-cuo')?.value)  || 0;
+  const ncu  = parseInt(document.getElementById('calc-ncu')?.value)    || 0;
+  if(!val || !cuo || !ncu){ toast('⚠️ Completa los datos del préstamo'); return; }
+
+  let tel = (document.getElementById('calc-wa-num')?.value || '').replace(/\D/g,'');
+  if(tel.length !== 10){ toast('⚠️ Ingresa un número de 10 dígitos'); return; }
+  if(!tel.startsWith('57')) tel = '57' + tel;
+
+  const total = cuo * ncu;
+  const interes = total - val;
+  const modNombre = {diario:'Diario',semanal:'Semanal',quincenal:'Quincenal',mensual:'Mensual'}[CALC.mod];
+  const calNombre = CALC.mod==='diario' ? ({'lv':'Lun–Vie','ls':'Lun–Sáb','td':'Todos los días'}[CALC.cal]) : 'Calendario corrido';
+
+  let msg = '🧮 *COTIZACIÓN PRÉSTAMO – PrestaMax*\n\n';
+  msg += '💵 Capital: *' + fmt(val) + '*\n';
+  msg += '💳 Cuota: *' + fmt(cuo) + '*\n';
+  msg += '🔢 Cuotas: *' + ncu + '*\n';
+  msg += '📋 Modalidad: *' + modNombre + ' (' + calNombre + ')*\n';
+  if(CALC.ini){
+    const d = new Date(CALC.ini+'T12:00:00');
+    msg += '📅 Inicio pago: *' + fdCalc(d) + '*\n';
+    const modoAntes = _calMode; _calMode = CALC.cal;
+    try {
+      const fechas = calcFechasDesde(d, CALC.mod, ncu);
+      if(fechas.length) msg += '🏁 Último pago: *' + fdCalc(fechas[fechas.length-1]) + '*\n';
+    } catch(e){}
+    _calMode = modoAntes;
+  }
+  msg += '💹 Interés: *' + fmt(Math.max(0,interes)) + '*\n';
+  msg += '🏆 *TOTAL A PAGAR: ' + fmt(total) + '*\n\n';
+  msg += '_Cotización generada por PrestaMax · Sujeta a confirmación_';
+
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ══ APLICAR PRÉSTAMO ══ */
+function calcAplicarPrestamo(){
+  const val = parseFloat(document.getElementById('calc-val')?.value) || 0;
+  const cuo = parseFloat(document.getElementById('calc-cuo')?.value) || 0;
+  const ncu = parseInt(document.getElementById('calc-ncu')?.value)   || 0;
+  if(!val || !cuo || !ncu){ toast('⚠️ Completa los datos del préstamo primero'); return; }
+
+  const panel = document.getElementById('calc-aplicar-panel');
+  const buscarWrap = document.getElementById('calc-buscar-cli-wrap');
+  const notice = document.getElementById('calc-login-notice');
+  const carterasWrap = document.getElementById('calc-aplicar-carteras-wrap');
+
+  panel.style.display = 'block';
+
+  // Verificar si hay sesión
+  if(!S.user){
+    notice.style.display = 'block';
+    carterasWrap.style.display = 'none';
+    buscarWrap.style.display = 'none';
+    return;
+  }
+  notice.style.display = 'none';
+
+  // Mostrar carteras del usuario
+  const mine = DB.carteras.filter(function(c){
+    return c.owner === S.user.id || c.owner === S.user.email || (c.collabs||[]).includes(S.user.email||'');
+  });
+
+  if(!mine.length){
+    carterasWrap.innerHTML = '<div style="font-size:13px;color:var(--fog);padding:8px 0;text-align:center">No tienes carteras. Crea una primero.</div>';
+    buscarWrap.style.display = 'none';
+    return;
+  }
+
+  carterasWrap.style.display = 'block';
+  buscarWrap.style.display = 'none';
+  CALC._carteraSelId = null;
+
+  document.getElementById('calc-carteras-list').innerHTML = mine.map(function(c){
+    const activos = (c.loans||[]).filter(function(l){return l.activo;}).length;
+    return `<div onclick="calcSeleccionarCartera('${c.id}')" id="calc-cart-btn-${c.id}"
+      style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s"
+      onmouseover="this.style.borderColor='var(--jade)'" onmouseout="if('${c.id}'!==CALC._carteraSelId)this.style.borderColor='var(--line)'">
+      <div style="font-size:22px">${{'cc-jade':'💚','cc-violet':'💜','cc-amber':'🧡','cc-lime':'🌿'}[c.color]||'💼'}</div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:14px">${c.name}</div>
+        <div style="font-size:11px;color:var(--smoke)">${activos} créditos activos</div>
+      </div>
+      <div style="font-size:18px;color:var(--fog)" id="calc-cart-check-${c.id}">○</div>
+    </div>`;
+  }).join('');
+}
+
+function calcSeleccionarCartera(id){
+  CALC._carteraSelId = id;
+  // Resaltar selección
+  DB.carteras.forEach(function(c){
+    const btn = document.getElementById('calc-cart-btn-' + c.id);
+    const chk = document.getElementById('calc-cart-check-' + c.id);
+    if(btn){ btn.style.borderColor = c.id===id ? 'var(--jade)' : 'var(--line)'; btn.style.background = c.id===id ? 'rgba(0,229,176,.08)' : 'var(--ink3)'; }
+    if(chk){ chk.textContent = c.id===id ? '✅' : '○'; chk.style.color = c.id===id ? 'var(--jade)' : 'var(--fog)'; }
+  });
+  // Mostrar buscador de clientes
+  document.getElementById('calc-buscar-cli-wrap').style.display = 'block';
+  document.getElementById('calc-buscar-cli').value = '';
+  document.getElementById('calc-buscar-resultados').innerHTML = '';
+  toast('📁 ' + (DB.carteras.find(c=>c.id===id)?.name||'Cartera') + ' seleccionada');
+}
+
+function calcBuscarCliente(){
+  const q = (document.getElementById('calc-buscar-cli')?.value || '').trim().toLowerCase();
+  const resultDiv = document.getElementById('calc-buscar-resultados');
+  if(!resultDiv) return;
+  if(q.length < 2){ resultDiv.innerHTML = ''; return; }
+
+  const cartId = CALC._carteraSelId;
+  const cartera = DB.carteras.find(function(c){ return c.id === cartId; });
+  if(!cartera){ resultDiv.innerHTML = ''; return; }
+
+  const fuente = [...(cartera.clientes||[])];
+  (cartera.loans||[]).forEach(function(l){
+    if(!fuente.find(function(c){ return c.ced === l.ced; })){
+      fuente.push({nom:l.nom, ape:l.ape, ced:l.ced, tel:l.tel, cel2:l.cel2||'', email:l.email||'', cta:l.cta||''});
+    }
+  });
+
+  const res = fuente.filter(function(c){
+    return (c.nom+' '+c.ape+' '+(c.ced||'')).toLowerCase().includes(q);
+  }).slice(0, 5);
+
+  if(!res.length){
+    resultDiv.innerHTML = '<div style="font-size:12px;color:var(--fog);padding:8px">Sin resultados</div>';
+    return;
+  }
+  resultDiv.innerHTML = res.map(function(c){
+    const safeC = encodeURIComponent(JSON.stringify(c));
+    return `<div onclick="calcAplicarACliente('${safeC}')"
+      style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"
+      onmouseover="this.style.background='rgba(0,229,176,.08)'" onmouseout="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--jade),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#000;flex-shrink:0">
+        ${(c.nom[0]||'')+(c.ape?c.ape[0]:'')}
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${c.nom} ${c.ape||''}</div>
+        <div style="font-size:11px;color:var(--smoke)">CC ${c.ced} · ${c.tel}</div>
+      </div>
+      <div class="btn btn-jade btn-sm" style="font-size:11px;padding:5px 10px;flex-shrink:0">Aplicar</div>
+    </div>`;
+  }).join('');
+}
+
+function calcAplicarACliente(safeC){
+  let cli;
+  try{ cli = JSON.parse(decodeURIComponent(safeC)); } catch(e){ toast('❌ Error al cargar cliente'); return; }
+  calcIrAModalPrestamo(cli);
+}
+
+function calcAplicarNuevo(){
+  calcIrAModalPrestamo(null);
+}
+
+function calcIrAModalPrestamo(cli){
+  const val  = parseFloat(document.getElementById('calc-val')?.value)  || 0;
+  const cuo  = parseFloat(document.getElementById('calc-cuo')?.value)  || 0;
+  const ncu  = parseInt(document.getElementById('calc-ncu')?.value)    || 0;
+  const mod  = CALC.mod;
+  const ini  = CALC.ini;
+  const cartId = CALC._carteraSelId;
+
+  if(!cartId){ toast('⚠️ Selecciona una cartera'); return; }
+
+  // Cambiar a la cartera seleccionada si no es la actual
+  const cartera = DB.carteras.find(function(c){ return c.id === cartId; });
+  if(!cartera){ toast('❌ Cartera no encontrada'); return; }
+
+  // Si la cartera tiene clave, debería estar ya desbloqueada desde carteras. Aceptamos ir directo.
+  S.cartera = cartera;
+
+  // Cerrar calculadora
+  closeM('m-calc');
+
+  // Ir a la pantalla de carteras → main → abrir modal préstamo
+  ['s-inicio','s-carteras','s-lock','s-detail','s-portal','s-admin'].forEach(function(id){
+    const el = document.getElementById(id); if(el) el.classList.remove('on');
+  });
+  document.getElementById('s-main').classList.add('on');
+  document.getElementById('cartera-bar-title').textContent = cartera.name;
+  goTab('inicio');
+
+  // Abrir modal con datos precargados
+  setTimeout(function(){
+    // Limpiar form antes de pre-llenar
+    ['f-nom','f-ape','f-ced','f-tel','f-cel2','f-email','f-val','f-cuo','f-ncu'].forEach(function(id){
+      const e=document.getElementById(id); if(e) e.value='';
+    });
+    const fi=document.getElementById('f-ini'); if(fi) fi.value='';
+    const bci=document.getElementById('cli-cargado-info'); if(bci) bci.style.display='none';
+    const bfc=document.getElementById('f-buscar-cli'); if(bfc) bfc.value='';
+    const bcr=document.getElementById('buscar-cli-results'); if(bcr) bcr.innerHTML='';
+    openLoanModal();
+    setTimeout(function(){
+      // Llenar datos del préstamo
+      if(val)  { const e=document.getElementById('f-val');  if(e){ e.value=val;  } }
+      if(cuo)  { const e=document.getElementById('f-cuo');  if(e){ e.value=cuo;  } }
+      if(ncu)  { const e=document.getElementById('f-ncu');  if(e){ e.value=ncu;  } }
+
+      // Modalidad
+      const modSel = document.getElementById('f-mod');
+      if(modSel){
+        // diario→diario, semanal→semanal, etc.
+        const mval = mod === 'diario' ? 'diario' : mod;
+        modSel.value = mval;
+      }
+
+      // Modo calendario
+      const radioMap = {lv:'cal-lv', ls:'cal-ls', td:'cal-td'};
+      const calRad = document.getElementById(radioMap[CALC.cal]||'cal-lv');
+      if(calRad){ calRad.checked = true; _calMode = CALC.cal; _dpMode = CALC.cal; }
+
+      // Fecha primera cuota
+      if(ini){
+        const el = document.getElementById('f-ini');
+        if(el){ el.value = ini; }
+        const d = new Date(ini+'T12:00:00');
+        const lbl = document.getElementById('f-ini-label');
+        if(lbl){ lbl.textContent = d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); lbl.style.color='var(--white)'; }
+      }
+
+      // Cliente (si se pasó uno)
+      if(cli){
+        if(document.getElementById('f-nom')) document.getElementById('f-nom').value = cli.nom||'';
+        if(document.getElementById('f-ape')) document.getElementById('f-ape').value = cli.ape||'';
+        if(document.getElementById('f-ced')) document.getElementById('f-ced').value = cli.ced||'';
+        if(document.getElementById('f-tel')) document.getElementById('f-tel').value = cli.tel||'';
+        if(document.getElementById('f-cel2')) document.getElementById('f-cel2').value = cli.cel2||'';
+        if(document.getElementById('f-email')) document.getElementById('f-email').value = cli.email||'';
+        // Mostrar chip de cliente cargado
+        const cargado = document.getElementById('cli-cargado-info');
+        if(cargado){
+          cargado.style.display='block';
+          cargado.innerHTML='✅ Cliente: <b>'+cli.nom+' '+cli.ape+'</b> · CC '+cli.ced+
+            ' <button onclick="limpiarClienteForm()" style="background:none;border:none;color:var(--fire);cursor:pointer;font-size:11px;margin-left:6px">✕ Limpiar</button>';
+        }
+        toast('✅ Datos de '+cli.nom+' precargados');
+      }
+
+      recalc();
+    }, 350);
+  }, 200);
 }
 
 seed();
