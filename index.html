@@ -474,6 +474,150 @@ body{font-family:'Exo 2',sans-serif;background:var(--ink);color:var(--white);fon
 
 /* canvas invisible para export */
 #calc-export-canvas{position:absolute;left:-9999px;top:-9999px}
+
+/* ─── BOTÓN FLOTANTE CALCULAR CRÉDITO ─── */
+@keyframes calcFloat{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%{transform:translateY(-6px) scale(1.03);}
+}
+@keyframes calcPulseRing{
+  0%{transform:scale(1);opacity:.7}
+  70%{transform:scale(1.55);opacity:0}
+  100%{transform:scale(1.55);opacity:0}
+}
+@keyframes calcTextSlide{
+  0%,30%{opacity:1;transform:translateY(0)}
+  40%,60%{opacity:0;transform:translateY(-8px)}
+  70%,100%{opacity:1;transform:translateY(0)}
+}
+@keyframes calcShine{
+  0%{left:-80%}
+  60%,100%{left:130%}
+}
+
+.calc-fab-wrap{
+  position:absolute;
+  bottom:22px;
+  left:0;right:0;
+  display:flex;
+  justify-content:center;
+  z-index:50;
+  pointer-events:none;
+}
+.calc-fab{
+  pointer-events:all;
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  background:linear-gradient(135deg,#00c49a,#0088ee);
+  border:none;
+  border-radius:40px;
+  padding:15px 28px 15px 20px;
+  cursor:pointer;
+  box-shadow:0 8px 32px rgba(0,229,176,.45),0 2px 8px rgba(0,0,0,.4);
+  animation:calcFloat 2.8s ease-in-out infinite;
+  overflow:hidden;
+}
+.calc-fab::before{
+  content:'';
+  position:absolute;
+  top:0;bottom:0;
+  left:-80%;
+  width:60%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:calcShine 3.2s ease-in-out infinite;
+  border-radius:40px;
+}
+.calc-fab-ring{
+  position:absolute;
+  inset:-4px;
+  border-radius:44px;
+  border:2.5px solid rgba(0,229,176,.6);
+  animation:calcPulseRing 2.4s ease-out infinite;
+  pointer-events:none;
+}
+.calc-fab-ico{
+  width:48px;height:48px;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  flex-shrink:0;
+}
+.calc-fab-texts{
+  display:flex;flex-direction:column;
+  align-items:flex-start;
+  overflow:hidden;
+}
+.calc-fab-t1{
+  font-weight:900;font-size:17px;
+  color:#fff;letter-spacing:-.3px;
+  line-height:1.15;
+  text-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.calc-fab-t2{
+  font-size:12px;
+  color:rgba(255,255,255,.8);
+  font-weight:600;
+  margin-top:1px;
+  animation:calcTextSlide 4s ease-in-out infinite;
+}
+
+/* ─── CALCULADORA MODAL — TAMAÑOS AUMENTADOS ─── */
+#m-calc .sheet{font-size:16px}
+#m-calc .fi{font-size:17px!important;padding:15px 16px!important;min-height:52px}
+#m-calc .fl{font-size:14px!important;margin-bottom:7px}
+#m-calc .fg{margin-bottom:14px}
+.calc-section{padding:18px;margin-bottom:14px}
+.calc-section-t{font-size:13px;margin-bottom:13px}
+.calc-result-row{padding:11px 0}
+.calc-result-lbl{font-size:15px}
+.calc-result-val{font-size:17px}
+.calc-mod-btn{font-size:15px;padding:14px 10px}
+.calc-sub-btn{font-size:13px;padding:10px 6px}
+.calc-result-box{padding:20px;margin-bottom:14px}
+#m-calc .btn{font-size:16px!important;padding:16px 18px!important;min-height:52px}
+#m-calc .btn-sm{font-size:14px!important;padding:12px 14px!important}
+#calc-cons-rows div{padding:10px 0!important}
+#calc-cons-rows span:first-child{font-size:14px!important}
+#calc-cons-rows span:last-child{font-size:15px!important}
+#calc-plan-rows div{padding:7px 0!important;font-size:13px!important}
+#calc-plan-rows span{font-size:13px!important}
+#cr-tot{font-size:24px!important}
+.calc-result-total{padding:20px}
+
+@media(min-width:600px){
+  .calc-fab-t1{font-size:19px}
+  .calc-fab-t2{font-size:14px}
+  .calc-fab-ico{width:52px;height:52px;font-size:27px}
+  .calc-fab{padding:17px 32px 17px 22px;gap:15px}
+  #m-calc .fi{font-size:19px!important;padding:17px 18px!important}
+  #m-calc .fl{font-size:16px!important}
+  .calc-section-t{font-size:15px}
+  .calc-mod-btn{font-size:17px;padding:16px 12px}
+  .calc-sub-btn{font-size:15px;padding:12px 8px}
+  .calc-result-lbl{font-size:17px}
+  .calc-result-val{font-size:19px}
+  #cr-tot{font-size:28px!important}
+  #m-calc .btn{font-size:18px!important;padding:18px 20px!important}
+}
+@media(min-width:768px){
+  .calc-fab-t1{font-size:22px}
+  .calc-fab-t2{font-size:15px}
+  .calc-fab{padding:20px 36px 20px 24px}
+  .calc-fab-ico{width:58px;height:58px;font-size:30px}
+  #m-calc .fi{font-size:20px!important;padding:18px 20px!important}
+  .calc-mod-btn{font-size:18px;padding:18px}
+  .calc-sub-btn{font-size:16px;padding:14px 10px}
+  .calc-result-lbl{font-size:18px}
+  .calc-result-val{font-size:20px}
+  #cr-tot{font-size:30px!important}
+  #m-calc .btn{font-size:19px!important;padding:20px 22px!important}
+  #calc-cons-rows span:first-child{font-size:16px!important}
+  #calc-cons-rows span:last-child{font-size:17px!important}
+  #calc-plan-rows div,#calc-plan-rows span{font-size:15px!important}
+}
 </style>
 
 <!-- Firebase SDK compat -->
@@ -524,7 +668,7 @@ window._db = firebase.firestore();
     <button onclick="toggleTheme()" id="theme-btn" style="background:none;border:none;cursor:pointer;font-size:24px;padding:4px 8px;margin-right:2px">🌙</button>
     <div class="user-chip" onclick="openM('m-user-menu')"><div class="user-av" id="uav">A</div><span id="uname">Admin</span></div>
   </div>
-  <div class="carteras-scroll pb">
+  <div class="carteras-scroll pb" style="padding-bottom:110px">
     <div style="font-weight:800;font-size:18px;letter-spacing:-.5px;margin-bottom:3px">Mis Carteras</div>
     <div style="font-size:12px;color:var(--smoke);margin-bottom:14px">Selecciona una cartera para gestionar préstamos</div>
     <div id="carteras-list"></div>
@@ -532,16 +676,17 @@ window._db = firebase.firestore();
       <div class="new-cartera-ico">➕</div><div class="new-cartera-t">Nueva Cartera</div>
       <div class="new-cartera-s">Grupo independiente con clave opcional</div>
     </div>
-    <!-- CALCULADORA DE CRÉDITOS -->
-    <div onclick="openCalc()" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(0,229,176,.1),rgba(0,153,255,.06));border:1.5px solid rgba(0,229,176,.3);border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .18s;margin-top:4px"
-      onmouseover="this.style.borderColor='var(--jade)'" onmouseout="this.style.borderColor='rgba(0,229,176,.3)'">
-      <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(0,229,176,.2),rgba(0,153,255,.15));border:1.5px solid rgba(0,229,176,.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🧮</div>
-      <div style="flex:1">
-        <div style="font-weight:900;font-size:15px;letter-spacing:-.3px;color:var(--jade)">Calcular Crédito</div>
-        <div style="font-size:12px;color:var(--smoke);margin-top:2px">Simula cuotas, fechas y aplica directamente</div>
+  </div>
+  <!-- BOTÓN FLOTANTE ANIMADO CALCULAR CRÉDITO -->
+  <div class="calc-fab-wrap">
+    <div class="calc-fab-ring"></div>
+    <button class="calc-fab" onclick="openCalc()">
+      <div class="calc-fab-ico">🧮</div>
+      <div class="calc-fab-texts">
+        <div class="calc-fab-t1">Calcular Crédito</div>
+        <div class="calc-fab-t2" id="calc-fab-msg">¿Deseas simular un préstamo?</div>
       </div>
-      <div style="font-size:20px;color:var(--jade);opacity:.7">›</div>
-    </div>
+    </button>
   </div>
 </div>
 <!-- LOCK -->
@@ -4666,6 +4811,23 @@ function confirmarGanInline(maxGan){
   document.getElementById('gan-inline-panel').style.display='none';
   render();
 }
+
+/* ── Mensajes rotativos del botón flotante ── */
+(function(){
+  const msgs = [
+    '¿Deseas simular un préstamo?',
+    'Calcula cuotas al instante ⚡',
+    'Aplica directo a tu cartera ✅',
+    'Simula fechas de pago 📅',
+    'Comparte por WhatsApp 📲',
+  ];
+  let idx = 0;
+  setInterval(function(){
+    idx = (idx + 1) % msgs.length;
+    const el = document.getElementById('calc-fab-msg');
+    if(el) el.textContent = msgs[idx];
+  }, 4000);
+})();
 
 /* ═══════════════════════════════════════════════════════
    CALCULADORA DE PRÉSTAMOS
