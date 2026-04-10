@@ -1187,100 +1187,100 @@ window._db = firebase.firestore();
       <button onclick="closeM('m-calc')" style="background:var(--ink3);border:1px solid var(--line);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--ash)">✕</button>
     </div>
 
-    <div style="padding:14px 16px 0">
+    <div style="padding:12px 14px 0">
 
-      <!-- ── SECCIÓN 1: DATOS DEL PRÉSTAMO ── -->
-      <div class="calc-section">
-        <div class="calc-section-t">💵 Datos del préstamo</div>
-        <div class="fg" style="margin-bottom:10px">
-          <label class="fl">Valor del préstamo</label>
-          <input type="number" class="fi" id="calc-val" placeholder="Ej: 500000" oninput="calcRecalc()">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:0">
-          <div class="fg" style="margin-bottom:0">
-            <label class="fl">N° de cuotas</label>
-            <input type="number" class="fi" id="calc-ncu" placeholder="Ej: 10" min="1" oninput="calcRecalc()">
+      <!-- ══ FILA 1: INPUTS + MODALIDAD lado a lado ══ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+
+        <!-- Columna izquierda: datos -->
+        <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
+          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">💵 Préstamo</div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;font-weight:700;color:var(--fog);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor</div>
+            <input type="number" class="fi" id="calc-val" placeholder="500000" oninput="calcRecalc()" style="font-size:14px!important;padding:10px 11px!important;min-height:auto">
           </div>
-          <div class="fg" style="margin-bottom:0">
-            <label class="fl">Valor cuota</label>
-            <input type="number" class="fi" id="calc-cuo" placeholder="Ej: 55000" oninput="calcRecalc()">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--fog);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">N° cuotas</div>
+              <input type="number" class="fi" id="calc-ncu" placeholder="10" min="1" oninput="calcRecalc()" style="font-size:14px!important;padding:10px 11px!important;min-height:auto">
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--fog);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cuota</div>
+              <input type="number" class="fi" id="calc-cuo" placeholder="55000" oninput="calcRecalc()" style="font-size:14px!important;padding:10px 11px!important;min-height:auto">
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: modalidad -->
+        <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
+          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">📅 Modalidad</div>
+          <!-- Diario + sub-opciones -->
+          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="padding:7px 6px;font-size:12px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:5px">⚡ Diario</div>
+          <div id="calc-sub-diario" style="display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap">
+            <div id="calc-cal-lv" onclick="calcSetCal('lv')" style="flex:1;min-width:0;background:rgba(74,158,255,.2);border:1.5px solid var(--sky);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:800;color:var(--sky)">L–V</div>
+            <div id="calc-cal-ls" onclick="calcSetCal('ls')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">L–S</div>
+            <div id="calc-cal-td" onclick="calcSetCal('td')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">Tod</div>
+          </div>
+          <!-- Semanal / Quincenal / Mensual -->
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')"   style="padding:6px;font-size:11px">📆 Semanal</div>
+            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')" style="padding:6px;font-size:11px">📆 Quincenal</div>
+            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')"   style="padding:6px;font-size:11px">📅 Mensual</div>
           </div>
         </div>
       </div>
 
-      <!-- ── SECCIÓN 2: RESULTADO AUTOMÁTICO ── -->
+      <!-- ══ FILA 2: RESUMEN COMPACTO (aparece al ingresar datos) ══ -->
       <div id="calc-result-wrap" style="display:none">
-        <div class="calc-result-box">
-          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">📊 Resumen del préstamo</div>
-          <div class="calc-result-row">
-            <span class="calc-result-lbl">💵 Capital prestado</span>
-            <span class="calc-result-val" id="cr-base" style="color:var(--sky)">-</span>
+
+        <!-- Mini resumen 2x2 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
+            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Capital</div>
+            <div id="cr-base" style="font-weight:900;font-size:15px;color:var(--sky);font-family:'JetBrains Mono',monospace">-</div>
           </div>
-          <div class="calc-result-row">
-            <span class="calc-result-lbl">💹 Interés total</span>
-            <span class="calc-result-val" id="cr-int" style="color:var(--lime)">-</span>
+          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
+            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Interés</div>
+            <div id="cr-int" style="font-weight:900;font-size:15px;color:var(--lime);font-family:'JetBrains Mono',monospace">-</div>
           </div>
-          <div class="calc-result-row">
-            <span class="calc-result-lbl">💳 Valor cuota</span>
-            <span class="calc-result-val" id="cr-cuo" style="color:var(--white)">-</span>
+          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
+            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Valor cuota</div>
+            <div id="cr-cuo" style="font-weight:900;font-size:15px;color:var(--white);font-family:'JetBrains Mono',monospace">-</div>
           </div>
-          <div class="calc-result-row" style="border-bottom:none;padding-top:10px;margin-top:2px;border-top:1px solid rgba(0,229,176,.3)">
-            <span style="font-weight:900;font-size:14px;color:var(--jade)">🏆 Total a pagar</span>
-            <span class="calc-result-val" id="cr-tot" style="color:var(--jade);font-size:18px">-</span>
+          <div style="background:linear-gradient(135deg,rgba(16,201,138,.15),rgba(74,158,255,.08));border:1.5px solid rgba(16,201,138,.4);border-radius:var(--r-sm);padding:10px;box-shadow:var(--glow-jade)">
+            <div style="font-size:10px;color:var(--jade);margin-bottom:2px">🏆 Total</div>
+            <div id="cr-tot" style="font-weight:900;font-size:17px;color:var(--jade);font-family:'JetBrains Mono',monospace">-</div>
           </div>
         </div>
 
-        <!-- ── SECCIÓN 3: MODALIDAD ── -->
-        <div class="calc-section">
-          <div class="calc-section-t">📅 Modalidad de pago</div>
-          <!-- Diario -->
-          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="margin-bottom:7px;display:flex;align-items:center;gap:8px;justify-content:center">
-            <span>⚡</span><span>Diario</span>
-          </div>
-          <div id="calc-sub-diario" class="calc-sub-mods" style="margin-bottom:10px">
-            <div id="calc-cal-lv" class="calc-sub-btn on" onclick="calcSetCal('lv')">Lun–Vie</div>
-            <div id="calc-cal-ls" class="calc-sub-btn" onclick="calcSetCal('ls')">Lun–Sáb</div>
-            <div id="calc-cal-td" class="calc-sub-btn" onclick="calcSetCal('td')">Todos</div>
-          </div>
-          <!-- Otras modalidades -->
-          <div class="calc-mod-grid">
-            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')">📆 Semanal</div>
-            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')">📆 Quincenal</div>
-            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')">📅 Mensual</div>
-          </div>
-        </div>
-
-        <!-- ── SECCIÓN 4: FECHA INICIO ── -->
-        <div class="calc-section">
-          <div class="calc-section-t">📅 Inicio de pago</div>
-          <div class="fi" id="calc-ini-display" onclick="openCalcDatePicker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;min-height:42px;margin-bottom:0">
-            <span id="calc-ini-label" style="color:var(--smoke)">Seleccionar fecha de primera cuota...</span>
-            <span style="font-size:16px">📅</span>
+        <!-- ══ FILA 3: FECHA + APLICAR lado a lado ══ -->
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px">
+          <div id="calc-ini-display" onclick="openCalcDatePicker()" style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;min-height:44px;box-shadow:var(--neon-input)">
+            <span id="calc-ini-label" style="font-size:12px;color:var(--smoke)">📅 Seleccionar fecha...</span>
+            <span style="font-size:15px">📅</span>
           </div>
           <input type="hidden" id="calc-ini">
+          <button class="btn btn-jade" onclick="calcAplicarPrestamo()" style="font-size:13px!important;padding:10px 14px!important;white-space:nowrap;min-height:44px;box-shadow:0 4px 14px rgba(16,201,138,.3)">✅ Aplicar</button>
         </div>
 
-        <!-- ── SECCIÓN 5: CONSOLIDADO FINAL ── -->
-        <div id="calc-consolidado" style="display:none;background:linear-gradient(135deg,#081820,#0c1e2c);border:1.5px solid rgba(0,229,176,.4);border-radius:var(--r-lg);padding:16px;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📋 Cotización completa</div>
+        <!-- ══ COTIZACIÓN COMPLETA (aparece al elegir fecha) ══ -->
+        <div id="calc-consolidado" style="display:none;background:linear-gradient(135deg,#081820,#0c1e2c);border:1.5px solid rgba(16,201,138,.35);border-radius:var(--r);padding:12px;margin-bottom:10px">
+          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📋 Cotización completa</div>
           <div id="calc-cons-rows"></div>
         </div>
 
-        <!-- ── ACCIONES ── -->
-        <div style="margin-bottom:12px">
-          <button class="btn btn-jade btn-w" style="margin-bottom:8px;font-size:14px" onclick="calcAplicarPrestamo()">✅ Aplicar Préstamo</button>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="btn btn-ghost" style="font-size:13px" onclick="calcDescargar()">📥 Descargar imagen</button>
-            <button class="btn btn-ghost" style="font-size:13px;border-color:rgba(37,211,102,.4);color:#25d366" onclick="calcMostrarWA()">📲 WhatsApp</button>
-          </div>
+        <!-- ══ ACCIONES ══ -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px">
+          <button class="btn btn-ghost" style="font-size:13px!important;padding:11px 10px!important" onclick="calcDescargar()">📥 Imagen</button>
+          <button class="btn btn-ghost" style="font-size:13px!important;padding:11px 10px!important;border-color:rgba(37,211,102,.4);color:#25d366" onclick="calcMostrarWA()">📲 WhatsApp</button>
         </div>
 
         <!-- ── PANEL WA ── -->
-        <div id="calc-wa-panel" style="display:none;background:rgba(37,211,102,.06);border:1.5px solid rgba(37,211,102,.3);border-radius:var(--r);padding:14px;margin-bottom:12px">
+        <div id="calc-wa-panel" style="display:none;background:rgba(37,211,102,.06);border:1.5px solid rgba(37,211,102,.3);border-radius:var(--r);padding:14px;margin-bottom:10px">
           <div style="font-size:11px;font-weight:800;color:#25d366;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📲 Enviar por WhatsApp</div>
           <div class="fg" style="margin-bottom:8px">
-            <label class="fl">Número de WhatsApp (10 dígitos)</label>
-            <input type="tel" inputmode="numeric" class="fi" id="calc-wa-num" placeholder="Ej: 3001234567" maxlength="10" oninput="calcWABuscarCliente()">
+            <label class="fl">Número (10 dígitos)</label>
+            <input type="tel" inputmode="numeric" class="fi" id="calc-wa-num" placeholder="Ej: 3001234567" maxlength="10" oninput="calcWABuscarCliente()" style="font-size:15px!important;padding:11px 13px!important">
           </div>
           <div id="calc-wa-sugerencias" style="margin-bottom:8px"></div>
           <div style="display:flex;gap:8px">
@@ -1290,7 +1290,7 @@ window._db = firebase.firestore();
         </div>
 
         <!-- ── PANEL APLICAR ── -->
-        <div id="calc-aplicar-panel" style="display:none;background:rgba(0,229,176,.06);border:1.5px solid rgba(0,229,176,.35);border-radius:var(--r);padding:14px;margin-bottom:12px">
+        <div id="calc-aplicar-panel" style="display:none;background:rgba(16,201,138,.06);border:1.5px solid rgba(16,201,138,.35);border-radius:var(--r);padding:14px;margin-bottom:10px">
           <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">✅ Aplicar préstamo</div>
           <div id="calc-login-notice" style="display:none" class="calc-login-notice">⚠️ Debes iniciar sesión como administrador para aplicar préstamos.</div>
           <div id="calc-aplicar-carteras-wrap">
@@ -1299,7 +1299,7 @@ window._db = firebase.firestore();
           </div>
           <div id="calc-buscar-cli-wrap" style="display:none">
             <div style="font-size:12px;color:var(--smoke);margin-bottom:6px">Buscar cliente existente:</div>
-            <input type="text" class="fi" id="calc-buscar-cli" placeholder="Nombre, apellido o cédula..." oninput="calcBuscarCliente()" autocomplete="off" style="margin-bottom:4px">
+            <input type="text" class="fi" id="calc-buscar-cli" placeholder="Nombre, apellido o cédula..." oninput="calcBuscarCliente()" autocomplete="off" style="margin-bottom:4px;font-size:14px!important;padding:10px 12px!important">
             <div id="calc-buscar-resultados" class="calc-search-result"></div>
             <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="calcAplicarNuevo()">👤 Aplicar a cliente nuevo</button>
           </div>
@@ -1308,9 +1308,9 @@ window._db = firebase.firestore();
 
       </div><!-- /#calc-result-wrap -->
 
-      <!-- warn cuando no hay suficientes datos -->
-      <div id="calc-hint" style="text-align:center;padding:16px 0;color:var(--fog);font-size:13px">
-        Ingresa el valor, cuota y número de cuotas para ver el cálculo automático 👆
+      <!-- hint inicial -->
+      <div id="calc-hint" style="text-align:center;padding:14px 0;color:var(--fog);font-size:13px">
+        Ingresa valor, cuotas y valor de cuota 👆
       </div>
 
     </div><!-- /padding wrapper -->
@@ -5294,47 +5294,41 @@ function calcActualizarConsolidado(val, cuo, ncu, total, interes){
   const ini  = CALC.ini;
 
   if(!ini){ if(cons) cons.style.display = 'none'; return; }
-
   if(cons) cons.style.display = 'block';
 
-  // Calcular fechas usando las funciones existentes del app
   const primeraCuota = new Date(ini + 'T12:00:00');
-
-  // Temporalmente pisar _calMode para el cálculo
   const modoAntes = _calMode;
   _calMode = CALC.cal;
-
   let fechas;
-  try {
-    fechas = calcFechasDesde(primeraCuota, CALC.mod, ncu);
-  } catch(e){
-    fechas = [];
-  }
+  try { fechas = calcFechasDesde(primeraCuota, CALC.mod, ncu); } catch(e){ fechas = []; }
   _calMode = modoAntes;
 
   const fechaFin = fechas.length ? fechas[fechas.length - 1] : null;
   const modNombre = {diario:'Diario', semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual'}[CALC.mod];
-  const calNombre = CALC.mod === 'diario' ? ({'lv':'Lun–Vie','ls':'Lun–Sáb','td':'Todos los días'}[CALC.cal]) : 'Calendario corrido';
+  const calNombre = CALC.mod === 'diario' ? ({'lv':'Lun–Vie','ls':'Lun–Sáb','td':'Todos'}[CALC.cal]) : 'Corrido';
 
-  const rows = [
-    {l:'💵 Capital prestado',    v: fmt(val),       c:'var(--sky)'},
-    {l:'💹 Interés total',       v: fmt(Math.max(0,interes)), c: interes<0?'var(--fire)':'var(--lime)'},
-    {l:'💳 Valor cuota',         v: fmt(cuo),       c:'var(--white)'},
-    {l:'🔢 Número de cuotas',    v: ncu,            c:'var(--ash)'},
-    {l:'📋 Modalidad',           v: modNombre,      c:'var(--ash)'},
-    {l:'📆 Calendario',          v: calNombre,      c:'var(--ash)'},
-    {l:'📅 Inicio de pago',      v: fdCalc(primeraCuota), c:'var(--amber)'},
-    {l:'🏁 Fecha pago final',    v: fechaFin ? fdCalc(fechaFin) : '—', c:'var(--amber)'},
-    {l:'🏆 TOTAL A PAGAR',       v: fmt(total),     c:'var(--jade)', bold:true},
+  // Grid compacto 2 columnas
+  const cells = [
+    {l:'Capital',      v: fmt(val),                            c:'var(--sky)'},
+    {l:'Interés',      v: fmt(Math.max(0,interes)),             c: interes<0?'var(--fire)':'var(--lime)'},
+    {l:'Cuota',        v: fmt(cuo),                            c:'var(--white)'},
+    {l:'N° cuotas',    v: ncu,                                 c:'var(--ash)'},
+    {l:'Modalidad',    v: modNombre+' · '+calNombre,           c:'var(--ash)'},
+    {l:'Inicio',       v: fdCalc(primeraCuota),                c:'var(--amber)'},
+    {l:'Último pago',  v: fechaFin ? fdCalc(fechaFin) : '—',  c:'var(--amber)'},
+    {l:'🏆 TOTAL',     v: fmt(total),                          c:'var(--jade)', bold:true, wide:true},
   ];
 
-  document.getElementById('calc-cons-rows').innerHTML = rows.map(r =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-      <span style="font-size:12px;color:var(--smoke)">${r.l}</span>
-      <span style="font-weight:${r.bold?'900':'700'};font-size:${r.bold?'15':'13'}px;color:${r.c};font-family:'JetBrains Mono',monospace">${r.v}</span>
-    </div>`
-  ).join('');
-
+  document.getElementById('calc-cons-rows').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">' +
+    cells.map(function(r){
+      const span = r.wide ? ' style="grid-column:1/-1;background:rgba(16,201,138,.08);border-color:rgba(16,201,138,.3)"' : '';
+      return `<div${span} style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 9px">
+        <div style="font-size:10px;color:var(--fog);margin-bottom:2px">${r.l}</div>
+        <div style="font-weight:${r.bold?'900':'700'};font-size:${r.bold?'16':'13'}px;color:${r.c};font-family:'JetBrains Mono',monospace;line-height:1.2">${r.v}</div>
+      </div>`;
+    }).join('') +
+    '</div>';
 }
 
 function fdCalc(d){
@@ -5359,9 +5353,18 @@ function calcSetMod(m){
 /* ── Cambiar calendario para diario ── */
 function calcSetCal(c){
   CALC.cal = c;
+  const styles = {
+    on:  {background:'rgba(74,158,255,.2)', borderColor:'var(--sky)', color:'var(--sky)', fontWeight:'800'},
+    off: {background:'var(--ink4)',         borderColor:'var(--line)', color:'var(--smoke)', fontWeight:'700'}
+  };
   ['lv','ls','td'].forEach(function(k){
     const el = document.getElementById('calc-cal-' + k);
-    if(el) el.classList.toggle('on', k === c);
+    if(!el) return;
+    const s = k === c ? styles.on : styles.off;
+    el.style.background   = s.background;
+    el.style.borderColor  = s.borderColor;
+    el.style.color        = s.color;
+    el.style.fontWeight   = s.fontWeight;
   });
   calcRecalc();
 }
