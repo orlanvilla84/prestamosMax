@@ -1199,20 +1199,15 @@ window._db = firebase.firestore();
           <label class="fl">Valor del préstamo</label>
           <input type="number" class="fi" id="calc-val" placeholder="Ej: 500000" oninput="calcRecalc()">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:0">
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">N° de cuotas</label>
+            <input type="number" class="fi" id="calc-ncu" placeholder="Ej: 10" min="1" oninput="calcRecalc()">
+          </div>
           <div class="fg" style="margin-bottom:0">
             <label class="fl">Valor cuota</label>
             <input type="number" class="fi" id="calc-cuo" placeholder="Ej: 55000" oninput="calcRecalc()">
           </div>
-          <div class="fg" style="margin-bottom:0">
-            <label class="fl">% sobre capital <span style="color:var(--fog);font-size:10px">(opcional)</span></label>
-            <input type="number" class="fi" id="calc-pct" placeholder="Ej: 20" min="0" max="200" oninput="calcPctToCuota()" style="border-color:rgba(0,153,255,.4)">
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--fog);margin-bottom:10px;margin-top:-4px">💡 Ingresa % para calcular cuota automáticamente, o escribe la cuota directamente</div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Número de cuotas</label>
-          <input type="number" class="fi" id="calc-ncu" placeholder="Ej: 10" min="1" oninput="calcRecalc()">
         </div>
       </div>
 
@@ -5266,18 +5261,6 @@ function openCalc(){
   const lbl = document.getElementById('calc-ini-label');
   if(lbl){ lbl.textContent = 'Seleccionar fecha de primera cuota...'; lbl.style.color = 'var(--smoke)'; }
   openM('m-calc');
-  calcRecalc();
-}
-
-/* ── Calcular cuota desde porcentaje ── */
-function calcPctToCuota(){
-  const val = parseFloat(document.getElementById('calc-val')?.value) || 0;
-  const pct = parseFloat(document.getElementById('calc-pct')?.value) || 0;
-  if(val > 0 && pct > 0){
-    const cuota = Math.ceil(val * (1 + pct/100) / Math.max(1, parseFloat(document.getElementById('calc-ncu')?.value)||1));
-    const el = document.getElementById('calc-cuo');
-    if(el) el.value = cuota;
-  }
   calcRecalc();
 }
 
