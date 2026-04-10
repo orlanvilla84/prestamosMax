@@ -995,8 +995,6 @@ body{
 #calc-cons-rows div{padding:10px 0!important}
 #calc-cons-rows span:first-child{font-size:14px!important}
 #calc-cons-rows span:last-child{font-size:15px!important}
-#calc-plan-rows div{padding:7px 0!important;font-size:13px!important}
-#calc-plan-rows span{font-size:13px!important}
 #cr-tot{font-size:24px!important}
 
 @media(min-width:600px){
@@ -1028,7 +1026,6 @@ body{
   #m-calc .btn{font-size:19px!important;padding:20px 24px!important}
   #calc-cons-rows span:first-child{font-size:16px!important}
   #calc-cons-rows span:last-child{font-size:17px!important}
-  #calc-plan-rows div,#calc-plan-rows span{font-size:15px!important}
 }
 </style>
 
@@ -1267,11 +1264,6 @@ window._db = firebase.firestore();
         <div id="calc-consolidado" style="display:none;background:linear-gradient(135deg,#081820,#0c1e2c);border:1.5px solid rgba(0,229,176,.4);border-radius:var(--r-lg);padding:16px;margin-bottom:12px">
           <div style="font-size:11px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📋 Cotización completa</div>
           <div id="calc-cons-rows"></div>
-          <!-- Plan primeras cuotas -->
-          <div id="calc-plan-wrap" style="margin-top:10px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">
-            <div style="font-size:10px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Primeras cuotas:</div>
-            <div id="calc-plan-rows"></div>
-          </div>
         </div>
 
         <!-- ── ACCIONES ── -->
@@ -5343,15 +5335,6 @@ function calcActualizarConsolidado(val, cuo, ncu, total, interes){
     </div>`
   ).join('');
 
-  // Primeras 6 cuotas
-  const planFechas = fechas.slice(0, 6);
-  document.getElementById('calc-plan-rows').innerHTML = planFechas.map((f, i) =>
-    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-      <span style="color:var(--jade);font-weight:700;width:56px;flex-shrink:0">Cuota ${i+1}</span>
-      <span style="color:var(--ash);flex:1">${fdCalc(f)}</span>
-      <span style="color:var(--white);font-family:monospace">${fmt(cuo)}</span>
-    </div>`
-  ).join('') + (ncu > 6 ? `<div style="font-size:10px;color:var(--fog);padding:4px 0">+${ncu-6} cuotas más...</div>` : '');
 }
 
 function fdCalc(d){
