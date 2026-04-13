@@ -4030,14 +4030,52 @@ function openOpts(){
   const l=getL(S.lid);if(!l)return;
   const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
   const canRenew=pag>=6&&l.cuotas.filter(c=>c.estado!=='pagada').length>0;
+  // Detectar cuotas pendientes con fecha duplicada
+  const pendFechas=l.cuotas.filter(c=>c.estado!=='pagada').map(c=>new Date(c.fecha).toISOString().slice(0,10));
+  const hayDups=pendFechas.length!==new Set(pendFechas).size;
   $('opts-body').innerHTML=`
   <button class="btn btn-sky btn-w"   onclick="sendWA(${l.id});closeM('m-opts')">📲 Recordatorio WhatsApp</button>
   <button class="btn btn-ghost btn-w" onclick="notifGrupo('pago',getL(${l.id}),{cn:'próxima',val:${l.cuo}});closeM('m-opts')">📢 Avisar grupo empresa</button>
   ${canRenew?`<button class="btn btn-amber btn-w" onclick="openRenew(${l.id})">🔄 Renovar crédito</button>`:''}
   <button class="btn btn-ghost btn-w" style="border-color:rgba(74,158,255,.4);color:var(--sky)" onclick="closeM('m-opts');openCambiarCalendario(${l.id})">📅 Cambiar calendario de pago</button>
+  ${hayDups?`<button class="btn btn-amber btn-w" style="border-color:rgba(246,166,35,.6);font-weight:800" onclick="closeM('m-opts');limpiarCuotasDuplicadas(${l.id})">🔧 Corregir cuotas duplicadas</button>`:''}
   <div class="hr"></div>
   <button class="btn btn-fire btn-w" onclick="delLoan(${l.id})">🗑️ Eliminar préstamo</button>`;
   openM('m-opts');
+}
+
+function limpiarCuotasDuplicadas(lid){
+  const l=getL(lid);if(!l)return;
+  const pendientes=l.cuotas.filter(c=>c.estado!=='pagada').sort((a,b)=>a.num-b.num);
+  if(!pendientes.length){toast('\u2705 Sin cuotas pendientes que corregir');return;}
+  // Detectar duplicados
+  const fechas=pendientes.map(c=>new Date(c.fecha).toISOString().slice(0,10));
+  const dups=fechas.filter((f,i)=>fechas.indexOf(f)!==i);
+  if(!dups.length){toast('\u2705 No se encontraron fechas duplicadas');return;}
+  if(!confirm('Se encontraron '+dups.length+' fecha(s) duplicada(s) en cuotas pendientes.\n\n'
+    +'Se recalcularán las fechas de las '+pendientes.length+' cuotas pendientes '
+    +'desde la fecha más temprana, respetando el calendario '+_calNombre(l.calMode||'lv')+'.\n\n'
+    +'Las cuotas pagadas NO se modifican.\n\n¿Continuar?'))return;
+  // Fecha base: la más temprana entre pendientes
+  let fechaBase=pendientes.reduce(function(min,x){
+    const fd=new Date(x.fecha);return fd<min?fd:min;
+  },new Date(pendientes[0].fecha));
+  // Ajustar al primer día hábil
+  const calModoLoan=l.calMode||'lv';
+  while(!isHabilMode(fechaBase,calModoLoan))fechaBase.setDate(fechaBase.getDate()+1);
+  // Recalcular fechas
+  const _sv=_calMode;_calMode=calModoLoan;
+  let nuevasFechas=[];
+  try{nuevasFechas=calcFechasDesde(fechaBase,l.mod,pendientes.length);}catch(e){}
+  _calMode=_sv;
+  if(nuevasFechas.length!==pendientes.length){toast('\u274c Error al recalcular fechas');return;}
+  pendientes.forEach(function(c,i){c.fecha=nuevasFechas[i];});
+  l.historico.push('\ud83d\udd27 Cuotas duplicadas corregidas \u00b7 '+pendientes.length+' pendientes recalculadas desde '
+    +fechaBase.toLocaleDateString('es-CO')+' \u00b7 '+new Date().toLocaleDateString('es-CO'));
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
+  toast('\u2705 '+pendientes.length+' cuotas corregidas — sin duplicados');
 }
 function delLoan(id){
   const l=S.cartera.loans.find(function(x){return x.id===id;});
