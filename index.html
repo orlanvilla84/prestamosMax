@@ -1190,7 +1190,7 @@ window._db = firebase.firestore();
     <div style="padding:12px 14px 0">
 
       <!-- ══ FILA 1: INPUTS + MODALIDAD lado a lado ══ -->
-      <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:2fr 0.75fr;gap:10px;margin-bottom:10px">
 
         <!-- Columna izquierda: datos -->
         <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
@@ -1211,22 +1211,28 @@ window._db = firebase.firestore();
           </div>
         </div>
 
-        <!-- Columna derecha: modalidad -->
-        <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
-          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">📅 Modalidad</div>
-          <!-- Diario + sub-opciones -->
-          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="padding:6px 4px;font-size:11px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:4px">⚡ Diario</div>
-          <div id="calc-sub-diario" style="display:flex;gap:2px;margin-bottom:5px">
-            <div id="calc-cal-lv" onclick="calcSetCal('lv')" style="flex:1;min-width:0;background:rgba(74,158,255,.2);border:1.5px solid var(--sky);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:800;color:var(--sky)">L–V</div>
-            <div id="calc-cal-ls" onclick="calcSetCal('ls')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:700;color:var(--smoke)">L–S</div>
-            <div id="calc-cal-td" onclick="calcSetCal('td')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:700;color:var(--smoke)">Tod</div>
+        <!-- Columna derecha: modalidad vertical compacta -->
+        <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 8px;box-shadow:var(--neon-card);display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:9px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px">📅 Modalidad</div>
+
+          <!-- Diario: botón con flecha + submenú desplegable -->
+          <div id="calc-mod-diario" class="calc-mod-btn on"
+               onclick="calcToggleDiario(event)"
+               style="padding:7px 6px;font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:2px;width:100%">
+            <span>⚡ Diario</span>
+            <span id="calc-diario-arrow" style="font-size:9px;transition:transform .2s">▾</span>
           </div>
-          <!-- Semanal / Quincenal / Mensual compactos -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')"   style="padding:5px 2px;font-size:10px;text-align:center">Sem</div>
-            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')" style="padding:5px 2px;font-size:10px;text-align:center">Quin</div>
-            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')"   style="padding:5px 2px;font-size:10px;text-align:center">Men</div>
+          <!-- Sub-opciones diario (colapsables) -->
+          <div id="calc-sub-diario" style="display:flex;flex-direction:column;gap:3px;overflow:hidden;transition:max-height .25s;max-height:120px">
+            <div id="calc-cal-lv" onclick="calcSetCal('lv')" style="background:rgba(74,158,255,.2);border:1.5px solid var(--sky);border-radius:5px;padding:5px 4px;text-align:center;cursor:pointer;font-size:10px;font-weight:800;color:var(--sky)">L–V</div>
+            <div id="calc-cal-ls" onclick="calcSetCal('ls')" style="background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:5px 4px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">L–S</div>
+            <div id="calc-cal-td" onclick="calcSetCal('td')" style="background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:5px 4px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">Tod</div>
           </div>
+
+          <!-- Semanal / Quincenal / Mensual apilados -->
+          <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')"   style="padding:5px 6px;font-size:10px;text-align:left;width:100%">📅 Semanal</div>
+          <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')" style="padding:5px 6px;font-size:10px;text-align:left;width:100%">📅 Quincenal</div>
+          <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')"   style="padding:5px 6px;font-size:10px;text-align:left;width:100%">📅 Mensual</div>
         </div>
       </div>
 
@@ -2002,71 +2008,19 @@ function showPortalMulti(prestamos){
     var pen=l.cuotas.filter(function(q){return q.estado!=='pagada';}).length;
     var moraN=l.cuotas.filter(function(q){return q.estado==='mora';}).length;
     var pct=Math.round(pag/l.cuotas.length*100);
-    var canSolicit=pag>=6&&pen>0&&!l.renewRequest;
-    var panelId='pc-'+l.id;
-    var arrId='pca-'+l.id;
+    var proxCuota=l.cuotas.find(function(q){return q.estado!=='pagada';});
 
-    var cuotasH=l.cuotas.map(function(c){
-      var estadoCls=c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p';
-      var estadoTxt=c.estado==='pagada'
-        ?'\u2705 Pagada'+(c.fechaPago?' \u00b7 '+new Date(c.fechaPago).toLocaleDateString('es-CO'):'')
-        :c.estado==='mora'?'\ud83d\udd34 Mora':'\u23f3 Pendiente';
-      var colorVal=c.estado==='pagada'?'var(--lime)':c.estado==='mora'?'var(--fire)':'var(--ash)';
-      var compHtml='';
-      if(c.comprobante){
-        compHtml='<img src="'+c.comprobante+'" style="width:30px;height:30px;border-radius:6px;object-fit:cover;border:1px solid var(--line2);cursor:pointer;margin-left:6px" onclick="viewImg(this.src)">';
-      } else {
-        compHtml='<label style="margin-left:6px;cursor:pointer" title="Adjuntar comprobante"><input type="file" accept="image/*" style="display:none" onchange="uploadClientComp(this,'+l.id+','+c.num+')"><span style="font-size:13px">\ud83d\udcf8</span></label>';
-      }
-      return '<div class="portal-row">'
-        +'<div class="cnum '+estadoCls+'" style="flex-shrink:0">'+c.num+'</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-weight:600;font-size:13px">'+fd(c.fecha)+'</div>'
-          +'<div style="font-size:11px;color:var(--smoke)">'+estadoTxt+'</div>'
-        +'</div>'
-        +'<div style="display:flex;align-items:center;gap:4px">'
-          +'<div class="mono" style="font-size:13px;font-weight:700;color:'+colorVal+'">'+fmt(c.valor+(c.multa||0))+'</div>'
-          +compHtml
-        +'</div>'
-      +'</div>';
-    }).join('');
-
-    html+='<div style="background:var(--ink2);border:1.5px solid '+(moraN>0?'rgba(255,61,90,.4)':'rgba(0,229,176,.2)')+';border-radius:var(--r-lg);margin-bottom:14px;overflow:hidden">'
-      +'<div style="padding:12px 14px;background:'+(moraN>0?'rgba(255,61,90,.06)':'rgba(0,229,176,.05)')+';border-bottom:1px solid var(--line)">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
-          +'<div style="font-weight:900;font-size:15px;color:var(--jade)">Cr\u00e9dito #'+(idx+1)+'</div>'
-          +'<span style="font-size:12px;font-weight:700;color:'+(moraN>0?'var(--fire)':'var(--lime)')+'">'+(moraN>0?'\u26a0\ufe0f '+moraN+' en mora':'\u2705 Al d\u00eda')+'</span>'
-        +'</div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">'
-          +'<div style="background:rgba(0,229,176,.08);border-radius:8px;padding:7px;text-align:center">'
-            +'<div style="font-weight:900;font-size:16px;color:var(--jade)">'+fmt(l.val)+'</div>'
-            +'<div style="font-size:10px;color:var(--fog)">Valor prestado</div>'
-          +'</div>'
-          +'<div style="background:rgba(0,153,255,.08);border-radius:8px;padding:7px;text-align:center">'
-            +'<div style="font-weight:900;font-size:16px;color:var(--sky)">'+fmt(l.cuo)+'</div>'
-            +'<div style="font-size:10px;color:var(--fog)">Valor cuota</div>'
-          +'</div>'
-          +'<div style="background:rgba(57,216,112,.08);border-radius:8px;padding:7px;text-align:center">'
-            +'<div style="font-weight:900;font-size:16px;color:var(--lime)">'+pag+'/'+l.ncu+'</div>'
-            +'<div style="font-size:10px;color:var(--fog)">Cuotas pagadas</div>'
-          +'</div>'
-          +'<div style="background:rgba(255,170,0,.08);border-radius:8px;padding:7px;text-align:center">'
-            +'<div style="font-weight:900;font-size:16px;color:var(--amber)">'+pen+'</div>'
-            +'<div style="font-size:10px;color:var(--fog)">Pendientes</div>'
-          +'</div>'
-        +'</div>'
-        +'<div class="pb-track" style="margin-bottom:4px"><div class="pb-fill" style="width:'+pct+'%;background:'+(moraN>0?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'"></div></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--smoke)"><span>Progreso: '+pct+'%</span><span>'+cap(l.mod)+'</span></div>'
+    html+='<div style="background:var(--ink2);border:1.5px solid '+(moraN>0?'rgba(255,61,90,.4)':'rgba(0,229,176,.2)')+';border-radius:var(--r-lg);margin-bottom:10px;padding:12px 14px;display:flex;align-items:center;gap:12px">'
+      +'<div style="width:40px;height:40px;border-radius:50%;background:'+(moraN>0?'rgba(255,61,90,.2)':'rgba(0,229,176,.15)')+';border:2px solid '+(moraN>0?'var(--fire)':'var(--jade)')+';display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:'+(moraN>0?'var(--fire)':'var(--jade)')+';flex-shrink:0">'+(idx+1)+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:800;font-size:14px;color:var(--ash)">'+cap(l.mod)+' · '+fmt(l.cuo)+'/c</div>'
+        +'<div style="font-size:12px;color:var(--smoke);margin-top:1px">'+pag+'/'+l.ncu+' cuotas pagadas'+(proxCuota?' · Próx: '+fd(proxCuota.fecha):'')+'</div>'
+        +'<div class="pb-track" style="margin-top:5px;height:4px"><div class="pb-fill" style="width:'+pct+'%;height:4px;background:'+(moraN>0?'var(--fire)':'linear-gradient(90deg,var(--jade),var(--sky))')+'"></div></div>'
       +'</div>'
-      +'<div style="padding:10px 14px">'
-        +'<div onclick="togglePortalCuotas(\''+panelId+'\')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0;margin-bottom:2px">'
-          +'<span style="font-weight:800;font-size:13px;color:var(--ash)">\ud83d\udccb Ver todas las cuotas ('+l.ncu+')</span>'
-          +'<span id="'+arrId+'" style="font-size:16px;color:var(--fog);transition:transform .2s">\u25bc</span>'
-        +'</div>'
-        +'<div id="'+panelId+'" style="display:none;margin-top:6px">'+cuotasH+'</div>'
+      +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-weight:900;font-size:13px;color:'+(moraN>0?'var(--fire)':'var(--lime)')+'">'+( moraN>0?'⚠️ Mora':'✅ Al día')+'</div>'
+        +'<div style="font-size:11px;color:var(--smoke);margin-top:2px">'+fmt(l.val)+'</div>'
       +'</div>'
-      +(canSolicit?'<div style="padding:0 14px 14px"><div class="renew-box"><div class="renew-box-t">\u00bfQuieres renovar este cr\u00e9dito?</div><div class="renew-box-s">Has pagado '+pag+' cuotas. El administrador revisar\u00e1 tu solicitud.</div><button class="btn btn-violet btn-w" onclick="solicitarRenovacion('+l.id+')">\ud83d\udd04 Solicitar renovaci\u00f3n</button></div></div>':'')
-      +(l.renewRequest?'<div style="margin:0 14px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--violet)">\ud83d\udd04 Tu solicitud de renovaci\u00f3n est\u00e1 siendo revisada.</div>':'')
     +'</div>';
   });
 
@@ -5323,6 +5277,16 @@ function openCalc(){
   document.getElementById('calc-wa-panel').style.display = 'none';
   const lbl = document.getElementById('calc-ini-label');
   if(lbl){ lbl.textContent = 'Seleccionar fecha de primera cuota...'; lbl.style.color = 'var(--smoke)'; }
+  // Inicializar acordeón: diario abierto por defecto
+  const subDiv = document.getElementById('calc-sub-diario');
+  const arrow  = document.getElementById('calc-diario-arrow');
+  if(CALC.mod === 'diario'){
+    if(subDiv) subDiv.style.maxHeight='120px';
+    if(arrow)  arrow.style.transform='rotate(0deg)';
+  } else {
+    if(subDiv) subDiv.style.maxHeight='0px';
+    if(arrow)  arrow.style.transform='rotate(-90deg)';
+  }
   openM('m-calc');
   calcRecalc();
 }
@@ -5413,17 +5377,46 @@ function fdCalc(d){
 }
 
 /* ── Cambiar modalidad ── */
+/* ── Toggle acordeón Diario ── */
+function calcToggleDiario(e){
+  e.stopPropagation();
+  const subDiv = document.getElementById('calc-sub-diario');
+  const arrow  = document.getElementById('calc-diario-arrow');
+  const isOpen = subDiv && subDiv.style.maxHeight !== '0px' && subDiv.style.maxHeight !== '';
+  if(CALC.mod !== 'diario'){
+    // Si no estaba activo, activar y abrir
+    calcSetMod('diario');
+    if(subDiv){subDiv.style.maxHeight='120px';}
+    if(arrow) arrow.style.transform='rotate(0deg)';
+  } else {
+    // Ya activo: toggle visibilidad
+    if(isOpen){
+      if(subDiv) subDiv.style.maxHeight='0px';
+      if(arrow)  arrow.style.transform='rotate(-90deg)';
+    } else {
+      if(subDiv) subDiv.style.maxHeight='120px';
+      if(arrow)  arrow.style.transform='rotate(0deg)';
+    }
+  }
+}
+
 function calcSetMod(m){
   CALC.mod = m;
   ['diario','semanal','quincenal','mensual'].forEach(function(k){
     const el = document.getElementById('calc-mod-' + k);
     if(el) el.classList.toggle('on', k === m);
   });
-  // Mostrar/ocultar opciones de calendario diario
+  // Sub-opciones diario: mostrar si diario, ocultar si otro
   const subDiv = document.getElementById('calc-sub-diario');
-  if(subDiv) subDiv.style.display = m === 'diario' ? 'flex' : 'none';
-  // Para no-diario usar Todos (calendario corrido)
-  if(m !== 'diario') CALC.cal = 'td';
+  const arrow  = document.getElementById('calc-diario-arrow');
+  if(m === 'diario'){
+    if(subDiv) subDiv.style.maxHeight='120px';
+    if(arrow)  arrow.style.transform='rotate(0deg)';
+  } else {
+    if(subDiv) subDiv.style.maxHeight='0px';
+    if(arrow)  arrow.style.transform='rotate(-90deg)';
+    CALC.cal = 'td';
+  }
   calcRecalc();
 }
 
@@ -6081,6 +6074,27 @@ function confirmarCambioCalendario(){
 }
 
 seed();
+
+/* ── Auto-mora: chequeo periódico cada 60 segundos ── */
+function checkAutoMora(){
+  if(!S.cartera)return;
+  let changed=false;
+  (S.cartera.loans||[]).forEach(function(l){
+    if(!l.activo)return;
+    const hor=l.hor||'18:00';
+    l.cuotas.forEach(function(c){
+      if(c.estado==='pendiente'&&isOvd(c.fecha,hor)){
+        // Solo marcar mora si la cuota tiene multa configurada en el préstamo
+        // o si simplemente ya pasó la hora (comportamiento general)
+        c.estado='mora';
+        changed=true;
+      }
+    });
+  });
+  if(changed){fsSave();updDot();render();}
+}
+// Ejecutar al cargar y luego cada minuto
+setTimeout(function(){checkAutoMora();setInterval(checkAutoMora,60000);},3000);
 </script>
 </body>
 </html>
