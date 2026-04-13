@@ -2391,16 +2391,35 @@ function capitalRecuperado(c){
 
 /* ─── INICIO ─── */
 function rCobrosHoy(act){
+  // Cobros pendientes de HOY + cuotas en MORA (acumuladas de días anteriores)
   const cuotasHoy=act.flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha)));
+  const cuotasMora=act.flatMap(l=>l.cuotas.filter(q=>q.estado==='mora'));
   const totHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
-  if(!cuotasHoy.length)return'';
+  const totMora=cuotasMora.reduce((s,q)=>s+q.valor,0);
+  const totTotal=totHoy+totMora;
+  if(!cuotasHoy.length&&!cuotasMora.length)return'';
+
+  // Filas por cliente: suma hoy + mora de ese cliente
   const rows=act.map(l=>{
     const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&isToday(q.fecha));
-    if(!qh.length)return'';
-    const tv=qh.reduce((s,q)=>s+q.valor,0);
-    return'<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--line)"><span>'+l.nom+' '+l.ape+'</span><span style="color:var(--jade);font-weight:700">'+fmt(tv)+'</span></div>';
+    const qm=l.cuotas.filter(q=>q.estado==='mora');
+    if(!qh.length&&!qm.length)return'';
+    const tv=qh.reduce((s,q)=>s+q.valor,0)+qm.reduce((s,q)=>s+q.valor,0);
+    const moraTag=qm.length?'<span style="font-size:9px;background:rgba(255,61,90,.2);color:var(--fire);border-radius:3px;padding:1px 4px;margin-left:4px">⚠️'+qm.length+' mora</span>':'';
+    const fechasMora=qm.map(q=>'#'+q.num+' '+fd(q.fecha)).join(', ');
+    return'<div style="padding:5px 0;border-bottom:1px solid var(--line)">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px">'
+        +'<span>'+l.nom+' '+l.ape+moraTag+'</span>'
+        +'<span style="color:var(--jade);font-weight:700">'+fmt(tv)+'</span>'
+      +'</div>'
+      +(qm.length?'<div style="font-size:10px;color:var(--fire);margin-top:1px">'+fechasMora+'</div>':'')
+    +'</div>';
   }).join('');
-  return'<div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.25);border-radius:var(--r-sm);padding:12px;margin-bottom:10px"><div style="font-weight:800;font-size:12px;color:var(--jade);margin-bottom:8px">💰 Cobros de hoy — '+fmt(totHoy)+'</div>'+rows+'</div>';
+
+  const moraLabel=totMora>0?(' · <span style="color:var(--fire)">⚠️ Mora: '+fmt(totMora)+'</span>'):'';
+  return'<div style="background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.25);border-radius:var(--r-sm);padding:12px;margin-bottom:10px">'
+    +'<div style="font-weight:800;font-size:12px;color:var(--jade);margin-bottom:8px">💰 Cobros hasta hoy — '+fmt(totTotal)+moraLabel+'</div>'
+    +rows+'</div>';
 }
 
 function rInicio(){
@@ -3269,7 +3288,10 @@ function rConfig(){
   const c=S.cartera;
   const hoy=new Date().toDateString();
   const cuotasHoy=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy));
+  const cuotasMora=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>q.estado==='mora'));
   const totalHoy=cuotasHoy.reduce((s,q)=>s+q.valor,0);
+  const totalMora=cuotasMora.reduce((s,q)=>s+q.valor,0);
+  const totalHoyMora=totalHoy+totalMora;
   const en7=loans().filter(l=>l.activo).flatMap(l=>l.cuotas.filter(q=>{
     if(q.estado!=='pendiente')return false;
     const d=new Date(q.fecha);const hoy2=new Date();
@@ -3282,27 +3304,33 @@ function rConfig(){
   <div class="cfg-grp">
     <div class="cfg-title">📅 Cobros programados</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div style="background:var(--ink3);border:1.5px solid var(--jade);border-radius:var(--r);padding:14px;text-align:center">
-        <div style="font-weight:900;font-size:26px;color:var(--jade)">${fmt(totalHoy)}</div>
-        <div style="font-size:12px;color:var(--smoke);margin-top:3px">💰 Hoy (${cuotasHoy.length} cuotas)</div>
+      <div style="background:var(--ink3);border:1.5px solid ${totalMora>0?'var(--fire)':'var(--jade)'};border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-weight:900;font-size:24px;color:${totalMora>0?'var(--fire)':'var(--jade)'}">${fmt(totalHoyMora)}</div>
+        <div style="font-size:11px;color:var(--smoke);margin-top:3px">💰 Hasta hoy (${cuotasHoy.length+cuotasMora.length})</div>
+        ${totalMora>0?`<div style="font-size:10px;color:var(--fire);margin-top:2px">⚠️ Mora: ${fmt(totalMora)}</div>`:''}
       </div>
       <div style="background:var(--ink3);border:1.5px solid var(--sky);border-radius:var(--r);padding:14px;text-align:center">
-        <div style="font-weight:900;font-size:26px;color:var(--sky)">${fmt(total7)}</div>
+        <div style="font-weight:900;font-size:24px;color:var(--sky)">${fmt(total7)}</div>
         <div style="font-size:12px;color:var(--smoke);margin-top:3px">📆 Próx. 7 días (${en7.length})</div>
       </div>
     </div>
-    ${cuotasHoy.length?`
+    ${(cuotasHoy.length||cuotasMora.length)?`
     <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
-      <div style="padding:8px 12px;font-size:12px;font-weight:800;color:var(--jade);background:rgba(0,229,176,.07)">Detalle de hoy</div>
+      <div style="padding:8px 12px;font-size:12px;font-weight:800;color:var(--jade);background:rgba(0,229,176,.07)">Detalle hasta hoy</div>
       ${loans().filter(l=>l.activo).map(l=>{
         const qh=l.cuotas.filter(q=>q.estado==='pendiente'&&new Date(q.fecha).toDateString()===hoy);
-        if(!qh.length)return'';
-        return`<div style="display:flex;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--line);font-size:14px">
-          <span>${l.nom} ${l.ape}</span>
-          <span style="color:var(--jade);font-weight:700">${fmt(qh.reduce((s,q)=>s+q.valor,0))}</span>
+        const qm=l.cuotas.filter(q=>q.estado==='mora');
+        if(!qh.length&&!qm.length)return'';
+        const tv=qh.reduce((s,q)=>s+q.valor,0)+qm.reduce((s,q)=>s+q.valor,0);
+        const moraInfo=qm.length?`<div style="font-size:10px;color:var(--fire);margin-top:1px">⚠️ ${qm.length} en mora: ${qm.map(q=>'#'+q.num+' '+new Date(q.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'short'})).join(', ')}</div>`:'';
+        return`<div style="padding:8px 12px;border-top:1px solid var(--line)">
+          <div style="display:flex;justify-content:space-between;font-size:13px">
+            <span>${l.nom} ${l.ape}</span>
+            <span style="color:${qm.length?'var(--fire)':'var(--jade)'};font-weight:700">${fmt(tv)}</span>
+          </div>${moraInfo}
         </div>`;
       }).join('')}
-    </div>`:'<div style="font-size:13px;color:var(--fog);text-align:center;padding:10px 0">Sin cobros programados hoy</div>'}
+    </div>`:'<div style="font-size:13px;color:var(--fog);text-align:center;padding:10px 0">Sin cobros pendientes</div>'}
   </div>
 
   <!-- ── NOTIFICACIONES ── -->
@@ -5277,16 +5305,11 @@ function openCalc(){
   document.getElementById('calc-wa-panel').style.display = 'none';
   const lbl = document.getElementById('calc-ini-label');
   if(lbl){ lbl.textContent = 'Seleccionar fecha de primera cuota...'; lbl.style.color = 'var(--smoke)'; }
-  // Inicializar acordeón: diario abierto por defecto
+  // Acordeón siempre cerrado al abrir la calculadora
   const subDiv = document.getElementById('calc-sub-diario');
   const arrow  = document.getElementById('calc-diario-arrow');
-  if(CALC.mod === 'diario'){
-    if(subDiv) subDiv.style.maxHeight='120px';
-    if(arrow)  arrow.style.transform='rotate(0deg)';
-  } else {
-    if(subDiv) subDiv.style.maxHeight='0px';
-    if(arrow)  arrow.style.transform='rotate(-90deg)';
-  }
+  if(subDiv) subDiv.style.maxHeight='0px';
+  if(arrow)  arrow.style.transform='rotate(-90deg)';
   openM('m-calc');
   calcRecalc();
 }
@@ -6084,9 +6107,13 @@ function checkAutoMora(){
     const hor=l.hor||'18:00';
     l.cuotas.forEach(function(c){
       if(c.estado==='pendiente'&&isOvd(c.fecha,hor)){
-        // Solo marcar mora si la cuota tiene multa configurada en el préstamo
-        // o si simplemente ya pasó la hora (comportamiento general)
+        // Cuota pendiente que ya venció según hora límite → mora
         c.estado='mora';
+        changed=true;
+      } else if(c.estado==='mora'&&!isOvd(c.fecha,hor)){
+        // Cuota en mora cuya hora límite aún NO ha pasado
+        // (ej: se cambió la hora límite a más tarde) → volver a pendiente
+        c.estado='pendiente';
         changed=true;
       }
     });
