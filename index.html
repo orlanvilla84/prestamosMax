@@ -4909,6 +4909,30 @@ function deshacerPago(lid, cn){
     l.historico.push('⟳ Cuota #'+cn+' revertida a pendiente — '+new Date().toLocaleDateString('es-CO'));
   }
 
+  // ── Recalcular fechas de todas las cuotas pendientes para evitar duplicados ──
+  // Esto es especialmente necesario cuando se cambió el calendario después de que
+  // se pagó la cuota: al revertir, hay que reasignar fechas desde la más temprana
+  // existente entre las pendientes, respetando el calMode actual del préstamo.
+  const todasPendientes=l.cuotas.filter(x=>x.estado!=='pagada').sort((a,b)=>a.num-b.num);
+  if(todasPendientes.length>1){
+    // Tomar la fecha más temprana entre las pendientes (incluyendo la recién revertida)
+    let fechaBase=todasPendientes.reduce((min,x)=>{
+      const fd=new Date(x.fecha);
+      return fd<min?fd:min;
+    },new Date(todasPendientes[0].fecha));
+    // Asegurarse de que sea día hábil según el calMode del préstamo
+    const calModoLoan=l.calMode||'lv';
+    while(!isHabilMode(fechaBase,calModoLoan))fechaBase.setDate(fechaBase.getDate()+1);
+    // Recalcular fechas consecutivas para todas las pendientes en orden
+    const _sv=_calMode;_calMode=calModoLoan;
+    let nuevasFechas=[];
+    try{nuevasFechas=calcFechasDesde(fechaBase,l.mod,todasPendientes.length);}catch(e){}
+    _calMode=_sv;
+    if(nuevasFechas.length===todasPendientes.length){
+      todasPendientes.forEach(function(q,i){q.fecha=nuevasFechas[i];});
+    }
+  }
+
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
   updDot();render();
