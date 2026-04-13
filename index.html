@@ -1190,7 +1190,7 @@ window._db = firebase.firestore();
     <div style="padding:12px 14px 0">
 
       <!-- ══ FILA 1: INPUTS + MODALIDAD lado a lado ══ -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:10px;margin-bottom:10px">
 
         <!-- Columna izquierda: datos -->
         <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
@@ -1213,19 +1213,19 @@ window._db = firebase.firestore();
 
         <!-- Columna derecha: modalidad -->
         <div style="background:var(--ink3);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--neon-card)">
-          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">📅 Modalidad</div>
+          <div style="font-size:10px;font-weight:800;color:var(--jade);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">📅 Modalidad</div>
           <!-- Diario + sub-opciones -->
-          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="padding:7px 6px;font-size:12px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:5px">⚡ Diario</div>
-          <div id="calc-sub-diario" style="display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap">
-            <div id="calc-cal-lv" onclick="calcSetCal('lv')" style="flex:1;min-width:0;background:rgba(74,158,255,.2);border:1.5px solid var(--sky);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:800;color:var(--sky)">L–V</div>
-            <div id="calc-cal-ls" onclick="calcSetCal('ls')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">L–S</div>
-            <div id="calc-cal-td" onclick="calcSetCal('td')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:6px;padding:4px 3px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;color:var(--smoke)">Tod</div>
+          <div id="calc-mod-diario" class="calc-mod-btn on" onclick="calcSetMod('diario')" style="padding:6px 4px;font-size:11px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:4px">⚡ Diario</div>
+          <div id="calc-sub-diario" style="display:flex;gap:2px;margin-bottom:5px">
+            <div id="calc-cal-lv" onclick="calcSetCal('lv')" style="flex:1;min-width:0;background:rgba(74,158,255,.2);border:1.5px solid var(--sky);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:800;color:var(--sky)">L–V</div>
+            <div id="calc-cal-ls" onclick="calcSetCal('ls')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:700;color:var(--smoke)">L–S</div>
+            <div id="calc-cal-td" onclick="calcSetCal('td')" style="flex:1;min-width:0;background:var(--ink4);border:1.5px solid var(--line);border-radius:5px;padding:3px 2px;text-align:center;cursor:pointer;font-size:9px;font-weight:700;color:var(--smoke)">Tod</div>
           </div>
-          <!-- Semanal / Quincenal / Mensual -->
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')"   style="padding:6px;font-size:11px">📆 Semanal</div>
-            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')" style="padding:6px;font-size:11px">📆 Quincenal</div>
-            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')"   style="padding:6px;font-size:11px">📅 Mensual</div>
+          <!-- Semanal / Quincenal / Mensual compactos -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+            <div id="calc-mod-semanal"   class="calc-mod-btn" onclick="calcSetMod('semanal')"   style="padding:5px 2px;font-size:10px;text-align:center">Sem</div>
+            <div id="calc-mod-quincenal" class="calc-mod-btn" onclick="calcSetMod('quincenal')" style="padding:5px 2px;font-size:10px;text-align:center">Quin</div>
+            <div id="calc-mod-mensual"   class="calc-mod-btn" onclick="calcSetMod('mensual')"   style="padding:5px 2px;font-size:10px;text-align:center">Men</div>
           </div>
         </div>
       </div>
@@ -1233,23 +1233,21 @@ window._db = firebase.firestore();
       <!-- ══ FILA 2: RESUMEN COMPACTO (aparece al ingresar datos) ══ -->
       <div id="calc-result-wrap" style="display:none">
 
-        <!-- Mini resumen 2x2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
-            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Capital</div>
-            <div id="cr-base" style="font-weight:900;font-size:15px;color:var(--sky);font-family:'JetBrains Mono',monospace">-</div>
-          </div>
-          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
-            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Interés</div>
-            <div id="cr-int" style="font-weight:900;font-size:15px;color:var(--lime);font-family:'JetBrains Mono',monospace">-</div>
-          </div>
-          <div style="background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;box-shadow:var(--neon-input)">
-            <div style="font-size:10px;color:var(--fog);margin-bottom:2px">Valor cuota</div>
-            <div id="cr-cuo" style="font-weight:900;font-size:15px;color:var(--white);font-family:'JetBrains Mono',monospace">-</div>
-          </div>
-          <div style="background:linear-gradient(135deg,rgba(16,201,138,.15),rgba(74,158,255,.08));border:1.5px solid rgba(16,201,138,.4);border-radius:var(--r-sm);padding:10px;box-shadow:var(--glow-jade)">
-            <div style="font-size:10px;color:var(--jade);margin-bottom:2px">🏆 Total</div>
-            <div id="cr-tot" style="font-weight:900;font-size:17px;color:var(--jade);font-family:'JetBrains Mono',monospace">-</div>
+        <!-- Mini resumen compacto -->
+        <div style="background:var(--ink3);border:1.5px solid rgba(16,201,138,.3);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:10px;box-shadow:var(--neon-input)">
+          <div style="display:flex;flex-wrap:wrap;gap:0;font-size:12px">
+            <div style="flex:1;min-width:120px;padding:3px 0;border-bottom:1px solid var(--line)">
+              <span style="color:var(--fog)">Capital </span><span id="cr-base" style="font-weight:800;color:var(--sky);font-family:'JetBrains Mono',monospace">-</span>
+            </div>
+            <div style="flex:1;min-width:120px;padding:3px 0 3px 8px;border-bottom:1px solid var(--line)">
+              <span style="color:var(--fog)">Interés </span><span id="cr-int" style="font-weight:800;color:var(--lime);font-family:'JetBrains Mono',monospace">-</span>
+            </div>
+            <div style="flex:1;min-width:120px;padding:3px 0">
+              <span style="color:var(--fog)">Cuota </span><span id="cr-cuo" style="font-weight:800;color:var(--ash);font-family:'JetBrains Mono',monospace">-</span>
+            </div>
+            <div style="flex:1;min-width:120px;padding:3px 0 3px 8px">
+              <span style="color:var(--jade);font-weight:700">TOTAL </span><span id="cr-tot" style="font-weight:900;color:var(--jade);font-family:'JetBrains Mono',monospace;font-size:14px">-</span>
+            </div>
           </div>
         </div>
 
@@ -1535,6 +1533,13 @@ window._db = firebase.firestore();
 <div class="overlay" id="m-renew"><div class="sheet"><div class="shandle"></div><div class="shtitle">🔄 Renovar Crédito</div><div id="renew-body"></div></div></div>
 <div class="overlay" id="m-mora"><div class="sheet"><div class="shandle"></div><div class="shtitle">⚠️ Gestionar Mora</div><div id="mora-body"></div></div></div>
 <div class="overlay" id="m-opts"><div class="sheet"><div class="shandle"></div><div class="shtitle">Opciones</div><div id="opts-body" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+
+<!-- CAMBIAR CALENDARIO MODAL -->
+<div class="overlay" id="m-cal-change"><div class="sheet">
+  <div class="shandle"></div>
+  <div class="shtitle">📅 Cambiar calendario de pago</div>
+  <div id="cal-change-body"></div>
+</div></div>
 <div class="overlay" id="m-user-menu"><div class="sheet">
   <div class="shandle"></div>
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
@@ -1850,6 +1855,7 @@ function mkLoan(d){
   });
   return{id,nom:d.nom,ape:d.ape,ced:d.ced||'',tel:d.tel,cel2:d.cel2||'',email:d.email||'',cta:d.cta,val:d.val,cuo:d.cuo,
     mod:d.mod,ncu:d.ncu,mul:d.mul,hor:d.hor,not:d.not,ini,cuotas,activo:true,
+    calMode:d.calMode||'lv',
     historico:[],comprobante:null,renewRequest:false};
 }
 
@@ -3604,7 +3610,7 @@ function saveLoan(){
   const iniRaw=(gv('f-ini')||'').trim();
   let iniDate=null;
   if(iniRaw){try{const d=new Date(iniRaw+'T12:00:00');if(!isNaN(d))iniDate=d;}catch(e){}}
-  const loan=mkLoan({nom,ape,ced,tel,cel2,email,cta,val,cuo,mod,ncu,mul,hor,not,iniDate});
+  const loan=mkLoan({nom,ape,ced,tel,cel2,email,cta,val,cuo,mod,ncu,mul,hor,not,iniDate,calMode:_calMode||'lv'});
   loan.comprobante=gv('loan-comp-data')||null;
   loan.creadoPor=S.user?.name||S.user?.email||'Desconocido';
   loan.creadoPorEmail=S.user?.email||'';
@@ -3688,7 +3694,7 @@ function confirmPay(lid,cn){
 /* ─── MORA ─── */
 let _mop=0;
 function nextFecha(c, l){
-  const mode=getCalMode();
+  const mode=(l&&l.calMode)?l.calMode:getCalMode();
   const base=new Date(c.fecha);
   if(l.mod==='diario'){
     const r=new Date(base);r.setDate(r.getDate()+1);
@@ -3913,7 +3919,9 @@ function confirmRenew(lid,efectivoCliente,interesCiclo){
   if(!l._valOriginal)l._valOriginal=l.val;
   l.historico.push('🔄 Renovación ciclo '+cicloNum+'→'+(cicloNum+1)+' · efectivo al cliente: '+fmt(efectivoCliente)+' · interés ciclo '+cicloNum+' guardado: '+fmt(interesCiclo)+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
   l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
+  const _savedCal=_calMode; _calMode=l.calMode||'lv';
   const fechas=calcFechas(new Date(),l.mod,l.ncu);
+  _calMode=_savedCal;
   l.cuotas=fechas.map(function(f,i){return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null};});
   closeM('m-renew');
   toast('🔄 Renovado · Interés ciclo '+cicloNum+' asegurado: '+fmt(interesCiclo));
@@ -4026,6 +4034,7 @@ function openOpts(){
   <button class="btn btn-sky btn-w"   onclick="sendWA(${l.id});closeM('m-opts')">📲 Recordatorio WhatsApp</button>
   <button class="btn btn-ghost btn-w" onclick="notifGrupo('pago',getL(${l.id}),{cn:'próxima',val:${l.cuo}});closeM('m-opts')">📢 Avisar grupo empresa</button>
   ${canRenew?`<button class="btn btn-amber btn-w" onclick="openRenew(${l.id})">🔄 Renovar crédito</button>`:''}
+  <button class="btn btn-ghost btn-w" style="border-color:rgba(74,158,255,.4);color:var(--sky)" onclick="closeM('m-opts');openCambiarCalendario(${l.id})">📅 Cambiar calendario de pago</button>
   <div class="hr"></div>
   <button class="btn btn-fire btn-w" onclick="delLoan(${l.id})">🗑️ Eliminar préstamo</button>`;
   openM('m-opts');
@@ -5319,14 +5328,20 @@ function calcActualizarConsolidado(val, cuo, ncu, total, interes){
     {l:'🏆 TOTAL',     v: fmt(total),                          c:'var(--jade)', bold:true, wide:true},
   ];
 
+  // Lista compacta de una sola columna
   document.getElementById('calc-cons-rows').innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">' +
+    '<div style="font-size:12px">' +
     cells.map(function(r){
-      const span = r.wide ? ' style="grid-column:1/-1;background:rgba(16,201,138,.08);border-color:rgba(16,201,138,.3)"' : '';
-      return `<div${span} style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 9px">
-        <div style="font-size:10px;color:var(--fog);margin-bottom:2px">${r.l}</div>
-        <div style="font-weight:${r.bold?'900':'700'};font-size:${r.bold?'16':'13'}px;color:${r.c};font-family:'JetBrains Mono',monospace;line-height:1.2">${r.v}</div>
-      </div>`;
+      if(r.wide){
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1.5px solid rgba(16,201,138,.3);margin-top:4px">'
+          +'<span style="font-weight:900;color:var(--jade)">'+r.l+'</span>'
+          +'<span style="font-weight:900;font-size:16px;color:'+r.c+';font-family:\'JetBrains Mono\',monospace">'+r.v+'</span>'
+          +'</div>';
+      }
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+        +'<span style="color:var(--fog)">'+r.l+'</span>'
+        +'<span style="font-weight:700;color:'+r.c+';font-family:\'JetBrains Mono\',monospace">'+r.v+'</span>'
+        +'</div>';
     }).join('') +
     '</div>';
 }
@@ -5858,6 +5873,149 @@ function calcIrAModalPrestamo(cli){
       recalc();
     }, 350);
   }, 200);
+}
+
+/* ─── CAMBIAR CALENDARIO DE PAGO ─── */
+function _calNombre(m){return m==='lv'?'Lun–Vie':m==='ls'?'Lun–Sáb':'Todos los días';}
+function _calEmoji(m){return m==='lv'?'📅':m==='ls'?'📆':'🗓️';}
+
+function openCambiarCalendario(lid){
+  const l=getL(lid);if(!l)return;
+  window._calChangeLid=lid;
+  window._calChangeNuevoModo=l.calMode||'lv'; // pre-seleccionar el actual
+  const actual=l.calMode||'lv';
+  const pend=l.cuotas.filter(function(c){return c.estado!=='pagada';}).length;
+  // Fecha por defecto: hoy
+  const hoyISO=new Date().toISOString().slice(0,10);
+  const modos=[
+    {k:'lv',label:'Lun–Vie',sub:'Sin sáb, dom ni festivos'},
+    {k:'ls',label:'Lun–Sáb',sub:'Sin dom ni festivos'},
+    {k:'td',label:'Todos',sub:'Todos los días'}
+  ];
+  document.getElementById('cal-change-body').innerHTML=
+    '<div style="background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.3);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--ash)">'
+      +'<b>'+l.nom+' '+l.ape+'</b> · CC '+l.ced+'<br>'
+      +'<span style="font-size:12px;color:var(--smoke)">Actual: <b style="color:var(--sky)">'+_calEmoji(actual)+' '+_calNombre(actual)+'</b> · Pendientes: <b style="color:var(--amber)">'+pend+'</b></span>'
+    +'</div>'
+    +'<div style="font-size:11px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px">1. Nuevo calendario</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">'
+    +modos.map(function(m){
+      const sel=m.k===actual;
+      return '<div id="cal-opt-'+m.k+'" onclick="selCalModo(\''+m.k+'\')" '
+        +'style="background:'+(sel?'rgba(74,158,255,.18)':'var(--ink3)')+';border:2px solid '+(sel?'var(--sky)':'var(--line)')+';border-radius:var(--r-sm);padding:9px 5px;text-align:center;cursor:pointer;transition:all .15s">'
+        +'<div style="font-size:13px;margin-bottom:2px">'+_calEmoji(m.k)+'</div>'
+        +'<div style="font-weight:800;font-size:12px;color:'+(sel?'var(--sky)':'var(--ash)')+'">'+m.label+'</div>'
+        +'<div style="font-size:10px;color:var(--fog);margin-top:2px">'+m.sub+'</div>'
+        +'<div id="cal-chk-'+m.k+'" style="font-size:14px;margin-top:4px">'+(sel?'🔵':'○')+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="font-size:11px;font-weight:800;color:var(--fog);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">2. Fecha de la primera cuota a reprogramar</div>'
+    +'<div style="background:rgba(255,192,64,.07);border:1px solid rgba(255,192,64,.3);border-radius:var(--r-sm);padding:8px 10px;font-size:12px;color:var(--gold);margin-bottom:8px">'
+      +'📅 Puede ser una fecha <b>pasada</b> para corregir el calendario retroactivamente. '
+      +'Si el día elegido no es hábil en el nuevo modo, se avanza al siguiente día hábil.'
+    +'</div>'
+    +'<input type="date" class="fi" id="cal-change-fecha" value="'+hoyISO+'" style="margin-bottom:14px">'
+    +'<div style="background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r-sm);padding:8px 10px;font-size:12px;color:var(--smoke);margin-bottom:14px" id="cal-change-preview">'
+      +'Selecciona un calendario y una fecha para ver el resumen.'
+    +'</div>'
+    +'<div class="brow">'
+      +'<button class="btn btn-ghost btn-w" onclick="closeM(\'m-cal-change\')">✕ Cancelar</button>'
+      +'<button class="btn btn-sky btn-w" id="btn-cal-confirmar" onclick="confirmarCambioCalendario()">✅ Confirmar</button>'
+    +'</div>';
+
+  // Activar preview al cambiar fecha
+  document.getElementById('cal-change-fecha').addEventListener('input', function(){
+    _actualizarPreviewCalCambio();
+  });
+  _actualizarPreviewCalCambio();
+  openM('m-cal-change');
+}
+
+function selCalModo(modo){
+  window._calChangeNuevoModo=modo;
+  ['lv','ls','td'].forEach(function(k){
+    const opt=document.getElementById('cal-opt-'+k);
+    const chk=document.getElementById('cal-chk-'+k);
+    if(opt){opt.style.borderColor=k===modo?'var(--sky)':'var(--line)';opt.style.background=k===modo?'rgba(74,158,255,.18)':'var(--ink3)';}
+    if(chk)chk.textContent=k===modo?'🔵':'○';
+    const lbl=opt&&opt.querySelector('div:nth-child(2)');
+    if(lbl)lbl.style.color=k===modo?'var(--sky)':'var(--ash)';
+  });
+  _actualizarPreviewCalCambio();
+}
+
+function _actualizarPreviewCalCambio(){
+  const nuevoModo=window._calChangeNuevoModo||'lv';
+  const lid=window._calChangeLid;
+  const l=getL(lid);if(!l)return;
+  const fechaStr=document.getElementById('cal-change-fecha')?.value;
+  const prev=document.getElementById('cal-change-preview');if(!prev)return;
+  if(!fechaStr){prev.innerHTML='Selecciona una fecha.';return;}
+  const fechaBase=new Date(fechaStr+'T12:00:00');
+  if(isNaN(fechaBase)){prev.innerHTML='Fecha inválida.';return;}
+  // Calcular primera fecha ajustada
+  const primeraNueva=new Date(fechaBase);
+  while(!isHabilMode(primeraNueva,nuevoModo))primeraNueva.setDate(primeraNueva.getDate()+1);
+  const pendientes=l.cuotas.filter(function(c){return c.estado!=='pagada';}).sort(function(a,b){return a.num-b.num;});
+  if(!pendientes.length){prev.innerHTML='Sin cuotas pendientes.';return;}
+  // Generar primeras 3 fechas para preview
+  const _sv=_calMode;_calMode=nuevoModo;
+  let muestras=[];
+  try{muestras=calcFechasDesde(primeraNueva,l.mod,Math.min(pendientes.length,3));}catch(e){}
+  _calMode=_sv;
+  const ajustado=primeraNueva.toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short'});
+  const modoNombre=_calNombre(nuevoModo);
+  const actual=l.calMode||'lv';
+  const cambioModo=nuevoModo!==actual;
+  prev.innerHTML=
+    '<b style="color:var(--sky)">'+_calEmoji(nuevoModo)+' '+modoNombre+'</b>'+(cambioModo?' <span style="color:var(--jade);font-size:11px">(cambio de modo)</span>':'')+'<br>'
+    +'Primera cuota: <b style="color:var(--amber)">'+ajustado+'</b>'
+    +(muestras.length>1?' · Siguiente: <b>'+muestras[1].toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short'})+'</b>':'')
+    +(muestras.length>2?' · <b>'+muestras[2].toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short'})+'</b>':'')+'...<br>'
+    +'<span style="color:var(--smoke)">'+pendientes.length+' cuota(s) pendiente(s) se reprogramarán</span>';
+}
+
+function confirmarCambioCalendario(){
+  const lid=window._calChangeLid;
+  const nuevoModo=window._calChangeNuevoModo;
+  const l=getL(lid);if(!l)return;
+  if(!nuevoModo){toast('⚠️ Selecciona un calendario');return;}
+  const fechaStr=document.getElementById('cal-change-fecha')?.value;
+  if(!fechaStr){toast('⚠️ Selecciona una fecha de inicio');return;}
+  const fechaBase=new Date(fechaStr+'T12:00:00');
+  if(isNaN(fechaBase)){toast('❌ Fecha inválida');return;}
+  const modoAnterior=l.calMode||'lv';
+  const pendientes=l.cuotas.filter(function(c){return c.estado!=='pagada';}).sort(function(a,b){return a.num-b.num;});
+  if(!pendientes.length){
+    l.calMode=nuevoModo;
+    l.historico.push('📅 Calendario cambiado a '+_calNombre(nuevoModo)+' — '+new Date().toLocaleDateString('es-CO'));
+    toast('✅ Calendario actualizado');closeM('m-cal-change');fsSave();return;
+  }
+  // Ajustar la fecha base al próximo día hábil en el nuevo modo
+  const primeraNueva=new Date(fechaBase);
+  while(!isHabilMode(primeraNueva,nuevoModo))primeraNueva.setDate(primeraNueva.getDate()+1);
+  // Generar nuevas fechas
+  const _sv=_calMode;_calMode=nuevoModo;
+  let nuevasFechas=[];
+  try{nuevasFechas=calcFechasDesde(primeraNueva,l.mod,pendientes.length);}catch(e){}
+  _calMode=_sv;
+  if(!nuevasFechas.length){toast('❌ Error al calcular fechas');return;}
+  // Aplicar nuevas fechas a cuotas pendientes
+  pendientes.forEach(function(c,i){
+    c.fecha=nuevasFechas[i]||c.fecha;
+    if(c.estado==='mora')c.estado='pendiente'; // cuota reprogramada vuelve a pendiente
+  });
+  l.calMode=nuevoModo;
+  const cambioModo=nuevoModo!==modoAnterior;
+  l.historico.push('📅 Calendario '+(cambioModo?'cambiado de '+_calNombre(modoAnterior)+' a ':' reprogramado en ')+_calNombre(nuevoModo)
+    +' · desde '+primeraNueva.toLocaleDateString('es-CO')
+    +' · '+pendientes.length+' cuota(s) — '+new Date().toLocaleDateString('es-CO'));
+  closeM('m-cal-change');
+  toast('✅ '+(cambioModo?_calNombre(nuevoModo)+' activado':' Cuotas reprogramadas')+' · Desde: '+primeraNueva.toLocaleDateString('es-CO'));
+  fsSave();
+  if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
+  updDot();render();
 }
 
 seed();
