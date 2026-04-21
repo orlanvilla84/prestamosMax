@@ -3830,20 +3830,27 @@ function openRenew(lid){
   const l=getL(lid);if(!l)return;
   const total=l.cuotas.length;
   const pagadas=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-  // Sin restricción mínima: se puede renovar desde la primera cuota
-  const interesCiclo=l.ncu*l.cuo-l.val;     // interés FIJO del ciclo siempre
-  const efectivoCliente=l.val-interesCiclo;  // capital - interés = lo que se entrega al cliente
+
+  // ── Cálculo correcto de renovación ──
+  // Interés FIJO del ciclo completo (independiente de cuánto hayan pagado)
+  const interesCiclo=l.ncu*l.cuo-l.val;
+  // Lo cobrado hasta ahora (cuotas pagadas × valor cuota)
   const cobrado=pagadas*l.cuo;
+  // Efectivo al cliente = cobrado - interés del ciclo
+  // Si cobrado < interesCiclo (pagaron muy poco), efectivo = 0
+  const efectivoCliente=Math.max(0, cobrado-interesCiclo);
   const pendientes=total-pagadas;
   const deuda=pendientes*l.cuo;
   const ganAcumulada=(l._ganAnteriorTotal||0);
   const cicloActual=(l._ciclos||0)+1;
+
   const html=[
     '<div class="calcbox" style="margin-bottom:10px">',
     '<div style="font-size:11px;font-weight:800;color:var(--jade);margin-bottom:8px">📊 Ciclo '+cicloActual+' (actual)</div>',
     '<div class="crow2"><span>Cuotas pagadas</span><span class="mono">'+pagadas+'/'+total+'</span></div>',
     '<div class="crow2"><span>Total cobrado</span><span class="mono">'+fmt(cobrado)+'</span></div>',
-    '<div class="crow2"><span>Cuotas pendientes (deuda)</span><span class="mono" style="color:var(--fire)">'+pendientes+' cuotas = '+fmt(deuda)+'</span></div>',
+    '<div class="crow2"><span>Ganancia ciclo '+cicloActual+' (cobrada)</span><span class="mono" style="color:var(--lime)">'+fmt(interesCiclo)+'</span></div>',
+    '<div class="crow2"><span>Cuotas pendientes (se cancelan)</span><span class="mono" style="color:var(--fog)">'+pendientes+' cuotas = '+fmt(deuda)+'</span></div>',
     '<div class="crow2" style="border-top:1px solid var(--line);padding-top:6px;margin-top:4px">',
     '<span>💸 Efectivo al cliente</span>',
     '<span class="mono" style="color:var(--sky);font-weight:900">'+fmt(efectivoCliente)+'</span></div>',
@@ -3857,7 +3864,7 @@ function openRenew(lid){
     '<div style="background:rgba(255,208,96,.1);border:1px solid rgba(255,208,96,.4);border-radius:10px;padding:12px;margin-bottom:12px">',
     '<div style="font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px">💰 Si termina el ciclo '+(cicloActual+1)+' completo</div>',
     '<div class="crow2"><span>Capital</span><span class="mono" style="color:var(--sky)">'+fmt(l.val)+'</span></div>',
-    ganAcumulada>0?'<div class="crow2"><span>Intereses ciclos anteriores</span><span class="mono" style="color:var(--lime)">'+fmt(ganAcumulada)+'</span></div>':'',
+    ganAcumulada>0?'<div class="crow2"><span>Ganancias ciclos anteriores</span><span class="mono" style="color:var(--lime)">'+fmt(ganAcumulada)+'</span></div>':'',
     '<div class="crow2"><span>Interés ciclo '+(cicloActual+1)+'</span><span class="mono" style="color:var(--gold)">'+fmt(interesCiclo)+'</span></div>',
     '<div class="crow2" style="border-top:1px solid var(--line);padding-top:6px;margin-top:4px">',
     '<span style="font-weight:900">Total acumulado</span>',
@@ -3882,9 +3889,19 @@ function confirmRenew(lid,efectivoCliente,interesCiclo){
   const l=getL(lid);if(!l)return;
   const comp=gv('ren-comp-data')||null;
   const cicloNum=(l._ciclos||0)+1;
-  // Guardar interés del ciclo permanentemente
   const cap=getCap(S.cartera);
+
+  // ── 1. Registrar ganancia del ciclo en histGan (suma al capital disponible) ──
   if(interesCiclo>0&&cap){
+    if(!cap.histGan)cap.histGan=[];
+    cap.histGan.push({
+      fecha:new Date().toISOString(),
+      monto:interesCiclo,
+      lid:l.id,
+      cliente:l.nom+' '+l.ape,
+      nota:'Ganancia ciclo '+cicloNum+' (renovación)'
+    });
+    // También guardar en histGanPermanente para trazabilidad de ciclos
     if(!cap.histGanPermanente)cap.histGanPermanente=[];
     cap.histGanPermanente.push({
       fecha:new Date().toISOString(),
@@ -3893,17 +3910,37 @@ function confirmRenew(lid,efectivoCliente,interesCiclo){
       nota:'Interés ciclo '+cicloNum+' (renovación)'
     });
   }
+
+  // ── 2. Limpiar entradas previas de histGan de cuotas pagadas de este préstamo ──
+  // (las cuotas ya pagadas tenían distribuirPago parcial; al renovar el ciclo
+  //  se consolida todo en la ganancia del ciclo completo, evitando doble conteo)
+  if(cap&&cap.histGan){
+    cap.histGan=cap.histGan.filter(function(h){
+      return !(h.lid===l.id&&h.nota&&h.nota.startsWith('Cuota #'));
+    });
+  }
+
+  // ── 3. Actualizar metadatos del préstamo ──
   l._ganAnteriorTotal=(l._ganAnteriorTotal||0)+interesCiclo;
   l._ciclos=cicloNum;
   if(!l._valOriginal)l._valOriginal=l.val;
-  l.historico.push('🔄 Renovación ciclo '+cicloNum+'→'+(cicloNum+1)+' · efectivo al cliente: '+fmt(efectivoCliente)+' · interés ciclo '+cicloNum+' guardado: '+fmt(interesCiclo)+(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
+  l.historico.push('🔄 Renovación ciclo '+cicloNum+'→'+(cicloNum+1)
+    +' · Ganancia ciclo '+cicloNum+': '+fmt(interesCiclo)
+    +' · Efectivo al cliente: '+fmt(efectivoCliente)
+    +(comp?' 📸':'')+' — '+new Date().toLocaleDateString('es-CO'));
+
+  // ── 4. Reiniciar cuotas del nuevo ciclo ──
   l.ini=new Date();l.comprobante=comp||l.comprobante;l.renewRequest=false;
   const _savedCal=_calMode; _calMode=l.calMode||'lv';
   const fechas=calcFechas(new Date(),l.mod,l.ncu);
   _calMode=_savedCal;
-  l.cuotas=fechas.map(function(f,i){return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',multa:0,fechaPago:null,pagadoPor:null,comprobante:null};});
+  l.cuotas=fechas.map(function(f,i){
+    return{num:i+1,fecha:new Date(f),valor:l.cuo,estado:'pendiente',
+           multa:0,fechaPago:null,pagadoPor:null,comprobante:null};
+  });
+
   closeM('m-renew');
-  toast('🔄 Renovado · Interés ciclo '+cicloNum+' asegurado: '+fmt(interesCiclo));
+  toast('🔄 Renovado · Ganancia ciclo '+cicloNum+': '+fmt(interesCiclo)+' · Efectivo: '+fmt(efectivoCliente));
   fsSave();
   setTimeout(function(){sendWARenovacion(l,0,efectivoCliente);},400);
   if(S.cartera.cfg&&S.cartera.cfg.grupoWA)setTimeout(function(){notifGrupo('renovacion',l,{trans:efectivoCliente});},900);
