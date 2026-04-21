@@ -2816,7 +2816,7 @@ function rDetail(l){
   const pen=l.cuotas.filter(c=>c.estado!=='pagada').length;
   const moraN=l.cuotas.filter(c=>c.estado==='mora').length;
   const pct=Math.round(pag/l.cuotas.length*100);
-  const sc=score(l),canRenew=pag>=Math.ceil(l.cuotas.length/2)&&pen>0;
+  const sc=score(l),canRenew=pen>0;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const ganR=gananciaLoan(l);
   const resumenFin=buildResumenFin(l,ganR);
@@ -3830,10 +3830,7 @@ function openRenew(lid){
   const l=getL(lid);if(!l)return;
   const total=l.cuotas.length;
   const pagadas=l.cuotas.filter(function(c){return c.estado==='pagada';}).length;
-  if(pagadas<Math.ceil(total/2)){
-    toast('⚠️ El cliente debe pagar al menos el 50% de las cuotas para renovar ('+pagadas+'/'+total+')');
-    return;
-  }
+  // Sin restricción mínima: se puede renovar desde la primera cuota
   const interesCiclo=l.ncu*l.cuo-l.val;     // interés FIJO del ciclo siempre
   const efectivoCliente=l.val-interesCiclo;  // capital - interés = lo que se entrega al cliente
   const cobrado=pagadas*l.cuo;
@@ -3978,14 +3975,14 @@ function openRenewReq(lid){
   const l=getL(lid);if(!l)return;
   const pend=l.cuotas.filter(c=>c.estado!=='pagada').length;
   const desc=pend*l.cuo,trans=Math.max(0,l.val-desc);
-  const canRenew=l.cuotas.filter(c=>c.estado==='pagada').length>=6&&pend>0;
+  const canRenew=pend>0;
   $('renew-req-body').innerHTML=`<div class="calcbox" style="margin-bottom:9px">
     <div class="crow2"><span>Cliente</span><span>${l.nom} ${l.ape} · CC ${l.ced}</span></div>
     <div class="crow2"><span>Crédito</span><span class="mono">${fmt(l.val)} · ${cap(l.mod)}</span></div>
     <div class="crow2"><span>Cuotas pagadas</span><span>${l.cuotas.filter(c=>c.estado==='pagada').length}/${l.cuotas.length}</span></div>
     <div class="crow2"><span>Pendientes (${pend}×${fmt(l.cuo)})</span><span class="mono" style="color:var(--fire)">-${fmt(desc)}</span></div>
     <div class="crow2"><span>Transferencia al cliente</span><span class="mono" style="color:var(--lime)">${fmt(trans)}</span></div></div>
-  ${!canRenew?'<div class="warn-box">⚠️ El cliente no cumple el mínimo de 6 cuotas pagadas para renovar.</div>':''}
+
   <div style="font-size:12px;color:var(--smoke);margin-bottom:10px">El cliente solicitó renovar su crédito desde el portal. Puedes aprobar o rechazar.</div>
   <div class="brow" style="flex-direction:column;gap:8px">
     ${canRenew?`<button class="btn btn-lime btn-w" onclick="approveRenew(${lid})">✅ Aprobar renovación</button>`:''}
@@ -4011,7 +4008,7 @@ function rejectRenew(lid){
 function openOpts(){
   const l=getL(S.lid);if(!l)return;
   const pag=l.cuotas.filter(c=>c.estado==='pagada').length;
-  const canRenew=pag>=6&&l.cuotas.filter(c=>c.estado!=='pagada').length>0;
+  const canRenew=l.cuotas.filter(c=>c.estado!=='pagada').length>0;
   // Detectar cuotas pendientes con fecha duplicada
   const pendFechas=l.cuotas.filter(c=>c.estado!=='pagada').map(c=>new Date(c.fecha).toISOString().slice(0,10));
   const hayDups=pendFechas.length!==new Set(pendFechas).size;
@@ -4095,7 +4092,7 @@ function renderPortal(l){
   const pen=l.cuotas.filter(c=>c.estado!=='pagada').length;
   const moraN=l.cuotas.filter(c=>c.estado==='mora').length;
   const pct=Math.round(pag/l.cuotas.length*100);
-  const canSolicit=pag>=6&&pen>0&&!l.renewRequest;
+  const canSolicit=pen>0&&!l.renewRequest;
   const ini=(l.nom[0]||'')+(l.ape[0]||'');
   const cuotasH=l.cuotas.map(c=>`<div class="portal-row">
     <div class="cnum ${c.estado==='pagada'?'cn-ok':c.estado==='mora'?'cn-m':'cn-p'}" style="flex-shrink:0">${c.num}</div>
