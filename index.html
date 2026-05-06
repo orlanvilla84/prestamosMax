@@ -1729,16 +1729,22 @@ async function fsCargarCarteras(){
       });
       DB.carteras=nuevas;
       if(document.getElementById('s-carteras')?.classList.contains('on'))renderCarteras();
+      // Reparar todas las carteras disponibles en background (corrige datos corruptos en Firestore)
+      nuevas.forEach(function(cart){
+        const n=repararCuotasCorruptas(cart);
+        if(n>0){
+          // Guardar directamente sin pasar por S.cartera para no interferir con render actual
+          if(window._db)window._db.collection('carteras').doc(cart.id).set(JSON.parse(JSON.stringify(cart)));
+          console.log('[PrestaMax] onSnapshot reparó '+n+' cuota(s) en cartera '+cart.id);
+        }
+      });
       if(S.cartera){
         const upd=DB.carteras.find(function(c){return c.id===S.cartera.id;});
         if(upd){
-          S.cartera=upd;
-          // 1) Primero reparar cuotas que el bug anterior dejó corruptas
-          //    (tienen fechaPago pero estado != pagada)
-          repararCuotasCorruptas();
-          // 2) Luego actualizar mora/pendiente según hora límite
+          S.cartera = upd;
+          // Evaluar mora/pendiente según hora límite
           checkAutoMora();
-          render();updDot();
+          render(); updDot();
         }
       }
     },function(e){console.warn('snapshot err:',e);});
@@ -2149,7 +2155,11 @@ function tryUnlock(){
 
 function openCartera(id){
   const c=DB.carteras.find(x=>x.id===id);if(!c)return;
+  // Reparar cuotas corruptas al abrir la cartera (antes de render)
+  const reparadas=repararCuotasCorruptas(c);
   S.cartera=c;
+  if(reparadas>0){fsSave();console.log('[PrestaMax] openCartera: reparadas '+reparadas+' cuota(s)');}
+  checkAutoMora();
   ['s-lock','s-carteras'].forEach(s=>document.getElementById(s).classList.remove('on'));
   document.getElementById('s-main').classList.add('on');
   $('cartera-bar-title').textContent=c.name;
@@ -6120,31 +6130,35 @@ function confirmarCambioCalendario(){
 seed();
 
 /* ── Reparar cuotas corruptas ──
-   El bug de doMora (versión anterior) podía pasar cuotas pagadas a mora/pendiente
-   cuando se gestionaba una mora en una cuota con fecha antigua. Detectamos cuotas
-   que tienen fechaPago registrado pero estado incorrecto y las restauramos. */
-function repararCuotasCorruptas(){
-  if(!S.cartera)return;
-  let fixed=0;
-  (S.cartera.loans||[]).forEach(function(l){
+   El bug antiguo de doMora cambiaba fecha+estado de cuotas pagadas sin borrar
+   fechaPago/pagadoPor. Detectamos esas cuotas y las restauramos a 'pagada'.
+   Acepta una cartera específica (útil en onSnapshot antes de asignar a S.cartera). */
+function repararCuotasCorruptas(carteraTarget){
+  const cart = carteraTarget || S.cartera;
+  if(!cart) return 0;
+  let fixed = 0;
+  (cart.loans||[]).forEach(function(l){
     l.cuotas.forEach(function(c){
-      // Si tiene fechaPago guardado → fue pagada en algún momento → restaurar
-      if(c.fechaPago && c.estado !== 'pagada'){
+      // Detector principal: tiene fechaPago registrado → fue pagada → restaurar
+      const fuePageada = (c.fechaPago && c.fechaPago !== null)
+                      || (c.pagadoPor && c.pagadoPor !== null)
+                      || (c._comprobante_prev !== undefined && c._comprobante_prev !== null);
+      if(fuePageada && c.estado !== 'pagada'){
+        console.log('[PrestaMax] Reparando cuota #'+c.num+' de '+l.nom+' '+l.ape
+          +' (estado era: '+c.estado+', fechaPago: '+c.fechaPago+')');
         c.estado = 'pagada';
-        // Restaurar pagadoPor si se perdió
         if(!c.pagadoPor) c.pagadoPor = 'Sistema';
         fixed++;
       }
     });
-    // Si todas las cuotas están pagadas y el préstamo sigue activo → cerrarlo
+    // Si todas pagadas y préstamo activo → cerrar
     if(l.activo && l.cuotas.every(function(c){return c.estado==='pagada';})){
-      l.activo=false;
-      if(!l.fechaCierre) l.fechaCierre=new Date().toISOString();
+      l.activo = false;
+      if(!l.fechaCierre) l.fechaCierre = new Date().toISOString();
     }
   });
-  if(fixed>0){
-    console.log('[PrestaMax] Reparadas '+fixed+' cuota(s) corruptas.');
-    fsSave();
+  if(fixed > 0){
+    console.log('[PrestaMax] ✅ Reparadas '+fixed+' cuota(s) corruptas en cartera '+cart.id);
   }
   return fixed;
 }
@@ -6174,8 +6188,8 @@ function checkAutoMora(){
 // Ejecutar INMEDIATAMENTE al cargar (sin delay) y luego cada 30 segundos.
 // Sin delay: en cuanto los datos llegan de Firestore (onSnapshot → render),
 // el estado de mora ya es correcto desde el primer frame visible.
-// Al arrancar: primero reparar datos corruptos, luego evaluar mora
-repararCuotasCorruptas();
+// repararCuotasCorruptas() se llama en onSnapshot cuando llegan los datos de Firestore.
+// Aquí solo iniciamos el ciclo de checkAutoMora (sin S.cartera aún no hace nada).
 checkAutoMora();
 setInterval(checkAutoMora, 30000);
 </script>
