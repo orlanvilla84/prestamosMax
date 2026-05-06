@@ -3796,24 +3796,20 @@ function doMora(lid, cn, pagaMulta){
     }
     l._multasCobradas=(l._multasCobradas||0)+multaVal;
     c.multa=(c.multa||0)+multaVal;
-    // Correr TODAS las cuotas pendientes desde cn un slot
-    const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
-    for(let i=0;i<pendSig.length;i++){
-      const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
-      pendSig[i].fecha=nextFecha({fecha:base},l);
-      pendSig[i].estado='pendiente'; // ← CLAVE: vuelve a pendiente, no mora
-    }
-    l.historico.push('Multa cuota #'+cn+': '+fmt(multaVal)+' cobrada · cuotas corridas un dia — '+new Date().toLocaleDateString('es-CO'));
+    // ── Solo mover la cuota gestionada al siguiente día hábil desde HOY.
+    // Las demás cuotas pendientes conservan sus fechas originales para evitar
+    // que fechas antiguas se propaguen y checkAutoMora las marque todas en mora.
+    c.fecha=nextFecha({fecha:new Date()},l);
+    c.estado='pendiente'; // ← vuelve a pendiente, no mora
+    l.historico.push('Multa cuota #'+cn+': '+fmt(multaVal)+' cobrada · cuota reprogramada — '+new Date().toLocaleDateString('es-CO'));
     toast('✅ Multa '+fmt(multaVal)+' cobrada. Cuota #'+cn+' reprogramada como PENDIENTE');
   } else {
-    // Sin multa: solo correr y poner pendiente
-    const pendSig=l.cuotas.filter(function(q){return q.estado!=='pagada'&&q.num>=cn;}).sort(function(a,b){return a.num-b.num;});
-    for(let i=0;i<pendSig.length;i++){
-      const base=new Date(i===0?c.fecha:pendSig[i-1].fecha);
-      pendSig[i].fecha=nextFecha({fecha:base},l);
-      pendSig[i].estado='pendiente'; // ← CLAVE: vuelve a pendiente
-    }
-    l.historico.push('Multa cuota #'+cn+' perdonada · cuotas reprogramadas pendiente — '+new Date().toLocaleDateString('es-CO'));
+    // Sin multa: solo mover esta cuota al siguiente día hábil desde HOY y ponerla pendiente.
+    // NO se recalculan las fechas de las demás cuotas para evitar que fechas vencidas
+    // se propaguen y checkAutoMora las marque todas en mora.
+    c.fecha=nextFecha({fecha:new Date()},l);
+    c.estado='pendiente'; // ← vuelve a pendiente
+    l.historico.push('Multa cuota #'+cn+' perdonada · cuota reprogramada pendiente — '+new Date().toLocaleDateString('es-CO'));
     toast('🤝 Multa perdonada. Cuota #'+cn+' reprogramada como PENDIENTE');
   }
   _multaActual=0;
@@ -4946,13 +4942,20 @@ function deshacerPago(lid, cn){
 
   // Revert the cuota
   const wasActivo=l.activo;
-  c.estado='pendiente';
   c.fechaPago=null;
   c.pagadoPor=null;
   c.pagadoPorEmail=null;
   // Keep comprobante for reference but mark as undone
   c._comprobante_prev=c.comprobante;
   c.comprobante=null;
+
+  // ── Si la fecha original de esta cuota ya venció, moverla al próximo día hábil
+  // para que checkAutoMora NO la marque inmediatamente en mora, lo que visualmente
+  // aparentaba que "todas las cuotas se vinieron a no pagadas".
+  if(isOvd(c.fecha, l.hor||'18:00')){
+    c.fecha=nextFecha({fecha:new Date()},l);
+  }
+  c.estado='pendiente';
 
   // If loan was closed, reactivate it
   if(!l.activo){
@@ -4963,10 +4966,7 @@ function deshacerPago(lid, cn){
     l.historico.push('⟳ Cuota #'+cn+' revertida a pendiente — '+new Date().toLocaleDateString('es-CO'));
   }
 
-  // ── Nota: NO se recalculan fechas de otras cuotas pendientes al revertir ──
-  // La cuota revertida conserva su fecha original (c.fecha no fue modificada).
-  // Recalcular desde la fecha más antigua causaba que todas las cuotas pendientes
-  // quedaran en fechas ya vencidas, apareciendo incorrectamente en mora.
+  // ── Las demás cuotas conservan sus fechas y estados originales. ──
 
   fsSave();
   if(document.getElementById('s-detail').classList.contains('on'))$('dcontent').innerHTML=rDetail(l);
