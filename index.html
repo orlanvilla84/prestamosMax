@@ -1731,7 +1731,15 @@ async function fsCargarCarteras(){
       if(document.getElementById('s-carteras')?.classList.contains('on'))renderCarteras();
       if(S.cartera){
         const upd=DB.carteras.find(function(c){return c.id===S.cartera.id;});
-        if(upd){S.cartera=upd;render();updDot();}
+        if(upd){
+          S.cartera=upd;
+          // 1) Primero reparar cuotas que el bug anterior dejó corruptas
+          //    (tienen fechaPago pero estado != pagada)
+          repararCuotasCorruptas();
+          // 2) Luego actualizar mora/pendiente según hora límite
+          checkAutoMora();
+          render();updDot();
+        }
       }
     },function(e){console.warn('snapshot err:',e);});
   }catch(e){console.warn('fsCargarCarteras error:',e);}
@@ -4949,13 +4957,11 @@ function deshacerPago(lid, cn){
   c._comprobante_prev=c.comprobante;
   c.comprobante=null;
 
-  // ── Si la fecha original de esta cuota ya venció, moverla al próximo día hábil
-  // para que checkAutoMora NO la marque inmediatamente en mora, lo que visualmente
-  // aparentaba que "todas las cuotas se vinieron a no pagadas".
-  if(isOvd(c.fecha, l.hor||'18:00')){
-    c.fecha=nextFecha({fecha:new Date()},l);
-  }
-  c.estado='pendiente';
+  // ── Conservar la fecha original de la cuota.
+  // Si ya venció → mora directamente (es una cuota vieja atrasada, no futura).
+  // Si aún no venció → pendiente normal.
+  // Las demás cuotas NO se tocan.
+  c.estado = isOvd(c.fecha, l.hor||'18:00') ? 'mora' : 'pendiente';
 
   // If loan was closed, reactivate it
   if(!l.activo){
@@ -6113,6 +6119,36 @@ function confirmarCambioCalendario(){
 
 seed();
 
+/* ── Reparar cuotas corruptas ──
+   El bug de doMora (versión anterior) podía pasar cuotas pagadas a mora/pendiente
+   cuando se gestionaba una mora en una cuota con fecha antigua. Detectamos cuotas
+   que tienen fechaPago registrado pero estado incorrecto y las restauramos. */
+function repararCuotasCorruptas(){
+  if(!S.cartera)return;
+  let fixed=0;
+  (S.cartera.loans||[]).forEach(function(l){
+    l.cuotas.forEach(function(c){
+      // Si tiene fechaPago guardado → fue pagada en algún momento → restaurar
+      if(c.fechaPago && c.estado !== 'pagada'){
+        c.estado = 'pagada';
+        // Restaurar pagadoPor si se perdió
+        if(!c.pagadoPor) c.pagadoPor = 'Sistema';
+        fixed++;
+      }
+    });
+    // Si todas las cuotas están pagadas y el préstamo sigue activo → cerrarlo
+    if(l.activo && l.cuotas.every(function(c){return c.estado==='pagada';})){
+      l.activo=false;
+      if(!l.fechaCierre) l.fechaCierre=new Date().toISOString();
+    }
+  });
+  if(fixed>0){
+    console.log('[PrestaMax] Reparadas '+fixed+' cuota(s) corruptas.');
+    fsSave();
+  }
+  return fixed;
+}
+
 /* ── Auto-mora: chequeo periódico cada 60 segundos ── */
 function checkAutoMora(){
   if(!S.cartera)return;
@@ -6135,8 +6171,13 @@ function checkAutoMora(){
   });
   if(changed){fsSave();updDot();render();}
 }
-// Ejecutar al cargar y luego cada minuto
-setTimeout(function(){checkAutoMora();setInterval(checkAutoMora,60000);},3000);
+// Ejecutar INMEDIATAMENTE al cargar (sin delay) y luego cada 30 segundos.
+// Sin delay: en cuanto los datos llegan de Firestore (onSnapshot → render),
+// el estado de mora ya es correcto desde el primer frame visible.
+// Al arrancar: primero reparar datos corruptos, luego evaluar mora
+repararCuotasCorruptas();
+checkAutoMora();
+setInterval(checkAutoMora, 30000);
 </script>
 </body>
 </html>
